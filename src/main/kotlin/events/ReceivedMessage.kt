@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.events
 
+import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.exception.PermissionForbidden
 import net.mamoe.mirai.console.command.CommandManager
@@ -11,13 +12,24 @@ import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.data.content
+
+private val allCommandSymbol by lazy {
+  (registeredCmds.map { it.primaryName } +
+      registeredCmds.map { it.secondaryNames.toList() }.flatten()).sorted().toTypedArray()
+}
+
+private val cmdRegex by lazy { Regex("""/(\w+)""") }
 
 @OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class)
 fun EventChannel<Event>.onReceivedMessage() {
   filter {
     it is GroupMessageEvent || it is FriendMessageEvent
   }.subscribeAlways<MessageEvent> {
-    if (message.contentToString().startsWith("/")) {
+    val content = message.content
+    if (content.startsWith("/")) {
+      val cmd = cmdRegex.find(content)?.groupValues?.get(1) ?: return@subscribeAlways
+      if (allCommandSymbol.binarySearch(cmd) < 0) return@subscribeAlways
       val cmdSender = sender.asCommandSender(false)
       try {
         CommandManager.executeCommand(cmdSender, message, false)
