@@ -11,6 +11,7 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.events.onMemberRequest
 import me.hbj.bikkuri.events.onNewMember
 import me.hbj.bikkuri.events.onReceivedMessage
+import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -27,6 +28,7 @@ object Bikkuri : KotlinPlugin(
       author("Colerar")
     }
 ) {
+  internal val registeredCmds = listOf<Command>(Version, LoginBili, Config, Sign, Version)
 
   @OptIn(MiraiExperimentalApi::class)
   override fun onEnable() {
@@ -50,6 +52,7 @@ object Bikkuri : KotlinPlugin(
     onMemberRequest()
   }
 
-  private fun registerCommands(): Unit =
-      listOf(Version, LoginBili, Config, Sign, Version).forEach(CommandManager::registerCommand)
+  private fun registerCommands() {
+    registeredCmds.forEach(CommandManager::registerCommand)
+  }
 }
