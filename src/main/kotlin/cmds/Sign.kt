@@ -115,7 +115,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
               if (medalNotNull && medalUserFit && medalLevel && keygenFit && keygenNotExpired) {
                 group.sendMessage("成功通过审核~~~ 请手动申请加群: ${data.targetGroup}, 申请后会自动同意, 如有问题请联系管理员")
                 AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
-                AutoApprove.map[data.targetGroup!!]?.list?.add(user.id) ?: run {
+                AutoApprove.map[data.targetGroup!!]?.set?.add(user.id) ?: run {
                   group.sendMessage("添加到自动批准列表时出现错误, 请联系管理员")
                 }
                 loop = false
