@@ -18,7 +18,10 @@ import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
+import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import java.io.File
 import kotlin.time.DurationUnit.SECONDS
 import kotlin.time.toDuration
 
@@ -77,7 +80,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       launch {
         client.sendMessageTo(
             uid!!,
-            MessageContent.Text("""【${bindName.await()}】 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略""")
+            MessageContent.Text("""<${bindName.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略""")
         )
       }
     }
@@ -100,24 +103,51 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
               loop = false
             }
             else -> {
-              val passed = client.getUserSpace(uid!!).data?.run {
-                val medal = fansMedal?.medal
-                medal?.targetId == data.userBind?.toInt()
-                    && medal?.isLighted == true
-                    && medal.level?.let { it >= REQUIRED_LEVEL } ?: false
-                    && message.content.removeSurrounding("[", "]") == keygen.keygen
-                    && keygen.expiresAt > Clock.System.now()
-              }
-              if (passed == true) {
+              val medal = client.getUserSpace(uid!!).data?.fansMedal?.medal
+              val str = Regex("""(\[?[0-9A-Za-z]+]?)""").find(message.content)?.value
+
+              val medalNotNull = medal != null
+              val medalUserFit = medal?.targetId == data.userBind?.toInt()
+              val medalLevel = medal?.level?.let { it >= REQUIRED_LEVEL } ?: false
+              val keygenFit = str?.removeSurrounding("[", "]") == keygen.keygen
+              val keygenNotExpired = keygen.expiresAt > Clock.System.now()
+
+              if (medalNotNull && medalUserFit && medalLevel && keygenFit && keygenNotExpired) {
                 group.sendMessage("成功通过审核~~~ 请手动申请加群: ${data.targetGroup}, 申请后会自动同意, 如有问题请联系管理员")
                 AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
                 AutoApprove.map[data.targetGroup!!]?.list?.add(user.id) ?: run {
                   group.sendMessage("添加到自动批准列表时出现错误, 请联系管理员")
                 }
                 loop = false
-              } else {
-                group.sendMessage("审核失败~可再次输入验证码重试, quit 退出.")
-              }
+              } else group.sendMessage(
+                  when {
+                    !medalNotNull -> buildMessageChain {
+                      add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送验证码重试, quit 退出)")
+                      File("")
+                      val resource = Bikkuri.javaClass.classLoader.getResourceAsStream("./images/guide.png")?.toExternalResource("png")
+                      resource?.let {
+                        add(group.uploadImage(it))
+                      } ?: add("[图片]")
+                    }
+                    !medalUserFit -> buildMessageChain {
+                      add("呜~ 请佩戴 [$bindName] 的粉丝牌哦! 可再次输入验证码重试, quit 退出.")
+                    }
+                    !medalLevel -> buildMessageChain {
+                      add("粉丝牌等级不足~ 需要至少 $REQUIRED_LEVEL 级哦~ 10 秒后将会把你踢出")
+                      loop = false
+                    }
+                    !keygenFit -> buildMessageChain {
+                      add("呜~ 验证码错误, 可再次输入验证码重试, quit 退出.")
+                    }
+                    @Suppress("KotlinConstantConditions")
+                    !keygenNotExpired -> buildMessageChain {
+                      add("呜~ 验证码过期, 可再次输入验证码重试, quit 退出.")
+                    }
+                    else -> buildMessageChain {
+                      add("审核失败~可再次输入验证码重试, quit 退出.")
+                    }
+                  }
+              )
             }
           }
         }
