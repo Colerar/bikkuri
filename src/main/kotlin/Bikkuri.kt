@@ -54,5 +54,6 @@ object Bikkuri : KotlinPlugin(
 
   private fun registerCommands() {
     registeredCmds.forEach(CommandManager::registerCommand)
+    Keygen.cleanup()
   }
 }
