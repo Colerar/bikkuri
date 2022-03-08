@@ -11,5 +11,5 @@ object AutoApprove : AutoSavePluginData("AutoApproveList") {
 
 @Serializable
 class AutoApproveData(
-    val list: MutableList<Long> = mutableListOf(),
+    val set: MutableSet<Long> = mutableSetOf(),
 )
