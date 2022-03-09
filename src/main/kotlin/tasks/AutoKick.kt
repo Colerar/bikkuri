@@ -19,10 +19,11 @@ fun CoroutineScope.launchAutoKickTask(): Job = launch {
     delay(5_000)
     ListenerData.map.forEach { (t, _) ->
       Bot.instances.forEach { bot ->
-        bot.groups.filter {
+        bot.groups.asSequence().filter {
           it.id == t && it.botAsMember.isOperator()
         }.forEach { group ->
           group.members
+            .asSequence()
             .filterNot { it.isOperator() }
             .forEach member@{
               val sec = ListenerData.map[group.id]?.kickDuration?.toLong() ?: 0

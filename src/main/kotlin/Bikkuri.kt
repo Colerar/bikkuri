@@ -9,10 +9,12 @@ import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberRequest
 import me.hbj.bikkuri.events.onNewMember
 import me.hbj.bikkuri.events.onReceivedMessage
+import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
@@ -52,6 +54,7 @@ object Bikkuri : KotlinPlugin(
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
     onBotOnline()
+    onBotOffline()
     onReceivedMessage()
     onNewMember()
     onMemberRequest()
@@ -64,5 +67,6 @@ object Bikkuri : KotlinPlugin(
 
   private fun launchTasks() {
     launchAutoKickTask()
+    launchAutoApproveTask()
   }
 }

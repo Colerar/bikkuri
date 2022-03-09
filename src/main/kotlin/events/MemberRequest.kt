@@ -2,6 +2,7 @@ package me.hbj.bikkuri.events
 
 import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.AutoApproveData
+import me.hbj.bikkuri.data.ListenerData
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
@@ -14,4 +15,10 @@ fun EventChannel<Event>.onMemberRequest() {
       AutoApprove.map[groupId]?.set?.remove(fromId)
     }
   }
+  subscribeAlways<MemberJoinRequestEvent> {
+    if (!ListenerData.map.keys.contains(it.groupId)) return@subscribeAlways
+    queuedMemberRequest.add(this)
+  }
 }
+
+val queuedMemberRequest = mutableListOf<MemberJoinRequestEvent>()
