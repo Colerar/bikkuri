@@ -13,8 +13,8 @@ import net.mamoe.mirai.utils.debug
 import kotlin.contracts.ExperimentalContracts
 
 object Config : CompositeCommand(
-    Bikkuri, "config", "配置", "c",
-    description = "配置指令"
+  Bikkuri, "config", "配置", "c",
+  description = "配置指令"
 ) {
   @OptIn(ExperimentalContracts::class)
   private fun MemberCommandSender.checkPerm() {
@@ -37,11 +37,13 @@ object Config : CompositeCommand(
     val target = ListenerData.map[id]?.targetGroup
     val bind = ListenerData.map[id]?.userBind
 
-    group.sendMessage(buildString {
-      appendLine("本群已${if (ListenerData.map[id]?.enable == true) "开启" else "关闭"}监听！")
-      if (target == null) appendLine("没有配置审核通过后的目标群聊，输入 /config target [群号] 配置！")
-      if (bind == null) appendLine("没有配置绑定的用户 UID，输入 /config bind [B站UID] 配置！")
-    }.clearIndent())
+    group.sendMessage(
+      buildString {
+        appendLine("本群已${if (ListenerData.map[id]?.enable == true) "开启" else "关闭"}监听！")
+        if (target == null) appendLine("没有配置审核通过后的目标群聊，输入 /config target [群号] 配置！")
+        if (bind == null) appendLine("没有配置绑定的用户 UID，输入 /config bind [B站UID] 配置！")
+      }.clearIndent()
+    )
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 

@@ -17,11 +17,13 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.content
 
 private val allCommandSymbol by lazy {
-  (registeredCmds.map { it.primaryName } +
-      registeredCmds.map { it.secondaryNames.toList() }.flatten()).sorted().toTypedArray()
+  (
+    registeredCmds.map { it.primaryName } +
+      registeredCmds.map { it.secondaryNames.toList() }.flatten()
+    ).sorted().toTypedArray()
 }
 
-private val cmdRegex by lazy { Regex("""/(\w+)""") }
+private val cmdRegex by lazy { Regex("""/(\S+)""") }
 
 @OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class)
 fun EventChannel<Event>.onReceivedMessage() {
