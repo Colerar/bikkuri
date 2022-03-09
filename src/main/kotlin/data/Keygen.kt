@@ -14,7 +14,7 @@ object Keygen : AutoSavePluginData("KeygenList") {
 
   fun cleanup() {
     val now = Clock.System.now()
-    map
+    map.asSequence()
       .filter { it.value.expiresAt < now }
       .forEach { (t, _) -> map.remove(t) }
   }
