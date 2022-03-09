@@ -6,7 +6,6 @@ import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
 import me.hbj.bikkuri.util.clearIndent
-import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.isOperator
@@ -18,8 +17,14 @@ object Config : CompositeCommand(
     description = "配置指令"
 ) {
   @OptIn(ExperimentalContracts::class)
-  fun MemberCommandSender.checkPerm() {
+  private fun MemberCommandSender.checkPerm() {
     if (!user.isOperator()) throw PermissionForbidden("/config needs admin perm")
+  }
+
+  @SubCommand
+  suspend fun MemberCommandSender.list() {
+    val data = ListenerData.map.getOrPut(group.id) { GroupListener() }
+    group.sendMessage("当前配置: $data")
   }
 
   @SubCommand
@@ -59,6 +64,20 @@ object Config : CompositeCommand(
     val last = data.targetGroup
     data.targetGroup = target
     group.sendMessage("绑定群聊变化： $last -> $target\n记得在目标群聊设置机器人为管理员哦~")
+    logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
+  }
+
+  @SubCommand
+  suspend fun MemberCommandSender.autokick(duration: String) {
+    checkPerm()
+    val id = group.id
+    val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
+    val last = data.kickDuration
+    data.kickDuration = duration.toULongOrNull() ?: run {
+      group.sendMessage("需输入非负整数, 0 代表不自动踢人")
+      return
+    }
+    group.sendMessage("自动踢人时长变化： $last -> $duration\n注意单位是秒, 0 表示关闭")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 }

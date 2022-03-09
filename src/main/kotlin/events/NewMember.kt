@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.events
 
+import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.util.clearIndent
 import net.mamoe.mirai.Bot
@@ -18,7 +19,9 @@ fun EventChannel<Event>.onNewMember() {
             欢迎进入舰长审核群。输入 /sign 或者 /验证 开始审核哦~
             """.clearIndent()
     )
+    LastMsg.setToNow(groupId, member.id)
   }
+
   subscribeAlways<MemberJoinEvent> {
     val (sourceGroup, _) = ListenerData.map.toList().firstOrNull { (_, v) ->
       v.targetGroup == user.group.id

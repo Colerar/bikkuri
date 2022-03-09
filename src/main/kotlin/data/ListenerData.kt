@@ -10,8 +10,9 @@ object ListenerData : AutoSavePluginData("ListenerData") {
 }
 
 @Serializable
-class GroupListener(
+data class GroupListener(
     var enable: Boolean = false,
     var userBind: Long? = null, // binds to bilibili mid
     var targetGroup: Long? = null,
+    var kickDuration: ULong = 0uL,
 )
