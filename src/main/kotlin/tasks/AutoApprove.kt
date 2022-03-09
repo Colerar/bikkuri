@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.events.queuedMemberRequest
 import net.mamoe.mirai.contact.getMember
@@ -26,6 +27,8 @@ fun CoroutineScope.launchAutoApproveTask(): Job = launch {
         if (e.group?.members?.count { !it.isOperator() } != 0) return@forEach
 
         e.accept()
+
+        logger.info("Accept join request: $e")
 
         queuedMemberRequest.remove(e)
       }
