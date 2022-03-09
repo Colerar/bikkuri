@@ -129,3 +129,6 @@ src/test/kotlin/RunTerminal.kt
 
 # Local Test Launch Point working directory
 /debug-sandbox
+
+# secrets or personal settings
+local.properties
