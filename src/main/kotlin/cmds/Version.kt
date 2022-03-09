@@ -9,13 +9,13 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 
 object Version : SimpleCommand(
-    Bikkuri, "version", "版本", "v",
-    description = "查看版本信息"
+  Bikkuri, "version", "版本", "v",
+  description = "查看版本信息"
 ) {
   @Handler
   suspend fun CommandSender.handle() {
     sendMessage(
-        """
+      """
             Bikkuri Q群机器人 - $VERSION
             ⏱ Built at $BUILD_TIME
             ❤️ With Kotlin ${KotlinVersion.CURRENT} & Mirai $MIRAI_VERSION

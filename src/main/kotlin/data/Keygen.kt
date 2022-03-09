@@ -15,21 +15,21 @@ object Keygen : AutoSavePluginData("KeygenList") {
   fun cleanup() {
     val now = Clock.System.now()
     map
-        .filter { it.value.expiresAt < now }
-        .forEach { (t, _) -> map.remove(t) }
+      .filter { it.value.expiresAt < now }
+      .forEach { (t, _) -> map.remove(t) }
   }
 }
 
 @Serializable
 class KeygenData(
-    val salt: String,
-    val keygen: String,
-    val expiresAt: Instant,
+  val salt: String,
+  val keygen: String,
+  val expiresAt: Instant,
 )
 
 fun KeygenData(salt: String, length: Int, expiresAfter: Duration): KeygenData =
-    KeygenData(
-        salt = salt,
-        keygen = randomKeygen(length),
-        expiresAt = Clock.System.now().plus(expiresAfter),
-    )
+  KeygenData(
+    salt = salt,
+    keygen = randomKeygen(length),
+    expiresAt = Clock.System.now().plus(expiresAfter),
+  )
