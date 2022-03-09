@@ -77,7 +77,6 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
         val medalUserFit = medal?.targetId == data.userBind?.toInt()
         val medalLevel = medal?.level?.let { it >= REQUIRED_LEVEL } ?: false
 
-
         when {
           !medalNotNull -> buildMessageChain {
             add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)")
