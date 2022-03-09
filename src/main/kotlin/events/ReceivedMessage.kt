@@ -1,12 +1,14 @@
 package me.hbj.bikkuri.events
 
-import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.Bikkuri.logger
+import me.hbj.bikkuri.Bikkuri.registeredCmds
+import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.exception.PermissionForbidden
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.FriendMessageEvent
@@ -36,6 +38,11 @@ fun EventChannel<Event>.onReceivedMessage() {
       } catch (e: PermissionForbidden) {
         logger.verbose("Sender permission forbidden ${cmdSender.user.id}", e)
       }
+    }
+  }
+  subscribeAlways<GroupMessageEvent> {
+    if (sender is NormalMember) {
+      LastMsg.setToNow(group.id, sender.id)
     }
   }
 }

@@ -7,10 +7,13 @@ import me.hbj.bikkuri.cmds.Version
 import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.Keygen
+import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberRequest
 import me.hbj.bikkuri.events.onNewMember
 import me.hbj.bikkuri.events.onReceivedMessage
+import me.hbj.bikkuri.tasks.launchAutoKickTask
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -37,6 +40,7 @@ object Bikkuri : KotlinPlugin(
     loadData()
     registerCommands()
     subscribeEvents()
+    launchTasks()
   }
 
   override fun onDisable() {
@@ -44,9 +48,10 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-      listOf(ListenerData, Keygen, AutoApprove).forEach { it.reload() }
+      listOf(ListenerData, Keygen, AutoApprove, LastMsg).forEach { it.reload() }
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
+    onBotOnline()
     onReceivedMessage()
     onNewMember()
     onMemberRequest()
@@ -55,5 +60,9 @@ object Bikkuri : KotlinPlugin(
   private fun registerCommands() {
     registeredCmds.forEach(CommandManager::registerCommand)
     Keygen.cleanup()
+  }
+
+  private fun launchTasks() {
+    launchAutoKickTask()
   }
 }
