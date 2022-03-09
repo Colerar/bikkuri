@@ -9,9 +9,9 @@ private val pattern by lazy {
 }
 
 fun randomKeygen(length: Int): String =
-    StringBuilder(length).apply {
-      repeat(length) {
-        val idx = rand.nextInt(0, pattern.lastIndex)
-        append(pattern[idx])
-      }
-    }.toString()
+  StringBuilder(length).apply {
+    repeat(length) {
+      val idx = rand.nextInt(0, pattern.lastIndex)
+      append(pattern[idx])
+    }
+  }.toString()

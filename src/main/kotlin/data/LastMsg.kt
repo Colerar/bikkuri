@@ -25,6 +25,6 @@ object LastMsg : AutoSavePluginData("LastMsgList") {
 
 @Serializable
 class LastMsgData(
-    // member qq id to last msg
-    val members: MutableMap<Long, Instant> = mutableMapOf()
+  // member qq id to last msg
+  val members: MutableMap<Long, Instant> = mutableMapOf()
 )

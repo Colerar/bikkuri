@@ -9,11 +9,11 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 
 object LoginBili : SimpleCommand(
-    Bikkuri, "loginbili",
-    description = "登录 B 站帐号"
+  Bikkuri, "loginbili",
+  description = "登录 B 站帐号"
 ) {
   @Handler
-  suspend fun ConsoleCommandSender.login() {
+  suspend fun @Suppress("unused") ConsoleCommandSender.login() {
     if (client.getBasicInfo().data.isLogin) {
       client.logOut()
     }

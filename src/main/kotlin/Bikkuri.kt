@@ -23,13 +23,13 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.info
 
 object Bikkuri : KotlinPlugin(
-    JvmPluginDescription(
-        id = "me.hbj.bikkuri",
-        name = "Bikkuri",
-        version = VERSION,
-    ) {
-      author("Colerar")
-    }
+  JvmPluginDescription(
+    id = "me.hbj.bikkuri",
+    name = "Bikkuri",
+    version = VERSION,
+  ) {
+    author("Colerar")
+  }
 ) {
   internal val registeredCmds = listOf<Command>(Version, LoginBili, Config, Sign, Version)
 
@@ -48,7 +48,7 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-      listOf(ListenerData, Keygen, AutoApprove, LastMsg).forEach { it.reload() }
+    listOf(ListenerData, Keygen, AutoApprove, LastMsg).forEach { it.reload() }
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
     onBotOnline()
