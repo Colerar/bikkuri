@@ -19,6 +19,7 @@ object Version : SimpleCommand(
             Bikkuri Q群机器人 - $VERSION
             ⏱ Built at $BUILD_TIME
             ❤️ With Kotlin ${KotlinVersion.CURRENT} & Mirai $MIRAI_VERSION
+            📦 Repo at https://gitlab.com/233hbj/bikkuri
         """.clearIndent()
     )
   }
