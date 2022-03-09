@@ -7,6 +7,9 @@ import net.mamoe.mirai.console.data.value
 object ListenerData : AutoSavePluginData("ListenerData") {
   // Group ID to listener setting
   val map: MutableMap<Long, GroupListener> by value()
+
+  val enabledMap
+    get() = map.filter { it.value.enable }
 }
 
 @Serializable
