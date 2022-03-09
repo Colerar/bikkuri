@@ -1,8 +1,8 @@
 import com.github.gmazzo.gradle.plugins.BuildConfigSourceSet
-import groovy.util.logging.Log4j2
-import java.time.*
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Properties
+import java.util.*
 
 plugins {
     kotlin("jvm")
@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "0.1.0-DEV"
+version = "0.2.0-DEV"
 
 repositories {
     mavenCentral()
