@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.utils.LoggerAdapters
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.info
 
@@ -39,6 +40,7 @@ object Bikkuri : KotlinPlugin(
 
   @OptIn(MiraiExperimentalApi::class)
   override fun onEnable() {
+    LoggerAdapters.useLog4j2()
     logger.info { "Bikkuri Plugin Enabled, v$VERSION" }
     initYabapi()
     loadData()
@@ -49,10 +51,15 @@ object Bikkuri : KotlinPlugin(
 
   override fun onDisable() {
     CommandManager.unregisterAllCommands(this)
+    cleanupData()
   }
 
   private fun loadData() =
     listOf(ListenerData, Keygen, AutoApprove, LastMsg).forEach { it.reload() }
+
+  private fun cleanupData() {
+    Keygen.cleanup()
+  }
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
     onBotOnline()
@@ -64,7 +71,6 @@ object Bikkuri : KotlinPlugin(
 
   private fun registerCommands() {
     registeredCmds.forEach(CommandManager::registerCommand)
-    Keygen.cleanup()
   }
 
   private fun launchTasks() {
