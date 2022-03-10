@@ -24,11 +24,6 @@ repositories {
 }
 
 dependencies {
-  api("net.mamoe:mirai-logging-log4j2:_")
-  fun Log4J(artifact: String) = "org.apache.logging.log4j:$artifact:_"
-  implementation(Log4J("log4j-api"))
-  implementation(Log4J("log4j-core"))
-  implementation(Log4J("log4j-slf4j-impl"))
   // Kotlinx
   implementation(KotlinX.datetime)
   implementation(KotlinX.coroutines.core)
@@ -75,6 +70,8 @@ buildConfig {
   packageName("$group.config")
   useKotlinOutput { topLevelConstants = true }
   string("VERSION", version.toString())
+  string("NAME", rootProject.name)
+  string("MAIN_GROUP", group.toString())
   string("BUILD_BRANCH", branch)
   string("BUILD_TIME", time)
   string("VERSION_LONG", "$version-[$branch]$commitHash $time")

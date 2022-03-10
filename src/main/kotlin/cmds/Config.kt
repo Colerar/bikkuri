@@ -69,8 +69,8 @@ object Config : CompositeCommand(
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
-  @SubCommand
-  suspend fun MemberCommandSender.autokick(duration: String) {
+  @SubCommand("autokick")
+  suspend fun MemberCommandSender.autoKick(duration: String) {
     checkPerm()
     val id = group.id
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
