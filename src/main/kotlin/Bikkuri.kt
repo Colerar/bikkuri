@@ -33,7 +33,9 @@ object Bikkuri : KotlinPlugin(
     author("Colerar")
   }
 ) {
-  internal val registeredCmds = listOf<Command>(Version, LoginBili, Config, Sign, Version)
+  internal val registeredCmds by lazy {
+    listOf<Command>(Version, LoginBili, Config, Sign, Version)
+  }
 
   @OptIn(MiraiExperimentalApi::class)
   override fun onEnable() {
