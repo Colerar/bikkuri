@@ -4,6 +4,8 @@ import me.hbj.bikkuri.cmds.Config
 import me.hbj.bikkuri.cmds.LoginBili
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.cmds.Version
+import me.hbj.bikkuri.config.MAIN_GROUP
+import me.hbj.bikkuri.config.NAME
 import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.Keygen
@@ -26,11 +28,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.info
 
 object Bikkuri : KotlinPlugin(
-  JvmPluginDescription(
-    id = "me.hbj.bikkuri",
-    name = "Bikkuri",
-    version = VERSION,
-  ) {
+  JvmPluginDescription(id = MAIN_GROUP, name = NAME, version = VERSION) {
     author("Colerar")
   }
 ) {

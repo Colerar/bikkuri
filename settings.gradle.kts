@@ -1,4 +1,4 @@
-rootProject.name = "bikkuri"
+rootProject.name = "Bikkuri"
 
 pluginManagement {
   repositories {
