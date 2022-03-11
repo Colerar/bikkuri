@@ -3,6 +3,7 @@ package me.hbj.bikkuri.cmds
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.data.GroupListener
+import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
 import me.hbj.bikkuri.util.clearIndent
@@ -36,6 +37,8 @@ object Config : CompositeCommand(
     ListenerData.map[id]?.enable = last?.not() ?: true
     val target = ListenerData.map[id]?.targetGroup
     val bind = ListenerData.map[id]?.userBind
+
+    LastMsg.map.remove(group.id)
 
     group.sendMessage(
       buildString {

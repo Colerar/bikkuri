@@ -10,6 +10,8 @@ object ListenerData : AutoSavePluginData("ListenerData") {
 
   val enabledMap
     get() = map.filter { it.value.enable }
+
+  fun isEnabled(groupId: Long) = enabledMap.keys.contains(groupId)
 }
 
 @Serializable

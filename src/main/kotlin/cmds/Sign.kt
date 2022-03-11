@@ -68,6 +68,11 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
     var loop1 = true
     while (loop1) {
       nextMsgEvent().apply {
+        if (message.content == "quit") {
+          loop1 = false
+          return@apply
+        }
+
         uid = Regex("""^\s*(UID:)?([0-9]+)\s*$""").find(message.content)?.groupValues?.get(2)?.toIntOrNull() ?: run {
           group.sendMessage("输入错误, 需要纯数字 UID, 请重新输入")
           return@apply
@@ -105,7 +110,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
     @Suppress("KotlinConstantConditions")
     if (uid == null) {
-      logger.debug { "Uid is null, unexpected, return..." }
+      logger.debug { "Uid is null, return..." }
       return
     }
 
