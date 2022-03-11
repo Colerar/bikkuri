@@ -2,10 +2,10 @@ package me.hbj.bikkuri.cmds
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.Clock
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.AutoApproveData
@@ -26,6 +26,7 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.debug
 import kotlin.time.DurationUnit.SECONDS
 import kotlin.time.toDuration
 
@@ -44,10 +45,12 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
     val biliSenderData = coroutineScope { async { client.getBasicInfo() } }
 
     val bindName = coroutineScope {
-      async {
-        client.getUserCard(data.userBind!!.toInt(), false).data?.card?.name ?: run {
-          group.sendMessage("获取绑定 UP 主信息失败~")
-          data.userBind.toString()
+      withTimeoutOrNull(5_000) {
+        async {
+          client.getUserCard(data.userBind!!.toInt(), false).data?.card?.name ?: run {
+            group.sendMessage("获取绑定 UP 主信息失败~")
+            data.userBind.toString()
+          }
         }
       }
     }
@@ -84,7 +87,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
             addImageOrText(loadImageResource("./images/guide-web.jpg", "jpg"), group)
           }
           !medalUserFit -> buildMessageChain {
-            add("呜~ 请佩戴 [$bindName] 的粉丝牌哦! 可再次输入 UID 重试, quit 退出.")
+            add("呜~ 请佩戴 [${bindName?.await()}] 的粉丝牌哦! 可再次输入 UID 重试, quit 退出.")
           }
           !medalLevel -> buildMessageChain {
             add("粉丝牌等级不足~ 需要至少 $REQUIRED_LEVEL 级哦~")
@@ -100,18 +103,26 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       }
     }
 
-    val keygen = KeygenData(uid.toString(), 6, sec.toDuration(SECONDS))
-    Keygen.map[user.id] = keygen
-    coroutineScope {
-      launch {
-        client.sendMessageTo(
-          uid!!, MessageContent.Text("""<${bindName.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略""")
-        )
-      }
+    @Suppress("KotlinConstantConditions")
+    if (uid == null) {
+      logger.debug { "Uid is null, unexpected, return..." }
+      return
     }
 
-    var loop = true
+    logger.debug { "Generating Keygen..." }
+    val keygen = KeygenData(uid.toString(), 6, sec.toDuration(SECONDS))
+    Keygen.map[user.id] = keygen
+
+    logger.debug { "Try to send message..." }
+    client.sendMessageTo(
+      uid!!, MessageContent.Text("""<${bindName?.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略 (可直接复制整段文字)""")
+    ).also {
+      logger.debug { "Send message response: $it" }
+    }
+
     withTimeoutOrNull(sec * 1000) {
+      logger.debug { "Waiting for response" }
+      var loop = true
       while (loop) {
         nextMsgEvent().apply {
           when (message.content) {

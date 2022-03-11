@@ -18,7 +18,7 @@ fun EventChannel<Event>.onNewMember() {
     group.sendMessage(
       buildMessageChain {
         add(At(user))
-        add(" 欢迎进入舰长审核群。输入 /验证 开始审核哦。")
+        add(" 欢迎进入舰长审核群。输入 “/验证” 开始审核哦。")
       }
     )
     LastMsg.setToNow(groupId, member.id)

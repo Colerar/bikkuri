@@ -10,9 +10,12 @@ import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
+import me.hbj.bikkuri.Bikkuri.logger
 import moe.sdl.yabapi.BiliClient
 import moe.sdl.yabapi.Yabapi
+import moe.sdl.yabapi.enums.LogLevel
 import moe.sdl.yabapi.storage.FileCookieStorage
+import net.mamoe.mirai.utils.debug
 import okio.Path.Companion.toOkioPath
 
 // Safari + MacOS User Agent
@@ -62,4 +65,8 @@ internal val prettyPrintJson = Json {
 
 internal fun initYabapi() = Yabapi.apply {
   defaultJson.getAndSet(json)
+
+  this.log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
+    logger.debug({ "$tag ${level.name} - ${message()}" }, e)
+  }
 }
