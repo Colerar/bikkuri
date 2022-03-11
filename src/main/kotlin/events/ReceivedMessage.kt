@@ -2,7 +2,9 @@ package me.hbj.bikkuri.events
 
 import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.Bikkuri.registeredCmds
+import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.LastMsg
+import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
@@ -43,8 +45,14 @@ fun EventChannel<Event>.onReceivedMessage() {
     }
   }
   subscribeAlways<GroupMessageEvent> {
-    if (sender is NormalMember) {
+    if (sender is NormalMember && ListenerData.isEnabled(group.id)) {
       LastMsg.setToNow(group.id, sender.id)
+    }
+  }
+  subscribeAlways<GroupMessageEvent> {
+    if (!ListenerData.isEnabled(group.id)) return@subscribeAlways
+    if (it.message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
+      CommandManager.executeCommand(sender.asCommandSender(false), Sign, checkPermission = false)
     }
   }
 }
