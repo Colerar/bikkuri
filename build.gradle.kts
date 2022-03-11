@@ -6,16 +6,16 @@ import java.time.format.DateTimeFormatter
 import java.util.Properties
 
 plugins {
+  application
   kotlin("jvm")
   kotlin("plugin.serialization")
-  id("net.mamoe.mirai-console")
   id("com.github.gmazzo.buildconfig")
   id("org.jlleitschuh.gradle.ktlint")
   id("org.jlleitschuh.gradle.ktlint-idea")
 }
 
 group = "me.hbj.bikkuri"
-version = "0.2.0-DEV"
+version = "0.3.0"
 
 repositories {
   mavenCentral()
@@ -24,6 +24,14 @@ repositories {
 }
 
 dependencies {
+  api("net.mamoe:mirai-logging-log4j2:_")
+  implementation("net.mamoe:mirai-core:_")
+  implementation("net.mamoe:mirai-console:_")
+  implementation("net.mamoe:mirai-console-terminal:_")
+  fun Log4J(artifact: String) = "org.apache.logging.log4j:$artifact:_"
+  implementation(Log4J("log4j-api"))
+  implementation(Log4J("log4j-core"))
+  implementation(Log4J("log4j-slf4j-impl"))
   // Kotlinx
   implementation(KotlinX.datetime)
   implementation(KotlinX.coroutines.core)
@@ -80,7 +88,7 @@ buildConfig {
     load(project.rootProject.file("versions.properties").inputStream())
   }
 
-  string("MIRAI_VERSION", version["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
+  string("MIRAI_VERSION", version["plugin.net.mamoe.mirai-console"]?.toString() ?: "unk")
 
   sourceSets["test"].apply {
     val prop = Properties().apply {
@@ -98,8 +106,15 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
 }
 
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+tasks.withType<Test> {
+  useJUnitPlatform()
+}
 
+application {
+  mainClass.set("me.hbj.bikkuri.MainKt")
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
   reporters {
     reporter(ReporterType.HTML)
     reporter(ReporterType.CHECKSTYLE)

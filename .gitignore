@@ -124,7 +124,7 @@ run/
 /bots
 
 # Local Test Launch Point working directory
-/debug-sandbox
+/mirai
 
 # secrets or personal settings
 local.properties
