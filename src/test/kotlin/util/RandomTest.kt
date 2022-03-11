@@ -1,7 +1,7 @@
 package me.hbj.util
 
 import me.hbj.bikkuri.util.randomKeygen
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
 
 class RandomTest {
   @Test
