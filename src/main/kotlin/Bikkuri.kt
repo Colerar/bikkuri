@@ -1,5 +1,6 @@
 package me.hbj.bikkuri
 
+import kotlinx.coroutines.runBlocking
 import me.hbj.bikkuri.cmds.Config
 import me.hbj.bikkuri.cmds.LoginBili
 import me.hbj.bikkuri.cmds.Sign
@@ -56,9 +57,11 @@ object Bikkuri : KotlinPlugin(
 
   private fun loadData() =
     listOf(ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
+      .also { cleanupData() }
 
-  private fun cleanupData() {
+  private fun cleanupData() = runBlocking {
     Keygen.cleanup()
+    LiverGuard.cleanup()
   }
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
