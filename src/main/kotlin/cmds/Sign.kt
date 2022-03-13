@@ -12,8 +12,10 @@ import me.hbj.bikkuri.data.AutoApproveData
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
+import me.hbj.bikkuri.util.now
 import moe.sdl.yabapi.api.getBasicInfo
 import moe.sdl.yabapi.api.getUserCard
 import moe.sdl.yabapi.api.getUserSpace
@@ -81,26 +83,32 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
         val medal = client.getUserSpace(uid!!).data?.fansMedal?.medal
 
+        val inList = LiverGuard.getGuard(data.userBind!!.toInt(), uid!!).let { it != null && it.expiresAt >= now() }
+
         val medalNotNull = medal != null
         val medalUserFit = medal?.targetId == data.userBind?.toInt()
         val medalLevel = medal?.level?.let { it >= REQUIRED_LEVEL } ?: false
 
         when {
+          inList || (medalNotNull && medalUserFit && medalLevel) -> buildMessageChain {
+            add("请回复B站用户 [${biliSenderData.await().data.username}] 给你发送的验证码, $sec 秒后超时, 请尽快哦~")
+          }.also {
+            loop1 = false
+          }
           !medalNotNull -> buildMessageChain {
             add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)")
             addImageOrText(loadImageResource("./images/guide-phone.jpg", "jpg"), group)
             addImageOrText(loadImageResource("./images/guide-web.jpg", "jpg"), group)
           }
           !medalUserFit -> buildMessageChain {
-            add("呜~ 请佩戴 [${bindName?.await()}] 的粉丝牌哦! 可再次输入 UID 重试, quit 退出.")
+            add("呜~ 请佩戴 [${bindName?.await()}] 的粉丝牌哦! 可再次输入 UID 重试, quit 退出")
           }
+          @Suppress("KotlinConstantConditions")
           !medalLevel -> buildMessageChain {
             add("粉丝牌等级不足~ 需要至少 $REQUIRED_LEVEL 级哦~")
           }
           else -> buildMessageChain {
-            add("请回复B站用户 [${biliSenderData.await().data.username}] 给你发送的验证码, $sec 秒后超时, 请尽快哦~")
-          }.also {
-            loop1 = false
+            add("遇到未知错误，可再次输入 UID 重试, quit 退出")
           }
         }.also {
           group.sendMessage(it)
@@ -120,7 +128,8 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
     logger.debug { "Try to send message..." }
     client.sendMessageTo(
-      uid!!, MessageContent.Text("""<${bindName?.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略 (可直接复制整段文字)""")
+      uid!!,
+      MessageContent.Text("""<${bindName?.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略 (可直接复制整段文字)""")
     ).also {
       logger.debug { "Send message response: $it" }
     }
