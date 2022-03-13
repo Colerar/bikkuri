@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "0.3.0"
+version = "0.4.0"
 
 repositories {
   mavenCentral()
@@ -115,7 +115,7 @@ buildConfig {
     load(project.rootProject.file("versions.properties").inputStream())
   }
 
-  string("MIRAI_VERSION", version["plugin.net.mamoe.mirai-console"]?.toString() ?: "unk")
+  string("MIRAI_VERSION", version["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
 
   sourceSets["test"].apply {
     val prop = Properties().apply {
