@@ -52,13 +52,6 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
     }
   }
 
-  launch {
-    while (isActive) {
-      delay(120_000)
-      LiverGuard.cleanup()
-    }
-  }
-
   while (isActive) {
     delay(10_000)
     val enabledMap = ListenerData.enabledMap
@@ -117,9 +110,8 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 
         launch {
           while (isActive) {
-            val now = now()
-            val lastList = LiverGuard.map.getOrPut(jobKey) { GuardData() }.lastList ?: now
-            if (now - lastList >= 1.toDuration(DurationUnit.DAYS)) {
+            val lastList = LiverGuard.map.getOrPut(jobKey) { GuardData() }.lastList
+            if (lastList == null || (now() - lastList >= 1.toDuration(DurationUnit.DAYS))) {
               fetchAllGuardList(roomId, jobKey)
                 .flowOn(Dispatchers.IO + CoroutineName("guard-lister-$jobKey"))
                 .collect {

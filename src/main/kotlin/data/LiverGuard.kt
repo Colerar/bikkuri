@@ -22,12 +22,19 @@ object LiverGuard : AutoSavePluginData("LiveGuardList") {
 
   suspend fun updateListTime(liverMid: Int, instant: Instant) = dataMutex.withLock {
     map.getOrPut(liverMid) { GuardData() }
-    map.get(liverMid)?.lastList = instant
+    map[liverMid]?.lastList = instant
   }
 
   suspend fun updateGuard(liverMid: Int, guardMid: Int, new: GuardInfo) = dataMutex.withLock {
-    Bikkuri.logger.verbose { "Updating guard for user $liverMid guard $guardMid info $new" }
+    val s = "Updating guard for user $liverMid guard $guardMid - $new"
+    if (new.from != GuardFetcher.LIST) {
+      Bikkuri.logger.verbose { s }
+    } else Bikkuri.logger.info(s)
     map.getOrPut(liverMid) { GuardData() }.updateGuard(guardMid, new)
+  }
+
+  suspend fun getGuard(liverMid: Int, guardMid: Int) = dataMutex.withLock {
+    map.getOrPut(liverMid) { GuardData() }.map[guardMid]
   }
 
   suspend fun cleanup() {
