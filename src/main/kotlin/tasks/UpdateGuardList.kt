@@ -23,6 +23,7 @@ import me.hbj.bikkuri.data.GuardFetcher
 import me.hbj.bikkuri.data.GuardInfo
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
+import me.hbj.bikkuri.exception.ReconnectException
 import me.hbj.bikkuri.util.after1Day
 import me.hbj.bikkuri.util.after30Days
 import me.hbj.bikkuri.util.now
@@ -41,6 +42,8 @@ import moe.sdl.yabapi.data.live.commands.DanmakuMsgCmd
 import moe.sdl.yabapi.data.live.commands.GuardBuyCmd
 import moe.sdl.yabapi.data.live.commands.SuperChatMsgCmd
 import net.mamoe.mirai.console.util.retryCatching
+import java.io.IOException
+import java.nio.channels.UnresolvedAddressException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -132,17 +135,30 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
               ) {
                 onResponse(jobKey, intArrayOf(roomId, realRoomId), lastHeartbeatResp)
               }
-              launch {
-                while (isActive) {
-                  val time = lastHeartbeatResp.value
-                  if (time != null && now() - time >= 60.toDuration(DurationUnit.SECONDS)) {
-                    error("Long time no response, try to reconnect")
-                  }
+              while (isActive) {
+                val time = lastHeartbeatResp.value
+                if (time != null && now() - time >= 60.toDuration(DurationUnit.SECONDS)) {
+                  throw ReconnectException("Long time no response, try to reconnect")
                 }
               }
             }.onFailure {
-              if (it is CancellationException) throw it
-              Bikkuri.logger.warning("an error occurred", it)
+              when(it) {
+                is CancellationException -> throw it
+                is ReconnectException -> {
+                  Bikkuri.logger.warning("Try to reconnect, because:", it)
+                }
+                is UnresolvedAddressException -> {
+                  Bikkuri.logger.warning("Try to reconnect after 5000 ms, because:", it)
+                  delay(5000)
+                }
+                is IOException -> {
+                  Bikkuri.logger.warning("Try to reconnect after 1000 ms, because an IOException:", it)
+                  delay(1000)
+                }
+                else -> {
+                  Bikkuri.logger.warning("An exception occurred, try to reconnect", it)
+                }
+              }
               createConnection()
             }
           }
@@ -153,7 +169,7 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   }
 }
 
-private val jobMap: MutableMap<Int, Job> = mutableMapOf()
+internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
 
 fun LiveDanmakuConnectConfig.onResponse(liverMid: Int, roomIds: IntArray, lastHeartbeatResp: AtomicRef<Instant?>) {
   onHeartbeatResponse { lastHeartbeatResp.getAndSet(now()) }
