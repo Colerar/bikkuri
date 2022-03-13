@@ -35,6 +35,7 @@ import moe.sdl.yabapi.api.getRoomIdByUid
 import moe.sdl.yabapi.api.getRoomInitInfo
 import moe.sdl.yabapi.api.loginWebQRCodeInteractive
 import moe.sdl.yabapi.connect.LiveDanmakuConnectConfig
+import moe.sdl.yabapi.connect.onCertificateResponse
 import moe.sdl.yabapi.connect.onCommandResponse
 import moe.sdl.yabapi.connect.onHeartbeatResponse
 import moe.sdl.yabapi.data.live.GuardLevel
@@ -133,11 +134,11 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
               client.createLiveDanmakuConnection(
                 selfId, realRoomId, stream.data!!.token!!, stream.data!!.hostList.first()
               ) {
-                onResponse(jobKey, intArrayOf(roomId, realRoomId), lastHeartbeatResp)
+                onResponse(jobKey, roomId, realRoomId, lastHeartbeatResp)
               }
               while (isActive) {
                 val time = lastHeartbeatResp.value
-                if (time != null && now() - time >= 60.toDuration(DurationUnit.SECONDS)) {
+                if (time != null && now() - time >= 35.toDuration(DurationUnit.SECONDS)) {
                   throw ReconnectException("Long time no response, try to reconnect")
                 }
               }
@@ -171,14 +172,17 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 
 internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
 
-fun LiveDanmakuConnectConfig.onResponse(liverMid: Int, roomIds: IntArray, lastHeartbeatResp: AtomicRef<Instant?>) {
+fun LiveDanmakuConnectConfig.onResponse(liverMid: Int, shortId: Int, realId: Int, lastHeartbeatResp: AtomicRef<Instant?>) {
+  onCertificateResponse {
+    Bikkuri.logger.info("Successfully connect to live room $shortId${if (shortId != realId) "($realId)" else ""}")
+  }
   onHeartbeatResponse { lastHeartbeatResp.getAndSet(now()) }
   onCommandResponse { flow ->
     flow.filterIsInstance<DanmakuMsgCmd>().collect {
       val roomId = it.data?.medal?.roomId ?: return@collect
       val lv = it.data?.medal?.level
       if (!(lv != null && lv >= 21)) return@collect
-      if (!roomIds.contains(roomId)) return@collect
+      if (roomId == shortId || roomId == realId) return@collect
       val uid = it.data?.liveUser?.mid ?: return@collect
 
       LiverGuard.updateGuard(liverMid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
