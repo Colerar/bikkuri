@@ -27,7 +27,7 @@ object LiverGuard : AutoSavePluginData("LiveGuardList") {
 
   suspend fun updateGuard(liverMid: Int, guardMid: Int, new: GuardInfo) = dataMutex.withLock {
     val s = "Updating guard for user $liverMid guard $guardMid - $new"
-    if (new.from != GuardFetcher.LIST) {
+    if (new.from == GuardFetcher.LIST) {
       Bikkuri.logger.verbose { s }
     } else Bikkuri.logger.info(s)
     map.getOrPut(liverMid) { GuardData() }.updateGuard(guardMid, new)
@@ -37,7 +37,7 @@ object LiverGuard : AutoSavePluginData("LiveGuardList") {
     map.getOrPut(liverMid) { GuardData() }.map[guardMid]
   }
 
-  suspend fun cleanup() {
+  suspend fun cleanup() = dataMutex.withLock {
     map.forEach {
       it.value.cleanup()
     }

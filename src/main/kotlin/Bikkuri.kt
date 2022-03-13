@@ -1,5 +1,7 @@
 package me.hbj.bikkuri
 
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.hbj.bikkuri.cmds.Config
 import me.hbj.bikkuri.cmds.LoginBili
@@ -57,7 +59,6 @@ object Bikkuri : KotlinPlugin(
 
   private fun loadData() =
     listOf(ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
-      .also { cleanupData() }
 
   private fun cleanupData() = runBlocking {
     Keygen.cleanup()
@@ -70,15 +71,17 @@ object Bikkuri : KotlinPlugin(
     onReceivedMessage()
     onNewMember()
     onMemberRequest()
-    launchUpdateGuardListTask()
   }
 
   private fun registerCommands() {
     registeredCmds.forEach(CommandManager::registerCommand)
   }
 
-  private fun launchTasks() {
+  private fun launchTasks() = launch {
     launchAutoKickTask()
     launchAutoApproveTask()
+    coroutineScope {
+      launchUpdateGuardListTask().invokeOnCompletion { me.hbj.bikkuri.tasks.jobMap.clear() }
+    }
   }
 }
