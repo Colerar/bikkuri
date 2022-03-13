@@ -1,4 +1,7 @@
 import com.github.gmazzo.gradle.plugins.BuildConfigSourceSet
+import org.gradle.nativeplatform.platform.internal.ArchitectureInternal
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.gradle.nativeplatform.platform.internal.DefaultOperatingSystem
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -23,6 +26,26 @@ repositories {
   maven("https://maven.aliyun.com/repository/public")
 }
 
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor(0, "minutes")
+}
+
+val hostOs: DefaultOperatingSystem = DefaultNativePlatform.getCurrentOperatingSystem()
+
+val hostArch: ArchitectureInternal = DefaultNativePlatform.getCurrentArchitecture()
+
+val target by lazy {
+  when {
+    hostOs.isWindows -> "windows-x86_64"
+    hostOs.isMacOsX -> "osx-x86_64"
+    hostOs.isLinux -> when {
+      hostArch.isArm -> "linux-aarch64"
+      else -> "linux-x86_64"
+    }
+    else -> ""
+  }
+}
+
 dependencies {
   api("net.mamoe:mirai-logging-log4j2:_")
   implementation("net.mamoe:mirai-core:_")
@@ -43,9 +66,13 @@ dependencies {
   // Ktor
   implementation(Ktor.client.core)
   implementation(Ktor.client.cio)
+  implementation(Ktor.client.websockets)
   implementation(Ktor.client.encoding)
   // IO
   implementation(Square.okio)
+  // Brotli
+  implementation("com.aayushatharva.brotli4j:brotli4j:_")
+  implementation("com.aayushatharva.brotli4j:native-$target:_")
   // Test framework
   testImplementation(Testing.junit.jupiter.api)
   testImplementation(Testing.junit.jupiter.engine)

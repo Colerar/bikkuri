@@ -5,12 +5,11 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.UserAgent
 import io.ktor.client.features.compression.ContentEncoding
 import io.ktor.client.features.cookies.HttpCookies
-import io.ktor.client.features.defaultRequest
-import io.ktor.client.request.header
-import io.ktor.http.HttpHeaders
+import io.ktor.client.features.websocket.WebSockets
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
 import me.hbj.bikkuri.Bikkuri.logger
+import me.hbj.bikkuri.util.BrotliImpl
 import moe.sdl.yabapi.BiliClient
 import moe.sdl.yabapi.Yabapi
 import moe.sdl.yabapi.enums.LogLevel
@@ -27,6 +26,9 @@ internal val client by lazy {
     install(UserAgent) {
       agent = WEB_USER_AGENT
     }
+    install(WebSockets) {
+      this.pingInterval = 500
+    }
     install(ContentEncoding) {
       gzip()
       deflate()
@@ -35,10 +37,6 @@ internal val client by lazy {
     install(HttpCookies) {
       val file = Bikkuri.resolveDataFile("sdl.moe.yabapi/cookies.json")
       storage = FileCookieStorage(okio.FileSystem.SYSTEM, file.toOkioPath())
-    }
-    defaultRequest {
-      header(HttpHeaders.Accept, "*/*")
-      header(HttpHeaders.AcceptCharset, "UTF-8")
     }
   }
   BiliClient(httpClient)
@@ -66,7 +64,9 @@ internal val prettyPrintJson = Json {
 internal fun initYabapi() = Yabapi.apply {
   defaultJson.getAndSet(json)
 
-  this.log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
+  log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
     logger.debug({ "$tag ${level.name} - ${message()}" }, e)
   }
+
+  brotliImpl.getAndSet(BrotliImpl)
 }

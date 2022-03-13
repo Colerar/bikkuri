@@ -17,6 +17,8 @@ object LoginBili : SimpleCommand(
     if (client.getBasicInfo().data.isLogin) {
       client.logOut()
     }
-    client.loginWebQRCodeInteractive()
+    client.loginWebQRCodeInteractive {
+      Bikkuri.logger.info(it)
+    }
   }
 }

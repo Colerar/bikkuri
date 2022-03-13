@@ -11,6 +11,7 @@ import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberRequest
@@ -18,6 +19,7 @@ import me.hbj.bikkuri.events.onNewMember
 import me.hbj.bikkuri.events.onReceivedMessage
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
+import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -53,7 +55,7 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-    listOf(ListenerData, Keygen, AutoApprove, LastMsg).forEach { it.reload() }
+    listOf(ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
 
   private fun cleanupData() {
     Keygen.cleanup()
@@ -65,6 +67,7 @@ object Bikkuri : KotlinPlugin(
     onReceivedMessage()
     onNewMember()
     onMemberRequest()
+    launchUpdateGuardListTask()
   }
 
   private fun registerCommands() {
