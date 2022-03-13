@@ -21,9 +21,9 @@ group = "me.hbj.bikkuri"
 version = "0.4.0"
 
 repositories {
+  maven("https://maven.aliyun.com/repository/public")
   mavenCentral()
   maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-  maven("https://maven.aliyun.com/repository/public")
 }
 
 configurations.all {
