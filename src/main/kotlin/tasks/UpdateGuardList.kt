@@ -143,7 +143,7 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
                 }
               }
             }.onFailure {
-              when(it) {
+              when (it) {
                 is CancellationException -> throw it
                 is ReconnectException -> {
                   Bikkuri.logger.warning("Try to reconnect, because:", it)
@@ -172,7 +172,12 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 
 internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
 
-fun LiveDanmakuConnectConfig.onResponse(liverMid: Int, shortId: Int, realId: Int, lastHeartbeatResp: AtomicRef<Instant?>) {
+fun LiveDanmakuConnectConfig.onResponse(
+  liverMid: Int,
+  shortId: Int,
+  realId: Int,
+  lastHeartbeatResp: AtomicRef<Instant?>
+) {
   onCertificateResponse {
     Bikkuri.logger.info("Successfully connect to live room $shortId${if (shortId != realId) "($realId)" else ""}")
   }
