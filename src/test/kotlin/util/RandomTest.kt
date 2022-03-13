@@ -1,6 +1,5 @@
-package me.hbj.util
+package me.hbj.bikkuri.util
 
-import me.hbj.bikkuri.util.randomKeygen
 import org.junit.jupiter.api.Test
 
 class RandomTest {
