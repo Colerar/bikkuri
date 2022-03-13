@@ -15,19 +15,25 @@ plugins {
   id("com.github.gmazzo.buildconfig")
   id("org.jlleitschuh.gradle.ktlint")
   id("org.jlleitschuh.gradle.ktlint-idea")
+  id("com.github.johnrengelman.shadow")
 }
 
 group = "me.hbj.bikkuri"
 version = "0.4.0"
 
 repositories {
-  maven("https://maven.aliyun.com/repository/public")
   mavenCentral()
   maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+  maven("https://maven.aliyun.com/repository/public")
 }
 
 configurations.all {
   resolutionStrategy.cacheChangingModulesFor(0, "minutes")
+}
+
+val prop = Properties().apply {
+  val file = project.rootProject.file("local.properties")
+  if (file.exists()) load(file.inputStream())
 }
 
 val hostOs: DefaultOperatingSystem = DefaultNativePlatform.getCurrentOperatingSystem()
@@ -36,6 +42,7 @@ val hostArch: ArchitectureInternal = DefaultNativePlatform.getCurrentArchitectur
 
 val target by lazy {
   when {
+    prop["brotli.target"] != null -> prop["brotli.target"].toString()
     hostOs.isWindows -> "windows-x86_64"
     hostOs.isMacOsX -> "osx-x86_64"
     hostOs.isLinux -> when {
@@ -46,15 +53,19 @@ val target by lazy {
   }
 }
 
+var versions = Properties().apply {
+  load(project.rootProject.file("versions.properties").inputStream())
+}
+
 dependencies {
   api("net.mamoe:mirai-logging-log4j2:_")
   implementation("net.mamoe:mirai-core:_")
   implementation("net.mamoe:mirai-console:_")
   implementation("net.mamoe:mirai-console-terminal:_")
-  fun Log4J(artifact: String) = "org.apache.logging.log4j:$artifact:_"
-  implementation(Log4J("log4j-api"))
-  implementation(Log4J("log4j-core"))
-  implementation(Log4J("log4j-slf4j-impl"))
+  fun log4j(artifact: String) = "org.apache.logging.log4j:$artifact:_"
+  implementation(log4j("log4j-api"))
+  implementation(log4j("log4j-core"))
+  implementation(log4j("log4j-slf4j-impl"))
   // Kotlinx
   implementation(KotlinX.datetime)
   implementation(KotlinX.coroutines.core)
@@ -72,7 +83,7 @@ dependencies {
   implementation(Square.okio)
   // Brotli
   implementation("com.aayushatharva.brotli4j:brotli4j:_")
-  implementation("com.aayushatharva.brotli4j:native-$target:_")
+  implementation("com.aayushatharva.brotli4j:native-$target:${versions["version.com.aayushatharva.brotli4j..brotli4j"]}")
   // Test framework
   testImplementation(Testing.junit.jupiter.api)
   testImplementation(Testing.junit.jupiter.engine)
@@ -110,21 +121,10 @@ buildConfig {
   string("BUILD_BRANCH", branch)
   string("BUILD_TIME", time)
   string("VERSION_LONG", "$version-[$branch]$commitHash $time")
-
-  val version = Properties().apply {
-    load(project.rootProject.file("versions.properties").inputStream())
-  }
-
-  string("MIRAI_VERSION", version["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
+  string("MIRAI_VERSION", versions["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
 
   sourceSets["test"].apply {
-    val prop = Properties().apply {
-      load(project.rootProject.file("local.properties").inputStream())
-    }
-    val id: Long? = prop["bikkuri.test.id"]?.toString()?.toLongOrNull()
-    val pwd: String? = prop["bikkuri.test.pwd"]?.toString()
-    longNullable("TEST_ID", id)
-    stringNullable("TEST_PWD", pwd)
+    string("TEST_DIR", rootProject.rootDir.absolutePath)
   }
 }
 
