@@ -40,16 +40,16 @@ val hostOs: DefaultOperatingSystem = DefaultNativePlatform.getCurrentOperatingSy
 
 val hostArch: ArchitectureInternal = DefaultNativePlatform.getCurrentArchitecture()
 
-val target by lazy {
+val targets by lazy {
   when {
-    prop["brotli.target"] != null -> prop["brotli.target"].toString()
-    hostOs.isWindows -> "windows-x86_64"
-    hostOs.isMacOsX -> "osx-x86_64"
+    prop["brotli.target"] != null -> prop["brotli.target"].toString().split(",").toTypedArray()
+    hostOs.isWindows -> arrayOf("windows-x86_64")
+    hostOs.isMacOsX -> arrayOf("osx-x86_64")
     hostOs.isLinux -> when {
-      hostArch.isArm -> "linux-aarch64"
-      else -> "linux-x86_64"
+      hostArch.isArm -> arrayOf("linux-aarch64")
+      else -> arrayOf("linux-x86_64")
     }
-    else -> ""
+    else -> error("unsupported target for ${hostOs.name}/$hostArch")
   }
 }
 
@@ -83,7 +83,10 @@ dependencies {
   implementation(Square.okio)
   // Brotli
   implementation("com.aayushatharva.brotli4j:brotli4j:_")
-  implementation("com.aayushatharva.brotli4j:native-$target:${versions["version.com.aayushatharva.brotli4j..brotli4j"]}")
+  val brotli4jVer = versions["version.com.aayushatharva.brotli4j..brotli4j"]
+  targets.forEach {
+    implementation("com.aayushatharva.brotli4j:native-$it:$brotli4jVer")
+  }
   // Test framework
   testImplementation(Testing.junit.jupiter.api)
   testImplementation(Testing.junit.jupiter.engine)
