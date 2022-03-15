@@ -29,6 +29,7 @@ import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.info
 import kotlin.time.DurationUnit.SECONDS
 import kotlin.time.toDuration
 
@@ -118,20 +119,21 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
     @Suppress("KotlinConstantConditions")
     if (uid == null) {
-      logger.debug { "Uid is null, return..." }
+      logger.info { "Uid is null, return..." }
       return
     }
 
-    logger.debug { "Generating Keygen..." }
+    logger.info { "Generating Keygen..." }
     val keygen = KeygenData(uid.toString(), 6, sec.toDuration(SECONDS))
     Keygen.map[user.id] = keygen
+    logger.info { "Generated Keygen $keygen" }
 
-    logger.debug { "Try to send message..." }
+    logger.info { "Try to send message..." }
     client.sendMessageTo(
       uid!!,
       MessageContent.Text("""<${bindName?.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略 (可直接复制整段文字)""")
     ).also {
-      logger.debug { "Send message response: $it" }
+      logger.info { "Send message response: $it" }
     }
 
     withTimeoutOrNull(sec * 1000) {
