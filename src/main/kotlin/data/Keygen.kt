@@ -21,7 +21,7 @@ object Keygen : AutoSavePluginData("KeygenList") {
 }
 
 @Serializable
-class KeygenData(
+data class KeygenData(
   val salt: String,
   val keygen: String,
   val expiresAt: Instant,

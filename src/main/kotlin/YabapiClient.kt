@@ -36,7 +36,9 @@ internal val client by lazy {
     }
     install(HttpCookies) {
       val file = Bikkuri.resolveDataFile("sdl.moe.yabapi/cookies.json")
-      storage = FileCookieStorage(okio.FileSystem.SYSTEM, file.toOkioPath())
+      storage = FileCookieStorage(okio.FileSystem.SYSTEM, file.toOkioPath()) {
+        saveInTime = true
+      }
     }
   }
   BiliClient(httpClient)
