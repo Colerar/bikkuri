@@ -1,11 +1,11 @@
 package me.hbj.bikkuri.events
 
-import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
+import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -17,6 +17,8 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.content
+
+private val logger = KotlinLogging.logger {}
 
 private val allCommandSymbol by lazy {
   (
@@ -40,7 +42,7 @@ fun EventChannel<Event>.onReceivedMessage() {
       try {
         CommandManager.executeCommand(cmdSender, message, false)
       } catch (e: PermissionForbidden) {
-        logger.verbose("Sender permission forbidden ${cmdSender.user.id}", e)
+        logger.trace(e) { "Sender permission forbidden ${cmdSender.user.id}" }
       }
     }
   }
