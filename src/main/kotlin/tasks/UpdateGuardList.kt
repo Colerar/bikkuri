@@ -194,7 +194,7 @@ fun LiveDanmakuConnectConfig.onResponse(
 
     flow.filterIsInstance<GuardBuyCmd>().collect { cmd ->
       val uid = cmd.data?.uid ?: return@collect
-      val expiresAt = cmd.data!!.endTime?.let { Instant.fromEpochSeconds(it) } ?: after30Days
+      val expiresAt = /* cmd.data!!.endTime?.let { Instant.fromEpochSeconds(it) } ?: */ after30Days
       LiverGuard.updateGuard(liverMid, uid, GuardInfo(expiresAt, GuardFetcher.JOIN))
     }
 
