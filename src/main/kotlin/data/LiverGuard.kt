@@ -5,16 +5,14 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.util.now
+import mu.KotlinLogging
 import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.utils.verbose
-import net.mamoe.mirai.utils.warning
 
 private val dataMutex = Mutex()
 
-private val logger = Bikkuri.logger
+private val logger = KotlinLogging.logger {}
 
 object LiverGuard : AutoSavePluginData("LiveGuardList") {
   // liver mid to GuardData
@@ -26,10 +24,10 @@ object LiverGuard : AutoSavePluginData("LiveGuardList") {
   }
 
   suspend fun updateGuard(liverMid: Int, guardMid: Int, new: GuardInfo) = dataMutex.withLock {
-    val s = "Updating guard for user $liverMid guard $guardMid - $new"
+    val s by lazy { "Updating guard for user $liverMid guard $guardMid - $new" }
     if (new.from == GuardFetcher.LIST) {
-      Bikkuri.logger.verbose { s }
-    } else Bikkuri.logger.info(s)
+      logger.trace { s }
+    } else logger.info { s }
     map.getOrPut(liverMid) { GuardData() }.updateGuard(guardMid, new)
   }
 
@@ -57,7 +55,7 @@ data class GuardData(
       map[guardMid] = new
     } else {
       val old = map[guardMid] ?: run {
-        logger.warning { "Unexpected null when updateGuard map [$guardMid] to $new" }
+        logger.warn { "Unexpected null when updateGuard map [$guardMid] to $new" }
         return@withLock
       }
       map[guardMid] = old.computeNewExpire(new.expiresAt, new.from)

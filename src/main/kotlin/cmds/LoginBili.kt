@@ -5,8 +5,11 @@ import me.hbj.bikkuri.client
 import moe.sdl.yabapi.api.getBasicInfo
 import moe.sdl.yabapi.api.logOut
 import moe.sdl.yabapi.api.loginWebQRCodeInteractive
+import mu.KotlinLogging
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+
+private val logger = KotlinLogging.logger {}
 
 object LoginBili : SimpleCommand(
   Bikkuri, "loginbili",
@@ -18,7 +21,7 @@ object LoginBili : SimpleCommand(
       client.logOut()
     }
     client.loginWebQRCodeInteractive {
-      Bikkuri.logger.info(it)
+      logger.info(it)
     }
   }
 }
