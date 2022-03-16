@@ -58,14 +58,14 @@ var versions = Properties().apply {
 }
 
 dependencies {
-  api("net.mamoe:mirai-logging-log4j2:_")
   implementation("net.mamoe:mirai-core:_")
   implementation("net.mamoe:mirai-console:_")
   implementation("net.mamoe:mirai-console-terminal:_")
-  fun log4j(artifact: String) = "org.apache.logging.log4j:$artifact:_"
-  implementation(log4j("log4j-api"))
-  implementation(log4j("log4j-core"))
-  implementation(log4j("log4j-slf4j-impl"))
+  // Logger
+  implementation("net.mamoe:mirai-logging-slf4j-logback:_")
+  implementation("io.github.microutils:kotlin-logging-jvm:_")
+  implementation("ch.qos.logback:logback-core:_")
+  implementation("ch.qos.logback:logback-classic:_")
   // Kotlinx
   implementation(KotlinX.datetime)
   implementation(KotlinX.coroutines.core)

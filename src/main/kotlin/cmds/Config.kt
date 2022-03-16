@@ -1,17 +1,18 @@
 package me.hbj.bikkuri.cmds
 
 import me.hbj.bikkuri.Bikkuri
-import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
 import me.hbj.bikkuri.util.clearIndent
+import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.utils.debug
 import kotlin.contracts.ExperimentalContracts
+
+private val logger = KotlinLogging.logger {}
 
 object Config : CompositeCommand(
   Bikkuri, "config", "配置", "c",

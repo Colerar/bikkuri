@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
-import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.GuardData
@@ -42,17 +41,20 @@ import moe.sdl.yabapi.data.live.GuardLevel
 import moe.sdl.yabapi.data.live.commands.DanmakuMsgCmd
 import moe.sdl.yabapi.data.live.commands.GuardBuyCmd
 import moe.sdl.yabapi.data.live.commands.SuperChatMsgCmd
+import mu.KotlinLogging
 import net.mamoe.mirai.console.util.retryCatching
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+private val logger = KotlinLogging.logger {}
+
 fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   if (!client.getBasicInfo().data.isLogin) {
-    Bikkuri.logger.info("检测到未登录，请根据流程扫码登录:")
+    logger.info { "检测到未登录，请根据流程扫码登录:" }
     client.loginWebQRCodeInteractive {
-      Bikkuri.logger.info(it)
+      logger.info(it)
     }
   }
 
@@ -61,7 +63,7 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
     val enabledMap = ListenerData.enabledMap
     val midsToListen = enabledMap.mapNotNull { it.value.userBind }
 
-    Bikkuri.logger.debug("Refresh guard list fetch jobs...")
+    logger.debug { "Refresh guard list fetch jobs..." }
 
     // cancel jobs
     jobMap.forEach { (mid, job) ->
@@ -82,22 +84,20 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
           retryCatching(retry) {
             client.getBasicInfo().data.mid ?: error("Failed to get self mid")
           }.onFailure {
-            Bikkuri.logger.warning("Failed to get self mid after $retry times")
+            logger.warn { "Failed to get self mid after $retry times" }
           }.getOrNull()
         }
 
         val roomId = retryCatching(retry) {
           client.getRoomIdByUid(jobKey).roomId ?: error("Failed to get room id")
         }.onFailure {
-          Bikkuri.logger.warning("Failed to get room id of $jobKey after $retry times")
-          Bikkuri.logger.warning(it)
+          logger.warn(it) { "Failed to get room id of $jobKey after $retry times" }
         }.getOrNull() ?: return@job
 
         val realRoomId = retryCatching(retry) {
           client.getRoomInitInfo(roomId).data?.roomId ?: error("Failed to get room id")
         }.onFailure {
-          Bikkuri.logger.warning("Failed to get room id $jobKey after $retry times")
-          Bikkuri.logger.warning(it)
+          logger.warn(it) { "Failed to get room id $jobKey after $retry times" }
         }.getOrNull() ?: return@job
 
         val stream = retryCatching(retry) {
@@ -106,8 +106,7 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
             requireNotNull(it.data?.hostList)
           }
         }.onFailure {
-          Bikkuri.logger.warning("Failed to get message stream info after $retry times")
-          Bikkuri.logger.warning(it)
+          logger.warn(it) { "Failed to get message stream info after $retry times" }
         }.getOrNull() ?: return@job
 
         val selfId = deferredId.await() ?: return@job
@@ -146,18 +145,18 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
               when (it) {
                 is CancellationException -> throw it
                 is ReconnectException -> {
-                  Bikkuri.logger.warning("Try to reconnect, because:", it)
+                  logger.warn(it) { "Try to reconnect, because:" }
                 }
                 is UnresolvedAddressException -> {
-                  Bikkuri.logger.warning("Try to reconnect after 5000 ms, because:", it)
+                  logger.warn(it) { "Try to reconnect after 5000 ms, because:" }
                   delay(5000)
                 }
                 is IOException -> {
-                  Bikkuri.logger.warning("Try to reconnect after 1000 ms, because an IOException:", it)
+                  logger.warn(it) { "Try to reconnect after 1000 ms, because an IOException:" }
                   delay(1000)
                 }
                 else -> {
-                  Bikkuri.logger.warning("An exception occurred, try to reconnect", it)
+                  logger.warn(it) { "An exception occurred, try to reconnect" }
                 }
               }
               createConnection()
@@ -179,7 +178,7 @@ fun LiveDanmakuConnectConfig.onResponse(
   lastHeartbeatResp: AtomicRef<Instant?>
 ) {
   onCertificateResponse {
-    Bikkuri.logger.info("Successfully connect to live room $shortId${if (shortId != realId) "($realId)" else ""}")
+    logger.info { "Successfully connect to live room $shortId${if (shortId != realId) "($realId)" else ""}" }
   }
   onHeartbeatResponse { lastHeartbeatResp.getAndSet(now()) }
   onCommandResponse { flow ->
@@ -221,7 +220,7 @@ private class GuardListFetcher(
     private set
 
   fun fetchAllGuardList() = channelFlow {
-    Bikkuri.logger.info("Starting fetch all guard list for liver $targetId")
+    logger.info { "Starting fetch all guard list for liver $targetId" }
     var now = 0
     do {
       now++
@@ -231,6 +230,6 @@ private class GuardListFetcher(
       if (listSize == null) listSize = resp.data?.info?.num
       delay(500)
     } while (now < (maxPage ?: 0))
-    Bikkuri.logger.info("Fetched $maxPage page guards for liver $targetId")
+    logger.info { "Fetched $maxPage page guards for liver $targetId" }
   }
 }

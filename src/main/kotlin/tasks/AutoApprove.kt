@@ -5,11 +5,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.events.queuedMemberRequest
+import mu.KotlinLogging
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
+
+private val logger = KotlinLogging.logger {}
 
 fun CoroutineScope.launchAutoApproveTask(): Job = launch {
   while (isActive) {
@@ -28,7 +30,7 @@ fun CoroutineScope.launchAutoApproveTask(): Job = launch {
 
         e.accept()
 
-        logger.info("Accept join request: $e")
+        logger.info { "Accept join request: $e" }
 
         queuedMemberRequest.remove(e)
       }

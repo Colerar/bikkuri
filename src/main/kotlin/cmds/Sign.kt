@@ -5,7 +5,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.datetime.Clock
 import me.hbj.bikkuri.Bikkuri
-import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.AutoApproveData
@@ -21,6 +20,7 @@ import moe.sdl.yabapi.api.getUserCard
 import moe.sdl.yabapi.api.getUserSpace
 import moe.sdl.yabapi.api.sendMessageTo
 import moe.sdl.yabapi.data.message.MessageContent
+import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.event.GlobalEventChannel
@@ -28,10 +28,10 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.info
 import kotlin.time.DurationUnit.SECONDS
 import kotlin.time.toDuration
+
+private val logger = KotlinLogging.logger {}
 
 private const val REQUIRED_LEVEL = 21
 

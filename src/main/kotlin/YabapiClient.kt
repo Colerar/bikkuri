@@ -8,14 +8,15 @@ import io.ktor.client.features.cookies.HttpCookies
 import io.ktor.client.features.websocket.WebSockets
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
-import me.hbj.bikkuri.Bikkuri.logger
 import me.hbj.bikkuri.util.BrotliImpl
 import moe.sdl.yabapi.BiliClient
 import moe.sdl.yabapi.Yabapi
 import moe.sdl.yabapi.enums.LogLevel
 import moe.sdl.yabapi.storage.FileCookieStorage
-import net.mamoe.mirai.utils.debug
+import mu.KotlinLogging
 import okio.Path.Companion.toOkioPath
+
+private val logger = KotlinLogging.logger {}
 
 // Safari + MacOS User Agent
 private const val WEB_USER_AGENT: String =
@@ -67,7 +68,7 @@ internal fun initYabapi() = Yabapi.apply {
   defaultJson.getAndSet(json)
 
   log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
-    logger.debug({ "$tag ${level.name} - ${message()}" }, e)
+    logger.debug(e) { "$tag ${level.name} - ${message()}" }
   }
 
   brotliImpl.getAndSet(BrotliImpl)
