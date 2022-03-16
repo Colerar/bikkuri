@@ -73,7 +73,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       nextMsgEvent().apply {
         if (message.content == "quit") {
           loop1 = false
-          return@apply
+          return
         }
 
         uid = Regex("""^\s*(UID:)?([0-9]+)\s*$""").find(message.content)?.groupValues?.get(2)?.toIntOrNull() ?: run {
