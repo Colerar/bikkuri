@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
+import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.GuardData
@@ -32,7 +33,6 @@ import moe.sdl.yabapi.api.getGuardList
 import moe.sdl.yabapi.api.getLiveDanmakuInfo
 import moe.sdl.yabapi.api.getRoomIdByUid
 import moe.sdl.yabapi.api.getRoomInitInfo
-import moe.sdl.yabapi.api.loginWebQRCodeInteractive
 import moe.sdl.yabapi.connect.LiveDanmakuConnectConfig
 import moe.sdl.yabapi.connect.onCertificateResponse
 import moe.sdl.yabapi.connect.onCommandResponse
@@ -52,10 +52,8 @@ private val logger = KotlinLogging.logger {}
 
 fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   if (!client.getBasicInfo().data.isLogin) {
-    logger.info { "检测到未登录，请根据流程扫码登录:" }
-    client.loginWebQRCodeInteractive {
-      logger.info(it)
-    }
+    Bikkuri.logger.info("检测到未登录，请使用 loginbili 指令登录后重启")
+    return@launch
   }
 
   while (isActive) {

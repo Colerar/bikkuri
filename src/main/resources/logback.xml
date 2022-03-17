@@ -1,4 +1,10 @@
-<configuration scan="true" scanPeriod="360 seconds" debug="true">
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%d{MM-dd'T'HH:mm:ss.SSS} - %highlight(%.-1level) [%thread] %green([%class]) >>> %highlight(%msg) %n</pattern>
+        </encoder>
+    </appender>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>./logs/%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -12,6 +18,7 @@
         </encoder>
     </appender>
     <root level="info">
+<!--        <appender-ref ref="STDOUT"/>-->
         <appender-ref ref="FILE"/>
     </root>
 </configuration>
