@@ -19,6 +19,7 @@ import moe.sdl.yabapi.api.getBasicInfo
 import moe.sdl.yabapi.api.getUserCard
 import moe.sdl.yabapi.api.getUserSpace
 import moe.sdl.yabapi.api.sendMessageTo
+import moe.sdl.yabapi.data.GeneralCode
 import moe.sdl.yabapi.data.message.MessageContent
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
@@ -131,9 +132,14 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
     logger.info { "Try to send message..." }
     client.sendMessageTo(
       uid!!,
-      MessageContent.Text("""<${bindName?.await()}> 舰长群的入群审核码: [${keygen.keygen}], $sec 秒内有效, 如非本人操作请忽略 (可直接复制整段文字)""")
+      MessageContent.Text("""${bindName?.await()}舰长群的入群验证码: [${keygen.keygen}], $sec 秒内有效, 非本人操作请忽略 (可直接复制整段文字)""")
     ).also {
       logger.info { "Send message response: $it" }
+      if (it.code != GeneralCode.SUCCESS) {
+        logger.warn { "Failed send message, ${it.code} - ${it.message}, $uid" }
+        group.sendMessage("私信发送失败，请联系管理员, 错误原因: ${it.code}-${it.message}")
+        return
+      }
     }
 
     withTimeoutOrNull(sec * 1000) {
