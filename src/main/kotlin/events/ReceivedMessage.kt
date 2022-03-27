@@ -5,6 +5,7 @@ import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.exception.PermissionForbidden
+import me.hbj.bikkuri.util.cmdLock
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
@@ -40,7 +41,9 @@ fun EventChannel<Event>.onReceivedMessage() {
       if (allCommandSymbol.binarySearch(cmd) < 0) return@subscribeAlways
       val cmdSender = sender.asCommandSender(false)
       try {
-        CommandManager.executeCommand(cmdSender, message, false)
+        cmdSender.cmdLock {
+          CommandManager.executeCommand(cmdSender, message, false)
+        }
       } catch (e: PermissionForbidden) {
         logger.trace(e) { "Sender permission forbidden ${cmdSender.user.id}" }
       }

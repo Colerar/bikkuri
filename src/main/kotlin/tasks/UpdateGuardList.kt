@@ -56,6 +56,17 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
     return@launch
   }
 
+  launch {
+    while (isActive) {
+      val sizeBefore = LiverGuard.size()
+      logger.info { "Cleaning live guards..." }
+      LiverGuard.cleanup()
+      val now = LiverGuard.size()
+      logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
+      delay(300_000)
+    }
+  }
+
   while (isActive) {
     delay(10_000)
     val enabledMap = ListenerData.enabledMap
