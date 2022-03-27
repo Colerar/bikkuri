@@ -93,7 +93,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
         when {
           inList || (medalNotNull && medalUserFit && medalLevel) -> buildMessageChain {
-            add("请回复B站用户 [${biliSenderData.await().data.username}] 给你发送的验证码, $sec 秒后超时, 请尽快哦~")
+            add("请回复B站用户 [${biliSenderData.await().data.username}] 给你私信的验证码, $sec 秒后超时, 请尽快哦~")
           }.also {
             loop1 = false
           }
@@ -160,11 +160,10 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
               if (keygenFit && keygenNotExpired) {
                 group.sendMessage(
                   """
-                    成功通过审核~~~ 舰长群号已经私聊给你，申请后会自动同意。
+                    成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
                     【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
                   """.trimIndent()
                 )
-                user.sendMessage("舰长群号: ${data.targetGroup}, 请勿外传!")
                 AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
                 AutoApprove.map[data.targetGroup!!]?.set?.add(user.id) ?: run {
                   group.sendMessage("将你添加到自动批准列表时出现错误, 请联系管理员")

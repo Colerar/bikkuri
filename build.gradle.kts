@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "0.4.2"
+version = "0.4.3"
 
 repositories {
   mavenCentral()
@@ -87,6 +87,8 @@ dependencies {
   targets.forEach {
     implementation("com.aayushatharva.brotli4j:native-$it:$brotli4jVer")
   }
+  // runtime system info
+  implementation("com.github.oshi:oshi-core-java11:6.1.5")
   // Test framework
   testImplementation(Testing.junit.jupiter.api)
   testImplementation(Testing.junit.jupiter.engine)
@@ -107,6 +109,10 @@ val time: String by lazy {
   ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
 }
 
+val epochTime: Long by lazy {
+  ZonedDateTime.now(ZoneOffset.UTC).toEpochSecond()
+}
+
 fun BuildConfigSourceSet.string(name: String, value: String) = buildConfigField("String", name, "\"$value\"")
 fun BuildConfigSourceSet.stringNullable(name: String, value: String?) =
   buildConfigField("String?", name, value?.let { "\"$value\"" } ?: "null")
@@ -123,6 +129,8 @@ buildConfig {
   string("MAIN_GROUP", group.toString())
   string("BUILD_BRANCH", branch)
   string("BUILD_TIME", time)
+  string("COMMIT_HASH", commitHash)
+  long("BUILD_EPOCH_TIME", epochTime)
   string("VERSION_LONG", "$version-[$branch]$commitHash $time")
   string("MIRAI_VERSION", versions["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
 

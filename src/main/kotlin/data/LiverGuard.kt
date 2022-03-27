@@ -35,10 +35,12 @@ object LiverGuard : AutoSavePluginData("LiveGuardList") {
     map.getOrPut(liverMid) { GuardData() }.map[guardMid]
   }
 
+  suspend fun size() = dataMutex.withLock {
+    map.map { it.value.map.size }.sum()
+  }
+
   suspend fun cleanup() = dataMutex.withLock {
-    map.forEach {
-      it.value.cleanup()
-    }
+    map.forEach { it.value.cleanup() }
   }
 }
 
@@ -64,11 +66,8 @@ data class GuardData(
 
   suspend fun cleanup() = mutex.withLock {
     val now = now()
-    map.forEach { (k, v) ->
-      if (v.expiresAt < now) {
-        map.remove(k)
-      }
-    }
+    map.filter { (_, v) -> v.expiresAt < now }
+      .forEach { map.remove(it.key) }
   }
 }
 
