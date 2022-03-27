@@ -5,13 +5,11 @@ import me.hbj.bikkuri.data.ListenerData
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.buildMessageChain
 
-fun EventChannel<Event>.onNewMember() {
+fun Events.onMemberJoin() {
   subscribeAlways<MemberJoinEvent> {
     if (it.groupId !in ListenerData.map.keys) return@subscribeAlways
     if (ListenerData.map[it.groupId]?.enable == false) return@subscribeAlways

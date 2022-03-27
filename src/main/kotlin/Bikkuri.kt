@@ -12,15 +12,17 @@ import me.hbj.bikkuri.config.MAIN_GROUP
 import me.hbj.bikkuri.config.NAME
 import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.data.AutoApprove
+import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
+import me.hbj.bikkuri.events.onMemberJoin
 import me.hbj.bikkuri.events.onMemberRequest
-import me.hbj.bikkuri.events.onNewMember
-import me.hbj.bikkuri.events.onReceivedMessage
+import me.hbj.bikkuri.events.onMessagePreSend
+import me.hbj.bikkuri.events.onMessageReceived
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
 import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
@@ -59,7 +61,7 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-    listOf(ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
+    listOf(General, ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
 
   private fun cleanupData() = runBlocking {
     Keygen.cleanup()
@@ -69,8 +71,9 @@ object Bikkuri : KotlinPlugin(
   private fun subscribeEvents() = GlobalEventChannel.apply {
     onBotOnline()
     onBotOffline()
-    onReceivedMessage()
-    onNewMember()
+    onMessageReceived()
+    onMessagePreSend()
+    onMemberJoin()
     onMemberRequest()
   }
 
@@ -79,10 +82,12 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun launchTasks() = launch {
-    launchAutoKickTask()
-    launchAutoApproveTask()
-    coroutineScope {
-      launchUpdateGuardListTask().invokeOnCompletion { me.hbj.bikkuri.tasks.jobMap.clear() }
+    listOf(
+      ::launchAutoKickTask,
+      ::launchAutoApproveTask,
+      ::launchUpdateGuardListTask
+    ).forEach {
+      coroutineScope { it() }
     }
   }
 }

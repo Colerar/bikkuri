@@ -12,8 +12,6 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
@@ -31,7 +29,7 @@ private val allCommandSymbol by lazy {
 private val cmdRegex by lazy { Regex("""/(\S+)""") }
 
 @OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class)
-fun EventChannel<Event>.onReceivedMessage() {
+fun Events.onMessageReceived() {
   filter {
     it is GroupMessageEvent || it is FriendMessageEvent
   }.subscribeAlways<MessageEvent> {
