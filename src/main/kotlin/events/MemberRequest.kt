@@ -4,13 +4,11 @@ import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.AutoApproveData
 import me.hbj.bikkuri.data.ListenerData
 import mu.KotlinLogging
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.EventChannel
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 
 private val logger = KotlinLogging.logger {}
 
-fun EventChannel<Event>.onMemberRequest() {
+fun Events.onMemberRequest() {
   subscribeAlways<MemberJoinRequestEvent> {
     val list = AutoApprove.map.getOrPut(groupId) { AutoApproveData() }.set
     if (list.contains(fromId)) {

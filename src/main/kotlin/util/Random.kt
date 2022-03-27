@@ -1,7 +1,9 @@
 package me.hbj.bikkuri.util
 
+import me.hbj.bikkuri.data.General
+
 private val pattern by lazy {
-  "1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm".toList().toTypedArray()
+  General.keygen.pattern.toList().toTypedArray()
 }
 
 fun randomKeygen(length: Int): String =

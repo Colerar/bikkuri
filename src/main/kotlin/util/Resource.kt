@@ -11,12 +11,25 @@ import java.net.URLDecoder
 
 private val logger = KotlinLogging.logger {}
 
-fun loadImageResource(path: String, formatName: String) =
-  runCatching {
-    Bikkuri.resolveDataFile(path).toExternalResource(formatName)
+/**
+ * @param path 图片路径
+ * @param formatName 文件拓展名, 若空则尝试从路径推断
+ */
+fun loadImageResource(path: String, formatName: String? = null): ExternalResource? {
+  val format = formatName ?: run {
+    when {
+      path.contains(".png") -> "png"
+      arrayListOf(".jpeg", ".jpg").any { path.contains(it) } -> "jpg"
+      else -> null
+    }
+  }
+
+  return runCatching {
+    Bikkuri.resolveDataFile(path).toExternalResource(format)
   }.onFailure {
     logger.warn(it) { "Failed to load image resource in ${File(path).absolutePath}" }
   }.getOrNull()
+}
 
 suspend fun MessageChainBuilder.addImageOrText(resource: ExternalResource?, contact: Contact) {
   resource?.use {

@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.events.queuedMemberRequest
 import mu.KotlinLogging
@@ -15,7 +16,7 @@ private val logger = KotlinLogging.logger {}
 
 fun CoroutineScope.launchAutoApproveTask(): Job = launch {
   while (isActive) {
-    delay(2_000)
+    delay(General.time.autoApprove)
     ListenerData.map
       .filter { it.value.enable }
       .forEach { (groupId, _) ->

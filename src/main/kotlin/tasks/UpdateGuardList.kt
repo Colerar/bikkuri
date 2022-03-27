@@ -1,8 +1,8 @@
 package me.hbj.bikkuri.tasks
 
-import io.ktor.utils.io.CancellationException
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import me.hbj.bikkuri.Bikkuri
@@ -38,6 +39,7 @@ import moe.sdl.yabapi.connect.onCertificateResponse
 import moe.sdl.yabapi.connect.onCommandResponse
 import moe.sdl.yabapi.connect.onHeartbeatResponse
 import moe.sdl.yabapi.data.live.GuardLevel
+import moe.sdl.yabapi.data.live.LiveDanmakuInfoGetResponse
 import moe.sdl.yabapi.data.live.commands.DanmakuMsgCmd
 import moe.sdl.yabapi.data.live.commands.GuardBuyCmd
 import moe.sdl.yabapi.data.live.commands.SuperChatMsgCmd
@@ -50,25 +52,33 @@ import kotlin.time.toDuration
 
 private val logger = KotlinLogging.logger {}
 
+// mid to job
+internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
+
 fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   if (!client.getBasicInfo().data.isLogin) {
     Bikkuri.logger.info("检测到未登录，请使用 loginbili 指令登录后重启")
     return@launch
   }
+  listOf(launchCleanJob(), launchCollectJob()).joinAll()
+}.apply {
+  invokeOnCompletion { jobMap.clear() }
+}
 
-  launch {
-    while (isActive) {
-      val sizeBefore = LiverGuard.size()
-      logger.info { "Cleaning live guards..." }
-      LiverGuard.cleanup()
-      val now = LiverGuard.size()
-      logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
-      delay(300_000)
-    }
-  }
-
+private fun CoroutineScope.launchCleanJob() = launch {
   while (isActive) {
-    delay(10_000)
+    val sizeBefore = LiverGuard.size()
+    logger.info { "Cleaning live guards..." }
+    LiverGuard.cleanup()
+    val now = LiverGuard.size()
+    logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
+    delay(General.time.guardCleanup)
+  }
+}
+
+private fun CoroutineScope.launchCollectJob() = launch {
+  while (isActive) {
+    delay(General.time.guardJobScan)
     val enabledMap = ListenerData.enabledMap
     val midsToListen = enabledMap.mapNotNull { it.value.userBind }
 
@@ -84,9 +94,9 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 
     // enable jobs
     enabledMap.filterNot { it.value.userBind == null }.forEach { (_, data) ->
-      val jobKey = data.userBind!!.toInt()
-      if (jobMap.containsKey(jobKey)) return@forEach
-      jobMap[jobKey] = launch(context = Dispatchers.IO + CoroutineName("live-message-fetcher")) job@{
+      val mid = data.userBind!!.toInt()
+      if (jobMap.containsKey(mid)) return@forEach
+      jobMap[mid] = launch job@{
         val retry = General.retryTimes
 
         val deferredId = async {
@@ -98,125 +108,144 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
         }
 
         val roomId = retryCatching(retry) {
-          client.getRoomIdByUid(jobKey).roomId ?: error("Failed to get room id")
+          client.getRoomIdByUid(mid).roomId ?: error("Failed to get room id")
         }.onFailure {
-          logger.warn(it) { "Failed to get room id of $jobKey after $retry times" }
+          logger.warn(it) { "Failed to get room id of $mid after $retry times" }
         }.getOrNull() ?: return@job
 
         val realRoomId = retryCatching(retry) {
           client.getRoomInitInfo(roomId).data?.roomId ?: error("Failed to get room id")
         }.onFailure {
-          logger.warn(it) { "Failed to get room id $jobKey after $retry times" }
+          logger.warn(it) { "Failed to get room id $mid after $retry times" }
         }.getOrNull() ?: return@job
 
-        val stream = retryCatching(retry) {
+        val stream = retryCatching(General.retryTimes) {
           client.getLiveDanmakuInfo(roomId).also {
             requireNotNull(it.data?.token)
             requireNotNull(it.data?.hostList)
           }
         }.onFailure {
-          logger.warn(it) { "Failed to get message stream info after $retry times" }
+          logger.warn(it) { "Failed to get message stream info after ${General.retryTimes} times" }
         }.getOrNull() ?: return@job
 
         val selfId = deferredId.await() ?: return@job
 
-        launch {
-          while (isActive) {
-            val lastList = LiverGuard.map.getOrPut(jobKey) { GuardData() }.lastList
-            if (lastList == null || (now() - lastList >= 1.toDuration(DurationUnit.DAYS))) {
-              fetchAllGuardList(roomId, jobKey)
-                .flowOn(Dispatchers.IO + CoroutineName("guard-lister-$jobKey"))
-                .collect {
-                  LiverGuard.updateGuard(jobKey, it.uid ?: return@collect, GuardInfo(after1Day, GuardFetcher.LIST))
-                }
-              LiverGuard.updateListTime(jobKey, now())
-            }
-            delay(10_000)
-          }
-        }
-
-        launch {
-          suspend fun createConnection() {
-            runCatching {
-              val lastHeartbeatResp: AtomicRef<Instant?> = atomic(null)
-              client.createLiveDanmakuConnection(
-                selfId, realRoomId, stream.data!!.token!!, stream.data!!.hostList.first()
-              ) {
-                onResponse(jobKey, roomId, realRoomId, lastHeartbeatResp)
-              }
-              while (isActive) {
-                val time = lastHeartbeatResp.value
-                if (time != null && now() - time >= 35.toDuration(DurationUnit.SECONDS)) {
-                  throw ReconnectException("Long time no response, try to reconnect")
-                }
-              }
-            }.onFailure {
-              when (it) {
-                is CancellationException -> throw it
-                is ReconnectException -> {
-                  logger.warn(it) { "Try to reconnect, because:" }
-                }
-                is UnresolvedAddressException -> {
-                  logger.warn(it) { "Try to reconnect after 5000 ms, because:" }
-                  delay(5000)
-                }
-                is IOException -> {
-                  logger.warn(it) { "Try to reconnect after 1000 ms, because an IOException:" }
-                  delay(1000)
-                }
-                else -> {
-                  logger.warn(it) { "An exception occurred, try to reconnect" }
-                }
-              }
-              createConnection()
-            }
-          }
-          createConnection()
-        }.join()
+        UpdateRoomConnection(mid, roomId, realRoomId, selfId, stream).run { start() }
       }
     }
   }
 }
 
-internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
-
-fun LiveDanmakuConnectConfig.onResponse(
-  liverMid: Int,
-  shortId: Int,
-  realId: Int,
-  lastHeartbeatResp: AtomicRef<Instant?>
+class UpdateRoomConnection(
+  private val mid: Int,
+  private val roomId: Int,
+  private val realId: Int,
+  private val selfId: Int,
+  private val stream: LiveDanmakuInfoGetResponse,
 ) {
-  onCertificateResponse {
-    logger.info { "Successfully connect to live room $shortId${if (shortId != realId) "($realId)" else ""}" }
+
+  private val lastHeartbeatResp: AtomicRef<Instant?> = atomic(null)
+
+  fun CoroutineScope.start() =
+    launch(context = Dispatchers.IO + CoroutineName("live-message-fetcher")) job@{
+      listOf(
+        launchFetchAllJob(),
+        connectLiveRoom(),
+      ).joinAll()
+    }
+
+  private fun CoroutineScope.launchFetchAllJob(): Job =
+    launch {
+      while (isActive) {
+        val lastList = LiverGuard.map.getOrPut(mid) { GuardData() }.lastList
+        if (lastList == null || (now() - lastList >= 1.toDuration(DurationUnit.DAYS))) {
+          fetchAllGuardList(roomId, mid)
+            .flowOn(Dispatchers.IO + CoroutineName("guard-lister-$mid"))
+            .collect {
+              LiverGuard.updateGuard(mid, it.uid ?: return@collect, GuardInfo(after1Day, GuardFetcher.LIST))
+            }
+          LiverGuard.updateListTime(mid, now())
+        }
+        delay(10_000)
+      }
+    }
+
+  private fun CoroutineScope.connectLiveRoom() = launch {
+    suspend fun createConnection() {
+      runCatching {
+        client.createLiveDanmakuConnection(
+          selfId, realId, stream.data!!.token!!, stream.data!!.hostList.first()
+        ) {
+          onResponse()
+        }
+        while (isActive) {
+          val time = lastHeartbeatResp.value
+          if (time != null && now() - time >= General.time.reconnectNoResponse.toDuration(DurationUnit.MILLISECONDS)) {
+            throw ReconnectException("Long time no response, try to reconnect")
+          }
+        }
+      }.onFailure {
+        when (it) {
+          is CancellationException -> throw it
+          is ReconnectException -> {
+            logger.warn(it) { "Try to reconnect, because:" }
+          }
+          is UnresolvedAddressException -> {
+            val delay = General.time.reconnectNoInternetMs
+            logger.warn(it) { "Try to reconnect after $delay ms, because:" }
+            delay(delay)
+          }
+          is IOException -> {
+            val delay = General.time.reconnectIOExceptionMs
+            logger.warn(it) { "Try to reconnect after $delay ms, because an IOException:" }
+            delay(delay)
+          }
+          else -> {
+            logger.warn(it) { "An exception occurred, try to reconnect" }
+          }
+        }
+        createConnection()
+      }
+    }
+    createConnection()
   }
-  onHeartbeatResponse { lastHeartbeatResp.getAndSet(now()) }
-  onCommandResponse { flow ->
-    flow.filterIsInstance<DanmakuMsgCmd>().collect {
-      val roomId = it.data?.medal?.roomId ?: return@collect
-      val lv = it.data?.medal?.level
-      if (!(lv != null && lv >= 21)) return@collect
-      if (roomId == shortId || roomId == realId) return@collect
-      val uid = it.data?.liveUser?.mid ?: return@collect
 
-      LiverGuard.updateGuard(liverMid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+  private fun LiveDanmakuConnectConfig.onResponse() {
+    onCertificateResponse {
+      logger.info { "Successfully connect to live room $roomId${if (roomId != realId) "($realId)" else ""}" }
     }
 
-    flow.filterIsInstance<GuardBuyCmd>().collect { cmd ->
-      val uid = cmd.data?.uid ?: return@collect
-      val expiresAt = /* cmd.data!!.endTime?.let { Instant.fromEpochSeconds(it) } ?: */ after30Days
-      LiverGuard.updateGuard(liverMid, uid, GuardInfo(expiresAt, GuardFetcher.JOIN))
-    }
+    onHeartbeatResponse { lastHeartbeatResp.getAndSet(now()) }
 
-    flow.filterIsInstance<SuperChatMsgCmd>().collect {
-      val uid = it.data?.uid ?: return@collect
-      val allowed = listOf(GuardLevel.CAPTAIN, GuardLevel.GOVERNOR, GuardLevel.ADMIRAL)
-      if (!allowed.contains(it.data?.medalInfo?.guardLevel)) return@collect
-      LiverGuard.updateGuard(liverMid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+    onCommandResponse { flow ->
+      flow.filterIsInstance<DanmakuMsgCmd>().collect {
+        val roomId = it.data?.medal?.roomId ?: return@collect
+        val lv = it.data?.medal?.level
+        if (!(lv != null && lv >= 21)) return@collect
+        if (roomId == this@UpdateRoomConnection.roomId || roomId == this@UpdateRoomConnection.realId)
+          return@collect
+        val uid = it.data?.liveUser?.mid ?: return@collect
+
+        LiverGuard.updateGuard(mid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+      }
+
+      flow.filterIsInstance<GuardBuyCmd>().collect { cmd ->
+        val uid = cmd.data?.uid ?: return@collect
+        val expiresAt = /* cmd.data!!.endTime?.let { Instant.fromEpochSeconds(it) } ?: */ after30Days
+        LiverGuard.updateGuard(mid, uid, GuardInfo(expiresAt, GuardFetcher.JOIN))
+      }
+
+      flow.filterIsInstance<SuperChatMsgCmd>().collect {
+        val uid = it.data?.uid ?: return@collect
+        val allowed = listOf(GuardLevel.CAPTAIN, GuardLevel.GOVERNOR, GuardLevel.ADMIRAL)
+        if (!allowed.contains(it.data?.medalInfo?.guardLevel)) return@collect
+        LiverGuard.updateGuard(mid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+      }
     }
   }
 }
 
-fun fetchAllGuardList(roomId: Int, targetId: Int) = GuardListFetcher(roomId, targetId).fetchAllGuardList()
+private fun fetchAllGuardList(roomId: Int, targetId: Int) = GuardListFetcher(roomId, targetId).fetchAllGuardList()
 
 private class GuardListFetcher(
   private val roomId: Int,

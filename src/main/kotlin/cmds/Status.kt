@@ -19,8 +19,8 @@ object Status : SimpleCommand(Bikkuri, "bstatus", "bikkuri", description = "查�
   suspend fun CommandSender.status() {
     sendMessage(
       """
-      当前系统: $os
-      运行时间: ${getUptime()} | MEM ${getMemoryRate().show()} | CPU ${getCpuRate().show()}
+      OS: $os
+      UPTIME: ${getUptime()} | MEM ${getMemoryRate().show()} | CPU ${getCpuRate().show()}
     """.trimIndent()
     )
   }
