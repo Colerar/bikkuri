@@ -1,9 +1,8 @@
 package me.hbj.bikkuri.cmds
 
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.datetime.Clock
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.AutoApprove
@@ -13,15 +12,15 @@ import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
+import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
 import me.hbj.bikkuri.util.now
-import moe.sdl.yabapi.api.getBasicInfo
-import moe.sdl.yabapi.api.getUserCard
+import me.hbj.bikkuri.util.uidRegex
+import me.hbj.bikkuri.validator.RecvMessageValidator
+import me.hbj.bikkuri.validator.SendMessageValidator
+import me.hbj.bikkuri.validator.ValidatorOperation
 import moe.sdl.yabapi.api.getUserSpace
-import moe.sdl.yabapi.api.sendMessageTo
-import moe.sdl.yabapi.data.GeneralCode
-import moe.sdl.yabapi.data.message.MessageContent
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
@@ -30,14 +29,10 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
-import kotlin.time.DurationUnit.MILLISECONDS
+import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 private val logger = KotlinLogging.logger {}
-
-private val uidRegex = Regex("""^\s*(UID:)?([0-9]+)\s*$""")
-
-private val keygenRegex = Regex("""(\[?[0-9A-Za-z]+]?)""")
 
 object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
   @Handler
@@ -48,30 +43,23 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       group.sendMessage("配置不完整，请联系管理员")
       return
     }
+    var uid: Int? = null
 
-    val biliSenderData = coroutineScope { async { client.getBasicInfo() } }
+    val expireDuration = General.keygen.timeout.toDuration(DurationUnit.MILLISECONDS)
 
-    val bindName = coroutineScope {
-      withTimeoutOrNull(General.time.timeout) {
-        async {
-          client.getUserCard(data.userBind!!.toInt(), false).data?.card?.name ?: run {
-            group.sendMessage("获取绑定 UP 主信息失败~")
-            data.userBind.toString()
-          }
-        }
+    val keygen by lazy {
+      logger.info { "Generating Keygen..." }
+      KeygenData(uid.toString(), General.keygen.length, expireDuration).also {
+        Keygen.map[user.id] = it
+        logger.info { "Generated Keygen $it" }
       }
     }
-
-    group.sendMessage("请发送 B 站 UID~")
-
-    var uid: Int? = null
 
     suspend fun nextMsgEvent() = GlobalEventChannel.nextEvent<GroupMessageEvent> {
       it.group.id == user.group.id && it.sender.id == user.id
     }
 
-    val expireDuration = General.keygen.timeout.toDuration(MILLISECONDS)
-    val expireDurInSec = expireDuration.inWholeSeconds
+    group.sendMessage("请发送 B 站 UID~")
 
     var loop1 = true
     while (loop1) nextMsgEvent().apply {
@@ -94,27 +82,29 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       val medalUserFit = medal?.targetId == data.userBind?.toInt()
       val medalLevel = medal?.level?.let { it >= General.joinRequiredLevel } ?: false
 
-      val msg = when {
-        inList || (medalNotNull && medalUserFit && medalLevel) -> buildMessageChain {
-          add("请回复B站用户 [${biliSenderData.await().data.username}] 给你私信的验证码, $expireDurInSec 秒后超时, 请尽快哦~")
-        }.also { loop1 = false }
-        !medalNotNull -> buildMessageChain {
-          add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)")
-          addImageOrText(loadImageResource("./images/guide-phone.jpg"), group)
-          addImageOrText(loadImageResource("./images/guide-web.jpg"), group)
-        }
-        !medalUserFit -> buildMessageChain {
-          add("呜~ 请佩戴 [${bindName?.await()}] 的粉丝牌哦! 可再次输入 UID 重试, quit 退出")
-        }
-        @Suppress("KotlinConstantConditions")
-        !medalLevel -> buildMessageChain {
-          add("粉丝牌等级不足~ 需要至少 ${General.joinRequiredLevel} 级哦~")
-        }
-        else -> buildMessageChain {
-          add("遇到未知错误，可再次输入 UID 重试, quit 退出")
+      when {
+        inList || (medalNotNull && medalUserFit && medalLevel) -> loop1 = false
+        else -> {
+          val msg = when {
+            !medalNotNull -> buildMessageChain {
+              add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)")
+              addImageOrText(loadImageResource("./images/guide-phone.jpg"), group)
+              addImageOrText(loadImageResource("./images/guide-web.jpg"), group)
+            }
+            !medalUserFit -> buildMessageChain {
+              add("呜~ 请佩戴正确的粉丝牌哦! 可再次输入 UID 重试, quit 退出")
+            }
+            @Suppress("KotlinConstantConditions")
+            !medalLevel -> buildMessageChain {
+              add("粉丝牌等级不足~ 需要至少 ${General.joinRequiredLevel} 级哦~")
+            }
+            else -> buildMessageChain {
+              add("遇到未知错误，可再次输入 UID 重试, quit 退出")
+            }
+          }
+          group.sendMessage(msg)
         }
       }
-      group.sendMessage(msg)
     }
 
     @Suppress("KotlinConstantConditions")
@@ -123,61 +113,34 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
       return
     }
 
-    logger.info { "Generating Keygen..." }
-    val keygen = KeygenData(uid.toString(), General.keygen.length, expireDuration)
-    Keygen.map[user.id] = keygen
-    logger.info { "Generated Keygen $keygen" }
-
-    logger.info { "Try to send message..." }
-    client.sendMessageTo(
-      uid!!,
-      MessageContent.Text("""${bindName?.await()}舰长群的入群验证码: [${keygen.keygen}], $expireDurInSec 秒内有效, 非本人操作请忽略 (可直接复制整段文字)""")
-    ).also {
-      logger.info { "Send message response: $it" }
-      if (it.code != GeneralCode.SUCCESS) {
-        logger.warn { "Failed send message, ${it.code} - ${it.message}, $uid" }
-        group.sendMessage("私信发送失败，请联系管理员, 错误原因: ${it.code}-${it.message}")
-        return
-      }
+    val validator = when (data.mode) {
+      ValidateMode.SEND -> SendMessageValidator(keygen, uid!!, data)
+      ValidateMode.RECV -> RecvMessageValidator(keygen, uid!!)
     }
+
+    coroutineScope { launch { validator.beforeValidate(this@handle) } }
 
     withTimeoutOrNull(expireDuration * 1000) {
       logger.debug { "Waiting for response" }
       var loop = true
 
       while (loop) nextMsgEvent().apply {
-        when (message.content) {
-          "quit" -> {
-            group.sendMessage("退出审核~")
-            loop = false
-          }
-          else -> {
-            val str = keygenRegex.find(message.content)?.value
-            val keygenFit = str?.removeSurrounding("[", "]") == keygen.keygen
-            val keygenNotExpired = keygen.expiresAt > Clock.System.now()
-
-            if (keygenFit && keygenNotExpired) {
-              group.sendMessage(
-                """
-                  成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
-                  【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
-                """.trimIndent()
-              )
-              AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
-              AutoApprove.map[data.targetGroup!!]?.set?.add(user.id) ?: run {
-                group.sendMessage("将你添加到自动批准列表时出现错误, 请联系管理员")
-              }
-              loop = false
-            } else {
-              val msg = when {
-                !keygenFit -> buildMessageChain { add("呜~ 验证码错误, 可再次输入验证码重试, quit 退出.") }
-                @Suppress("KotlinConstantConditions")
-                !keygenNotExpired -> buildMessageChain { add("呜~ 验证码过期, 可再次输入验证码重试, quit 退出.") }
-                else -> buildMessageChain { add("审核失败~可再次输入验证码重试, quit 退出.") }
-              }
-              group.sendMessage(msg)
+        loop = when (validator.validate(this)) {
+          ValidatorOperation.CONTINUED -> true
+          ValidatorOperation.PASSED -> {
+            AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
+            AutoApprove.map[data.targetGroup!!]?.set?.add(sender.id) ?: run {
+              this.group.sendMessage("将你添加到自动批准列表时出现错误, 请联系管理员")
             }
+            group.sendMessage(
+              """
+              成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
+              【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
+              """.trimIndent()
+            )
+            false
           }
+          else -> false
         }
       }
     }

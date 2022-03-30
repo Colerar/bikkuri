@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.events
 
+import kotlinx.coroutines.CancellationException
 import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.LastMsg
@@ -38,12 +39,14 @@ fun Events.onMessageReceived() {
       val cmd = cmdRegex.find(content)?.groupValues?.get(1) ?: return@subscribeAlways
       if (allCommandSymbol.binarySearch(cmd) < 0) return@subscribeAlways
       val cmdSender = sender.asCommandSender(false)
-      try {
-        cmdSender.cmdLock {
+      cmdSender.cmdLock {
+        try {
           CommandManager.executeCommand(cmdSender, message, false)
+        } catch (e: PermissionForbidden) {
+          logger.trace(e) { "Sender permission forbidden ${cmdSender.user.id}" }
+        } catch (e: CancellationException) {
+          logger.warn(e) { "Cancelled command $cmd" }
         }
-      } catch (e: PermissionForbidden) {
-        logger.trace(e) { "Sender permission forbidden ${cmdSender.user.id}" }
       }
     }
   }

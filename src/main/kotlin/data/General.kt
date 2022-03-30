@@ -22,6 +22,8 @@ data class KeygenConfig(
 data class TaskDelay(
   val timeout: Long = 5_000L,
 
+  val responseTimeout: Long = 300_000L,
+
   val autoApprove: Long = 2_000L,
 
   val autoKick: Long = 5_000L,
