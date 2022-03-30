@@ -26,6 +26,7 @@ import me.hbj.bikkuri.events.onMessageReceived
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
 import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
+import me.hbj.bikkuri.tasks.setMessageTask
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -85,7 +86,8 @@ object Bikkuri : KotlinPlugin(
     listOf(
       ::launchAutoKickTask,
       ::launchAutoApproveTask,
-      ::launchUpdateGuardListTask
+      ::launchUpdateGuardListTask,
+      ::setMessageTask,
     ).forEach {
       coroutineScope { it() }
     }

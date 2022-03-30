@@ -4,6 +4,7 @@ import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.exception.PermissionForbidden
 import me.hbj.bikkuri.util.clearIndent
 import mu.KotlinLogging
@@ -71,6 +72,24 @@ object Config : CompositeCommand(
     data.targetGroup = target
     group.sendMessage("绑定群聊变化： $last -> $target\n记得在目标群聊设置机器人为管理员哦~")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
+  }
+
+  @SubCommand
+  suspend fun MemberCommandSender.mode(mode: String) {
+    checkPerm()
+    val modeEnum = when (mode.lowercase()) {
+      "recv" -> ValidateMode.RECV
+      "send" -> ValidateMode.SEND
+      else -> {
+        group.sendMessage("输入错误，需要为 RECV 或 SEND。即机器人收消息或机器人发消息。")
+        return
+      }
+    }
+    val data = ListenerData.map.getOrPut(group.id) { GroupListener(true) }
+    val last = data.mode
+    data.mode = modeEnum
+    group.sendMessage("验证模式变化： $last -> $modeEnum")
+    logger.debug { "GroupListener[${group.id}] : ${ListenerData.map[group.id]}" }
   }
 
   @SubCommand("autokick")
