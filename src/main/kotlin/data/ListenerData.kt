@@ -18,6 +18,12 @@ object ListenerData : AutoSavePluginData("ListenerData") {
 data class GroupListener(
   var enable: Boolean = false,
   var userBind: Long? = null, // binds to bilibili mid
+  var mode: ValidateMode = ValidateMode.SEND,
   var targetGroup: Long? = null,
   var kickDuration: ULong = 0uL,
 )
+
+@Serializable
+enum class ValidateMode {
+  RECV, SEND;
+}
