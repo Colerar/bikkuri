@@ -2,6 +2,9 @@ package me.hbj.bikkuri.events
 
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.db.isBlocked
+import me.hbj.bikkuri.db.removeBlock
+import me.hbj.bikkuri.util.toFriendly
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
@@ -32,6 +35,13 @@ fun Events.onMemberJoin() {
         .filter { it.getMember(bot.id)?.isOperator() == true }
         .firstOrNull { it.id == sourceGroup }
         ?.getMember(member.id)?.kick("加入舰长群后自动从审核群移出")
+    }
+  }
+
+  subscribeAlways<MemberJoinEvent.Invite> {
+    if (member.isBlocked() && invitor.isOperator()) {
+      member.removeBlock()
+      group.sendMessage("管理邀请入群，自动将 ${member.toFriendly()} 移出屏蔽列表。")
     }
   }
 }

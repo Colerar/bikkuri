@@ -7,6 +7,8 @@ import moe.sdl.yabapi.api.logOut
 import moe.sdl.yabapi.api.loginWebConsole
 import moe.sdl.yabapi.api.loginWebQRCodeInteractive
 import moe.sdl.yabapi.api.loginWebSMSConsole
+import moe.sdl.yabapi.data.GeneralCode
+import moe.sdl.yabapi.data.login.LoginWebSMSResponseCode
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -27,16 +29,20 @@ object LoginBili : CompositeCommand(
   @Description("通过二维码登录B站帐号")
   suspend fun ConsoleCommandSender.qr() {
     logOutIfLogin()
-    client.loginWebQRCodeInteractive { Bikkuri.logger.info(it) }
-    Bikkuri.logger.info("Logged in successfully via qrcode")
+    val resp = client.loginWebQRCodeInteractive { Bikkuri.logger.info(it) }.lastOrNull()
+    if (resp?.code == GeneralCode.SUCCESS) {
+      logger.info("Logged in successfully via qrcode")
+    } else logger.warn("Failed to login")
   }
 
   @SubCommand("sms")
   @Description("通过短信登录B站帐号")
   suspend fun ConsoleCommandSender.sms() {
     logOutIfLogin()
-    client.loginWebSMSConsole(true) { Bikkuri.logger.info(it) }
-    Bikkuri.logger.info("Logged in successfully via sms")
+    val resp = client.loginWebSMSConsole(true) { Bikkuri.logger.info(it) }
+    if (resp.code == LoginWebSMSResponseCode.SUCCESS) {
+      logger.info("Logged in successfully via sms")
+    } else logger.warn("Failed to login")
   }
 
   @SubCommand("pwd", "password")
@@ -44,6 +50,6 @@ object LoginBili : CompositeCommand(
   suspend fun ConsoleCommandSender.pwd() {
     logOutIfLogin()
     client.loginWebConsole { Bikkuri.logger.info(it) }
-    Bikkuri.logger.info("Logged in successfully via pwd")
+    logger.info("Logged in successfully via pwd")
   }
 }
