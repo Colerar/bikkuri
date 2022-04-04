@@ -9,6 +9,7 @@ object General : AutoSavePluginConfig("_General") {
   val joinRequiredLevel by value(21)
   val keygen by value(KeygenConfig())
   val time by value(TaskDelay())
+  val randomReply by value(RandomReply())
 }
 
 @Serializable
@@ -35,6 +36,26 @@ data class TaskDelay(
   val reconnectNoResponse: Long = 35_000L,
   val reconnectIOExceptionMs: Long = 1_000L,
   val reconnectNoInternetMs: Long = 5_000L,
-
-  val replayDelayRange: Pair<Long, Long> = 0L to 0L,
 )
+
+enum class RandomReplyMode {
+  NONE, FIXED, BETWEEN, SCALE, MATH_LOG;
+}
+
+@Serializable
+data class RandomReply(
+  val mode: RandomReplyMode = RandomReplyMode.NONE,
+  val fixedValue: Long = 100L,
+  val betweenRange: Pair<Long, Long> = 100L to 1_000L,
+  val scaleCoefficient: Pair<Double, Double> = 15.0 to 20.0,
+  val log: Log = Log(),
+) {
+  @Serializable
+  data class Log(
+    val coefficient: Double = 20.0,
+    val base: Double = 2.0,
+    val pow: Int = 10,
+    val constant: Double = 300.0,
+    val jitter: Long = 300L,
+  )
+}

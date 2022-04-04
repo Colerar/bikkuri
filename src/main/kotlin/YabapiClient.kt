@@ -36,7 +36,7 @@ internal val client by lazy {
       identity()
     }
     install(HttpCookies) {
-      val file = Bikkuri.resolveDataFile("sdl.moe.yabapi/cookies.json")
+      val file = Bikkuri.resolveDataFile("cookies.json")
       storage = FileCookieStorage(okio.FileSystem.SYSTEM, file.toOkioPath()) {
         saveInTime = true
       }
