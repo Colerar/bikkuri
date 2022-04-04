@@ -1,14 +1,11 @@
 package me.hbj.bikkuri.events
 
-import kotlinx.coroutines.CancellationException
 import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.exception.PermissionForbidden
-import me.hbj.bikkuri.util.cmdLock
+import me.hbj.bikkuri.util.executeCommandSafely
 import mu.KotlinLogging
-import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -38,16 +35,7 @@ fun Events.onMessageReceived() {
     if (content.startsWith("/")) {
       val cmd = cmdRegex.find(content)?.groupValues?.get(1) ?: return@subscribeAlways
       if (allCommandSymbol.binarySearch(cmd) < 0) return@subscribeAlways
-      val cmdSender = sender.asCommandSender(false)
-      cmdSender.cmdLock {
-        try {
-          CommandManager.executeCommand(cmdSender, message, false)
-        } catch (e: PermissionForbidden) {
-          logger.trace(e) { "Sender permission forbidden ${cmdSender.user.id}" }
-        } catch (e: CancellationException) {
-          logger.warn(e) { "Cancelled command $cmd" }
-        }
-      }
+      sender.asCommandSender(false).executeCommandSafely(message)
     }
   }
   subscribeAlways<GroupMessageEvent> {
@@ -58,7 +46,7 @@ fun Events.onMessageReceived() {
   subscribeAlways<GroupMessageEvent> {
     if (!ListenerData.isEnabled(group.id)) return@subscribeAlways
     if (it.message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
-      CommandManager.executeCommand(sender.asCommandSender(false), Sign, checkPermission = false)
+      (it.sender as? NormalMember)?.asCommandSender(false)?.executeCommandSafely(Sign.primaryName)
     }
   }
 }

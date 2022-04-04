@@ -5,13 +5,11 @@ import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.ValidateMode
-import me.hbj.bikkuri.exception.PermissionForbidden
 import me.hbj.bikkuri.util.clearIndent
+import me.hbj.bikkuri.util.requireOperator
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
-import net.mamoe.mirai.contact.isOperator
-import kotlin.contracts.ExperimentalContracts
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,20 +17,17 @@ object Config : CompositeCommand(
   Bikkuri, "config", "配置", "c",
   description = "配置指令"
 ) {
-  @OptIn(ExperimentalContracts::class)
-  private fun MemberCommandSender.checkPerm() {
-    if (!user.isOperator()) throw PermissionForbidden("/config needs admin perm")
-  }
 
   @SubCommand
   suspend fun MemberCommandSender.list() {
+    requireOperator(this)
     val data = ListenerData.map.getOrPut(group.id) { GroupListener() }
     group.sendMessage("当前配置: $data")
   }
 
   @SubCommand
   suspend fun MemberCommandSender.switch() {
-    checkPerm()
+    requireOperator(this)
     val id = group.id
     ListenerData.map.getOrPut(id) { GroupListener() }
     val last = ListenerData.map[id]?.enable
@@ -54,7 +49,7 @@ object Config : CompositeCommand(
 
   @SubCommand
   suspend fun MemberCommandSender.bind(bind: Long) {
-    checkPerm()
+    requireOperator(this)
     val id = group.id
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.userBind
@@ -65,7 +60,7 @@ object Config : CompositeCommand(
 
   @SubCommand
   suspend fun MemberCommandSender.target(target: Long) {
-    checkPerm()
+    requireOperator(this)
     val id = group.id
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.targetGroup
@@ -76,7 +71,7 @@ object Config : CompositeCommand(
 
   @SubCommand
   suspend fun MemberCommandSender.mode(mode: String) {
-    checkPerm()
+    requireOperator(this)
     val modeEnum = when (mode.lowercase()) {
       "recv" -> ValidateMode.RECV
       "send" -> ValidateMode.SEND
@@ -94,7 +89,7 @@ object Config : CompositeCommand(
 
   @SubCommand("autokick")
   suspend fun MemberCommandSender.autoKick(duration: String) {
-    checkPerm()
+    requireOperator(this)
     val id = group.id
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.kickDuration

@@ -58,6 +58,14 @@ var versions = Properties().apply {
 }
 
 dependencies {
+  // Kotlinx
+  implementation(KotlinX.datetime)
+  implementation(KotlinX.coroutines.core)
+  implementation(KotlinX.Serialization.core)
+  implementation(KotlinX.Serialization.json)
+  implementation("org.jetbrains.kotlinx:atomicfu:_")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:_")
+  // Mirai
   implementation("net.mamoe:mirai-core:_")
   implementation("net.mamoe:mirai-console:_")
   implementation("net.mamoe:mirai-console-terminal:_")
@@ -66,12 +74,12 @@ dependencies {
   implementation("io.github.microutils:kotlin-logging-jvm:_")
   implementation("ch.qos.logback:logback-core:_")
   implementation("ch.qos.logback:logback-classic:_")
-  // Kotlinx
-  implementation(KotlinX.datetime)
-  implementation(KotlinX.coroutines.core)
-  implementation(KotlinX.Serialization.core)
-  implementation(KotlinX.Serialization.json)
-  implementation("org.jetbrains.kotlinx:atomicfu:_")
+  // database
+  implementation("org.xerial:sqlite-jdbc:_")
+  implementation("org.jetbrains.exposed:exposed-core:_")
+  implementation("org.jetbrains.exposed:exposed-dao:_")
+  implementation("org.jetbrains.exposed:exposed-jdbc:_")
+  implementation("org.jetbrains.exposed:exposed-java-time:_")
   // BiliBili
   implementation("moe.sdl.yabapi:yabapi-core-jvm:_")
   // Ktor
@@ -88,7 +96,7 @@ dependencies {
     implementation("com.aayushatharva.brotli4j:native-$it:$brotli4jVer")
   }
   // runtime system info
-  implementation("com.github.oshi:oshi-core-java11:6.1.5")
+  implementation("com.github.oshi:oshi-core-java11:_")
   // Test framework
   testImplementation(Testing.junit.jupiter.api)
   testImplementation(Testing.junit.jupiter.engine)
