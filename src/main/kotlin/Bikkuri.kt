@@ -3,6 +3,7 @@ package me.hbj.bikkuri
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.hbj.bikkuri.cmds.Backup
 import me.hbj.bikkuri.cmds.Block
 import me.hbj.bikkuri.cmds.Config
 import me.hbj.bikkuri.cmds.LoginBili
@@ -48,7 +49,7 @@ object Bikkuri : KotlinPlugin(
   }
 ) {
   internal val registeredCmds by lazy {
-    listOf<Command>(Status, Version, LoginBili, Config, Sign, Block)
+    listOf<Command>(Status, Version, LoginBili, Backup, Config, Sign, Block)
   }
 
   @OptIn(MiraiExperimentalApi::class)

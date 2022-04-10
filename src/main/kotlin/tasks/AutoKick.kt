@@ -22,7 +22,7 @@ fun CoroutineScope.launchAutoKickTask(): Job = launch {
       Bot.instances.forEach { bot ->
         bot.groups.asSequence().filter {
           it.id == t && it.botAsMember.isOperator()
-        }.forEach group@ { group ->
+        }.forEach group@{ group ->
           group.members
             .asSequence()
             .filterNot { it.isOperator() }

@@ -47,7 +47,10 @@ class SendMessageValidator(
         logger.info { "Try to send message..." }
         client.sendMessageTo(
           uid,
-          MessageContent.Text("""${bindName.await()}舰长群的入群验证码: [${keygen.keygen}], ${keygen.expire} 秒内有效, 非本人操作请忽略 (可直接复制整段文字)""")
+          MessageContent.Text(
+            "${bindName.await()}舰长群的入群验证码: [${keygen.keygen}], " +
+              "${keygen.expire} 秒内有效, 非本人操作请忽略 (可直接复制整段文字)"
+          )
         ).also {
           logger.info { "Send message response: $it" }
           if (it.code != GeneralCode.SUCCESS) {
@@ -70,16 +73,17 @@ class SendMessageValidator(
         val keygenFit = event.message.content.fitKeygen(keygen)
         val keygenNotExpired = keygen.expiresAt > Clock.System.now()
 
-        if (keygenFit && keygenNotExpired) {
-          return ValidatorOperation.PASSED
+        return if (keygenFit && keygenNotExpired) {
+          ValidatorOperation.PASSED
         } else {
           val msg = when {
             !keygenFit -> buildMessageChain { add("呜~ 验证码错误, 可再次输入验证码重试, quit 退出.") }
-            @Suppress("KotlinConstantConditions") !keygenNotExpired -> buildMessageChain { add("呜~ 验证码过期, 可再次输入验证码重试, quit 退出.") }
+            @Suppress("KotlinConstantConditions") !keygenNotExpired ->
+              buildMessageChain { add("呜~ 验证码过期, 可再次输入验证码重试, quit 退出.") }
             else -> buildMessageChain { add("审核失败~可再次输入验证码重试, quit 退出.") }
           }
           event.group.sendMessage(msg)
-          return ValidatorOperation.FAILED
+          ValidatorOperation.FAILED
         }
       }
     }
