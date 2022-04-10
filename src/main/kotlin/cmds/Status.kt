@@ -21,7 +21,7 @@ object Status : SimpleCommand(Bikkuri, "bstatus", "bikkuri", description = "æŸ¥ç
       """
       OS: $os
       UPTIME: ${getUptime()} | MEM ${getMemoryRate().show()} | CPU ${getCpuRate().show()}
-    """.trimIndent()
+      """.trimIndent()
     )
   }
 

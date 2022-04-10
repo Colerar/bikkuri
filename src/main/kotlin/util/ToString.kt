@@ -20,7 +20,7 @@ fun Member?.toString() = this?.let { "Member-$nameCardOrNick($id)" } ?: "UnkMemb
 
 fun Friend?.toString() = this?.let { "Friend-$remarkOrNick($id)" } ?: "UnkFriend"
 
-fun Member.toFriendly() = this.let { "$nameCardOrNick(${id})" }
+fun Member.toFriendly() = this.let { "$nameCardOrNick($id)" }
 
 private val readableDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
 

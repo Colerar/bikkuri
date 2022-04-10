@@ -89,6 +89,8 @@ dependencies {
   implementation(Ktor.client.encoding)
   // IO
   implementation(Square.okio)
+  // csv
+  implementation("com.github.doyaaaaaken:kotlin-csv-jvm:_")
   // Brotli
   implementation("com.aayushatharva.brotli4j:brotli4j:_")
   val brotli4jVer = versions["version.com.aayushatharva.brotli4j..brotli4j"]

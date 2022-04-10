@@ -32,8 +32,8 @@ data class KeygenData(
 }
 
 fun String?.fitKeygen(keygen: KeygenData): Boolean {
-    val str = keygenRegex.find(this ?: "")?.value
-    return str?.removeSurrounding("[", "]") == keygen.keygen
+  val str = keygenRegex.find(this ?: "")?.value
+  return str?.removeSurrounding("[", "]") == keygen.keygen
 }
 
 fun KeygenData(salt: String, length: Int, expiresAfter: Duration): KeygenData =
