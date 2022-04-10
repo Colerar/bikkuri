@@ -22,7 +22,6 @@ private fun setupWorkingDir(workDir: File?) {
 suspend fun setupTerminal(workDir: File? = null) {
   setupWorkingDir(workDir)
 
-
   MiraiConsoleImplementationTerminal().start()
   Class.forName("net.mamoe.mirai.console.terminal.ConsoleThreadKt").apply {
     getDeclaredMethod("startupConsoleThread").invoke(this)

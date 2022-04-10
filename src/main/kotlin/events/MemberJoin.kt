@@ -1,9 +1,10 @@
 package me.hbj.bikkuri.events
 
-import me.hbj.bikkuri.data.LastMsg
+import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.db.isBlocked
 import me.hbj.bikkuri.db.removeBlock
+import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.toFriendly
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.getMember
@@ -22,7 +23,7 @@ fun Events.onMemberJoin() {
         add(" 欢迎进入舰长审核群。输入“验证”开始审核哦。")
       }
     )
-    LastMsg.setToNow(groupId, member.id)
+    GlobalLastMsg[bot.id][groupId].map[member.id] = now()
   }
 
   subscribeAlways<MemberJoinEvent> {

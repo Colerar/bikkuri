@@ -12,10 +12,8 @@ import me.hbj.bikkuri.cmds.Version
 import me.hbj.bikkuri.config.MAIN_GROUP
 import me.hbj.bikkuri.config.NAME
 import me.hbj.bikkuri.config.VERSION
-import me.hbj.bikkuri.data.AutoApprove
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.Keygen
-import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.db.Blocklist
@@ -71,7 +69,7 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-    listOf(General, ListenerData, Keygen, AutoApprove, LastMsg, LiverGuard).forEach { it.reload() }
+    listOf(General, ListenerData, Keygen, LiverGuard).forEach { it.reload() }
 
   private fun loadDb() {
     val path = resolveDataPath("data.db").absolutePathString()

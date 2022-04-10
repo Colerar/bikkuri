@@ -1,8 +1,8 @@
 package me.hbj.bikkuri.cmds
 
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.GroupListener
-import me.hbj.bikkuri.data.LastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.util.clearIndent
@@ -35,7 +35,7 @@ object Config : CompositeCommand(
     val target = ListenerData.map[id]?.targetGroup
     val bind = ListenerData.map[id]?.userBind
 
-    LastMsg.map.remove(group.id)
+    GlobalLastMsg[bot.id].remove(group.id)
 
     group.sendMessage(
       buildString {
