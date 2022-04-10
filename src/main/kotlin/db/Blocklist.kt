@@ -20,7 +20,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object Blocklist : Table() {
   private val eventId = long("event_id").autoIncrement()
   val botId = long("bot_id")
-  val groupId = long("group_id")
+  val groupId = long("group_id").index()
   val memberId = long("member_id")
   val updateInstant = timestamp("updateInstant")
   override val primaryKey = PrimaryKey(eventId)

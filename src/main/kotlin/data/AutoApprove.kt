@@ -1,15 +1,26 @@
 package me.hbj.bikkuri.data
 
-import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.data.AutoSavePluginData
-import net.mamoe.mirai.console.data.value
+import java.util.concurrent.ConcurrentHashMap
 
-object AutoApprove : AutoSavePluginData("AutoApproveList") {
-  // QQ group id to data
-  val map: MutableMap<Long, AutoApproveData> by value()
+object GlobalAutoApprove {
+  // bot id to group map
+  private val map: MutableMap<Long, BotApprove> = ConcurrentHashMap()
+
+  operator fun get(botId: Long): BotApprove = map.getOrPut(botId) { BotApprove() }
 }
 
-@Serializable
-class AutoApproveData(
-  val set: MutableSet<Long> = mutableSetOf(),
+class BotApprove {
+  // group id to group list
+  private val map: MutableMap<Long, GroupApprove> = ConcurrentHashMap()
+
+  operator fun get(groupId: Long): GroupApprove = map.getOrPut(groupId) { GroupApprove() }
+}
+
+class GroupApprove {
+  val map: MutableMap<Long, MemberToApprove> = ConcurrentHashMap()
+}
+
+data class MemberToApprove(
+  val boundBiliUid: Long,
+  val fromGroup: Long,
 )

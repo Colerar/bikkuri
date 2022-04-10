@@ -20,11 +20,13 @@ class RecvMessageValidator(
     val basicInfo = client.getBasicInfo().data
     sender.sendMessage(
       """
-      请私信 B 站用户 ${basicInfo.username} (UID ${basicInfo.mid}) 验证码完成验证, ${keygen.expire} 秒内有效：[${keygen.keygen}]
-      网页版直达链接: https://message.bilibili.com/#/whisper/mid${basicInfo.mid}
-      完成后发送任意信息验证，如遇问题请发送 "quit" 退出后联系管理
+      [${keygen.keygen}]
+      麻烦您按顺序完成以下两个步骤：
+      ① 复制本条消息，b站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
+      ② 私信后返回本群发送任何消息开始验证。（本条 ${keygen.expire} 秒内有效）
       """.trimIndent()
     )
+    sender.sendMessage("网页版直达链接: https://message.bilibili.com/#/whisper/mid${basicInfo.mid}")
   }
 
   override suspend fun validate(event: GroupMessageEvent): ValidatorOperation {
@@ -34,7 +36,7 @@ class RecvMessageValidator(
       .filterIsInstance<Text>()
       .any { it.content.fitKeygen(keygen) }
     if (pass) return ValidatorOperation.PASSED else {
-      event.group.sendMessage("验证失败，稍后重试看看...")
+      event.group.sendMessage("验证失败，稍后重试看看... 如有问题请 @ 管理，发送 quit 可退出验证。")
     }
     return ValidatorOperation.CONTINUED
   }

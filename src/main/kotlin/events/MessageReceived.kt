@@ -2,9 +2,10 @@ package me.hbj.bikkuri.events
 
 import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
-import me.hbj.bikkuri.data.LastMsg
+import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.util.executeCommandSafely
+import me.hbj.bikkuri.util.now
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -40,13 +41,13 @@ fun Events.onMessageReceived() {
   }
   subscribeAlways<GroupMessageEvent> {
     if (sender is NormalMember && ListenerData.isEnabled(group.id)) {
-      LastMsg.setToNow(group.id, sender.id)
+      GlobalLastMsg[bot.id][group.id].map[sender.id] = now()
     }
   }
   subscribeAlways<GroupMessageEvent> {
     if (!ListenerData.isEnabled(group.id)) return@subscribeAlways
     if (it.message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
-      (it.sender as? NormalMember)?.asCommandSender(false)?.executeCommandSafely(Sign.primaryName)
+      (it.sender as? NormalMember)?.asCommandSender(false)?.executeCommandSafely("/${Sign.primaryName}")
     }
   }
 }

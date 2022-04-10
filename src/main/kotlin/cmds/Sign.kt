@@ -5,13 +5,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
-import me.hbj.bikkuri.data.AutoApprove
-import me.hbj.bikkuri.data.AutoApproveData
 import me.hbj.bikkuri.data.General
+import me.hbj.bikkuri.data.GlobalAutoApprove
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
+import me.hbj.bikkuri.data.MemberToApprove
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
@@ -128,10 +128,11 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
         loop = when (validator.validate(this)) {
           ValidatorOperation.CONTINUED -> true
           ValidatorOperation.PASSED -> {
-            AutoApprove.map.getOrPut(data.targetGroup!!) { AutoApproveData() }
-            AutoApprove.map[data.targetGroup!!]?.set?.add(sender.id) ?: run {
-              this.group.sendMessage("将你添加到自动批准列表时出现错误, 请联系管理员")
-            }
+            val map = GlobalAutoApprove[bot.id][data.targetGroup!!].map
+            map[sender.id] = MemberToApprove(
+              uid!!.toLong(),
+              this.group.id,
+            )
             group.sendMessage(
               """
               成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
