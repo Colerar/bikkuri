@@ -21,8 +21,7 @@ object Backup : CompositeCommand(Bikkuri, "backup") {
     }
     sendMessage(
       buildMessageChain {
-        // add(QuoteReply(message))
-        add("备份完成! 已保存 ${task.saveMember} 名群员。")
+        add("备份完成! 已保存 ${task.savedMember} 名群员。")
       }
     )
   }
