@@ -1,6 +1,12 @@
 package me.hbj.bikkuri.util
 
+import kotlinx.atomicfu.atomic
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -17,3 +23,10 @@ val after7Days
 
 val after30Days
   get() = afterNowDays(30)
+
+object Formatter {
+  val dateTime: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"))
+}
+
+fun Instant.toFriendly(timeZone: TimeZone): String? =
+  Formatter.dateTime.format(toLocalDateTime(timeZone).toJavaLocalDateTime())

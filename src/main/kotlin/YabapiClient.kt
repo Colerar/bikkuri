@@ -68,7 +68,14 @@ internal fun initYabapi() = Yabapi.apply {
   defaultJson.getAndSet(json)
 
   log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
-    logger.debug(e) { "$tag ${level.name} - ${message()}" }
+    when (level) {
+      LogLevel.VERBOSE -> logger.trace { "$tag - ${message()}" }
+      LogLevel.DEBUG -> logger.debug { "$tag - ${message()}" }
+      LogLevel.INFO -> logger.info { "$tag - ${message()}" }
+      LogLevel.WARN -> logger.warn { "$tag - ${message()}" }
+      LogLevel.ERROR -> logger.error { "$tag - ${message()}" }
+      LogLevel.ASSERT -> logger.error { "-----ASSERT----- $tag - ${message()}" }
+    }
   }
 
   brotliImpl.getAndSet(BrotliImpl)

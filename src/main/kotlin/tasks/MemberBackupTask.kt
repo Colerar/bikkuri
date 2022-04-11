@@ -3,8 +3,10 @@ package me.hbj.bikkuri.tasks
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.datetime.TimeZone
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.util.now
+import me.hbj.bikkuri.util.toFriendly
 import mu.KotlinLogging
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.isAdministrator
@@ -23,7 +25,9 @@ class MemberBackupTask(
 
   suspend fun run() {
     logger.info { "Start backup for ${group.name}(${group.id})" }
-    val file = Bikkuri.resolveDataFile("./member_backup/${group.id}/${now().epochSeconds}.csv").apply {
+    val file = Bikkuri.resolveDataFile(
+      "./member_backup/${group.id}/${now().toFriendly(TimeZone.UTC)}.csv"
+    ).apply {
       parentFile?.mkdirs()
       if (exists()) {
         logger.info { "File $absolutePath already exists, deleting..." }
@@ -50,5 +54,6 @@ class MemberBackupTask(
         this@MemberBackupTask.savedMember++
       }
     }
+    logger.info { "Backup finished for ${group.name}(${group.id}), saved $savedMember..." }
   }
 }

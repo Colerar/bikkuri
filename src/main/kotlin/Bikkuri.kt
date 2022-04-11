@@ -3,8 +3,10 @@ package me.hbj.bikkuri
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import me.hbj.bikkuri.cmds.Approve
 import me.hbj.bikkuri.cmds.Backup
 import me.hbj.bikkuri.cmds.Block
+import me.hbj.bikkuri.cmds.CheckLogin
 import me.hbj.bikkuri.cmds.Config
 import me.hbj.bikkuri.cmds.LoginBili
 import me.hbj.bikkuri.cmds.Sign
@@ -18,6 +20,7 @@ import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.db.Blocklist
+import me.hbj.bikkuri.db.BotAccepted
 import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberJoin
@@ -49,7 +52,7 @@ object Bikkuri : KotlinPlugin(
   }
 ) {
   internal val registeredCmds by lazy {
-    listOf<Command>(Status, Version, LoginBili, Backup, Config, Sign, Block)
+    listOf<Command>(Approve, Backup, Block, CheckLogin, Config, LoginBili, Sign, Status, Version)
   }
 
   @OptIn(MiraiExperimentalApi::class)
@@ -77,7 +80,7 @@ object Bikkuri : KotlinPlugin(
     val db = Database.connect("jdbc:sqlite:$path", "org.sqlite.JDBC")
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
-      SchemaUtils.create(Blocklist)
+      SchemaUtils.create(Blocklist, BotAccepted)
     }
   }
 
