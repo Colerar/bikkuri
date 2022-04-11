@@ -30,7 +30,7 @@ data class TaskDelay(
   val autoKick: Long = 5_000L,
   val messageNoticeBetweenKick: Long = 500L,
 
-  val guardJobScan: Long = 1_000L,
+  val guardJobScan: Long = 10_000L,
   val guardCleanup: Long = 300_000L,
 
   val reconnectNoResponse: Long = 35_000L,

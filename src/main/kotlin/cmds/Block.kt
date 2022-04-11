@@ -8,6 +8,7 @@ import me.hbj.bikkuri.db.isBlocked
 import me.hbj.bikkuri.db.listBlocked
 import me.hbj.bikkuri.db.removeBlock
 import me.hbj.bikkuri.util.clearIndent
+import me.hbj.bikkuri.util.parseMessageMember
 import me.hbj.bikkuri.util.require
 import me.hbj.bikkuri.util.requireOperator
 import me.hbj.bikkuri.util.toFriendly
@@ -15,16 +16,9 @@ import me.hbj.bikkuri.util.toLocalDateTime
 import me.hbj.bikkuri.util.toReadDateTime
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
-import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.firstIsInstanceOrNull
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.math.max
 
 object Block : CompositeCommand(
@@ -40,29 +34,6 @@ object Block : CompositeCommand(
     /block ban <At|QQ号> 添加某人到屏蔽列表，移出本群，同时使用QQ的拉黑功能
     /block remove/rm <At|QQ号> 将某人移出屏蔽列表
   """.trimIndent()
-
-  @OptIn(ExperimentalContracts::class)
-  private suspend fun MemberCommandSender.parseMessage(
-    message: MessageChain,
-    onMember: suspend MemberCommandSender.(at: NormalMember) -> Unit,
-    onId: suspend MemberCommandSender.(id: Long) -> Unit,
-  ) {
-    contract {
-      callsInPlace(onMember, InvocationKind.AT_MOST_ONCE)
-      callsInPlace(onId, InvocationKind.AT_MOST_ONCE)
-    }
-    message.firstIsInstanceOrNull<At>().also {
-      if (it == null) return@also
-      onMember(group.getMember(it.target) ?: return@also)
-      return
-    }
-    message.firstIsInstanceOrNull<PlainText>()?.also { str ->
-      val id = str.content.toLongOrNull() ?: return@also
-      val member = group.getMember(id)
-      if (member != null) onMember(member) else onId(id)
-      return
-    }
-  }
 
   @SubCommand("help")
   suspend fun MemberCommandSender.help() {
@@ -89,7 +60,7 @@ object Block : CompositeCommand(
   }
 
   private suspend fun MemberCommandSender.underlyingAdd(message: MessageChain, kick: Boolean, block: Boolean) {
-    parseMessage(
+    parseMessageMember(
       message,
       onMember = { member ->
         require(this@underlyingAdd, !member.isOperator()) { "你没有权限！" }
@@ -120,7 +91,7 @@ object Block : CompositeCommand(
   @SubCommand("remove", "rm")
   suspend fun MemberCommandSender.remove(message: MessageChain) {
     requireOperator(this)
-    parseMessage(
+    parseMessageMember(
       message,
       onMember = { member ->
         if (member.isBlocked()) {
@@ -145,7 +116,7 @@ object Block : CompositeCommand(
   suspend fun MemberCommandSender.query(message: MessageChain) {
     requireOperator(this)
     var id: Long? = null
-    parseMessage(
+    parseMessageMember(
       message,
       onMember = { id = it.id },
       onId = { id = it }

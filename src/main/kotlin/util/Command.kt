@@ -11,11 +11,19 @@ import net.mamoe.mirai.console.command.FriendCommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
+import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.firstIsInstanceOrNull
 import java.util.Vector
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 private val logger = KotlinLogging.logger { }
 
@@ -74,4 +82,27 @@ suspend fun CommandSender.executeCommandSafely(message: MessageChain) {
 @OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class)
 suspend fun CommandSender.executeCommandSafely(message: String) {
   executeCommandSafely(buildMessageChain { add(message) })
+}
+
+@OptIn(ExperimentalContracts::class)
+suspend fun MemberCommandSender.parseMessageMember(
+  message: MessageChain,
+  onMember: suspend MemberCommandSender.(at: NormalMember) -> Unit,
+  onId: suspend MemberCommandSender.(id: Long) -> Unit,
+) {
+  contract {
+    callsInPlace(onMember, InvocationKind.AT_MOST_ONCE)
+    callsInPlace(onId, InvocationKind.AT_MOST_ONCE)
+  }
+  message.firstIsInstanceOrNull<At>().also {
+    if (it == null) return@also
+    onMember(group.getMember(it.target) ?: return@also)
+    return
+  }
+  message.firstIsInstanceOrNull<PlainText>()?.also { str ->
+    val id = str.content.toLongOrNull() ?: return@also
+    val member = group.getMember(id)
+    if (member != null) onMember(member) else onId(id)
+    return
+  }
 }

@@ -82,7 +82,7 @@ private fun CoroutineScope.launchCollectJob() = launch {
     val enabledMap = ListenerData.enabledMap
     val midsToListen = enabledMap.mapNotNull { it.value.userBind }
 
-    logger.debug { "Refresh guard list fetch jobs..." }
+    logger.trace { "Refresh guard list fetch jobs..." }
 
     // cancel jobs
     jobMap.forEach { (mid, job) ->
