@@ -10,31 +10,32 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOwner
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 class MemberBackupTask(
   val group: Group,
 ) {
-  private var _totalMember: Int? = null
+  var totalMember: Int? = null
+    private set
 
-  val totalMember: Int?
-    get() = _totalMember
-
-  private var _savedMember by atomic(0)
-
-  val saveMember: Int
-    get() = _savedMember
+  var savedMember by atomic(0)
+    private set
 
   suspend fun run() {
     logger.info { "Start backup for ${group.name}(${group.id})" }
     val file = Bikkuri.resolveDataFile("./member_backup/${group.id}/${now().epochSeconds}.csv").apply {
       parentFile?.mkdirs()
-      createNewFile()
+      if (exists()) {
+        logger.info { "File $absolutePath already exists, deleting..." }
+        delete()
+      }
+      // write UTF-8 BOM to support Microsoft Office
+      writeBytes(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))
     }
-    csvWriter().openAsync(file) {
+    csvWriter().openAsync(file, append = true) {
       writeRow("id", "name_card", "nick", "join_time", "last_msg", "is_admin", "is_owner")
       (group.members).apply {
-        _totalMember = size
+        this@MemberBackupTask.totalMember = size
       }.asFlow().collect {
         logger.trace { "Write row $it" }
         writeRow(
@@ -46,7 +47,7 @@ class MemberBackupTask(
           /* is_admin */ it.isAdministrator(),
           /* is_owner */ it.isOwner()
         )
-        _savedMember++
+        this@MemberBackupTask.savedMember++
       }
     }
   }
