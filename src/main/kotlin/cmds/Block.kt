@@ -1,6 +1,7 @@
 package me.hbj.bikkuri.cmds
 
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.addBlock
 import me.hbj.bikkuri.db.blockedSize
 import me.hbj.bikkuri.db.blockedTime
@@ -16,13 +17,14 @@ import me.hbj.bikkuri.util.toLocalDateTime
 import me.hbj.bikkuri.util.toReadDateTime
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.math.max
 
 object Block : CompositeCommand(
-  Bikkuri, "blocklist", "block", "/b"
+  Bikkuri, "blocklist", "block", "b"
 ) {
   override val usage: String = """
     /blocklist 屏蔽指令，缩写 /block /b
@@ -158,4 +160,96 @@ object Block : CompositeCommand(
     sb.appendLine("$page / $maxPage")
     group.sendMessage(sb.toString().clearIndent())
   }
+
+  @SubCommand("link")
+  suspend fun MemberCommandSender.link(operator: String, to: Long) {
+    requireOperator(this)
+
+    val from = user.group.id
+    val fromGroup = bot.getGroup(from)
+    val toGroup = bot.getGroup(to)
+
+    if (!checkIsAdmin(fromGroup, toGroup)) {
+      sendMessage("⚠️ 需要在两个群都为管理才能设置本选项。")
+      return
+    }
+
+    val fromStr = fromGroup.toFriendly(from)
+    val toStr = toGroup.toFriendly(to)
+
+    // 操作符判断
+    fun op(vararg matches: String) = matches.contains(operator)
+    val toBefore by lazy { BlocklistLink.query(from) }
+
+    when {
+      op("link", "add") -> {
+        if (toBefore == null) {
+          BlocklistLink.link(from, to)
+          sendMessage("✅ 成功设置拦截名单重定向 $fromStr 🔗 $toStr")
+        } else {
+          val beforeGroup = bot.getGroup(toBefore!!).toFriendly(toBefore)
+          sendMessage("🤔 已有重定向 $fromStr 🔗 $beforeGroup 存在。考虑使用 update 命令进行更新。")
+        }
+      }
+      op("update", "upd") -> {
+        if (toBefore != null) {
+          if (!checkIsAdmin(toBefore!!)) {
+            sendMessage("⚠️ 需要在之前绑定的群也为管理员，才能修改重定向。")
+            return
+          }
+          BlocklistLink.update(from, to)
+          sendMessage("✅ 成功修改拦截名单重定向 $fromStr 🔗 $toStr")
+        } else {
+          sendMessage("🈳 本群没有拦截列表重定向。")
+        }
+      }
+      else -> sendMessage("❌ 错误的操作输入: $operator")
+    }
+  }
+
+  @SubCommand("link")
+  suspend fun MemberCommandSender.link(operator: String) {
+    requireOperator(this)
+
+    val from = user.group.id
+    val fromGroup = bot.getGroup(from)
+    val fromStr = fromGroup.toFriendly(from)
+
+    val toBefore by lazy { BlocklistLink.query(from) }
+
+    fun op(vararg matches: String) = matches.contains(operator)
+    when {
+      op("rm", "remove") -> {
+        if (toBefore != null) {
+          val toStr = bot.getGroup(toBefore!!).toFriendly(toBefore)
+          if (!checkIsAdmin(from, toBefore!!)) {
+            sendMessage("⚠️ 需要在 $toStr 也为管理才能移除重定向。")
+            return
+          }
+          BlocklistLink.remove(from)
+          sendMessage("💥 成功移除拦截名单重定向 $fromStr 🚧 $toStr")
+        } else {
+          sendMessage("🈳 本群没有拦截列表重定向。")
+          return
+        }
+      }
+      op("now", "see") -> {
+        if (toBefore == null) {
+          sendMessage("🈳 本群没有拦截列表重定向。")
+          return
+        }
+        val linkStr = bot.getGroup(toBefore!!).toFriendly(toBefore)
+        sendMessage("🔍 当前拦截列表重定向 $fromStr 🔗 $linkStr")
+      }
+      else -> sendMessage("❌ 错误的操作输入: $operator")
+    }
+  }
+
+  private fun MemberCommandSender.checkIsAdmin(vararg group: Long) =
+    checkIsAdmin(*group.map(bot::getGroup).toTypedArray())
+
+  private fun MemberCommandSender.checkIsAdmin(vararg group: Group?) =
+    group.fold(true) { acc, i ->
+      acc && i?.getMember(this.user.id)?.isOperator() == true
+    }
 }

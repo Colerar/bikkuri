@@ -69,12 +69,12 @@ internal fun initYabapi() = Yabapi.apply {
 
   log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
     when (level) {
-      LogLevel.VERBOSE -> logger.trace { "$tag - ${message()}" }
-      LogLevel.DEBUG -> logger.debug { "$tag - ${message()}" }
-      LogLevel.INFO -> logger.info { "$tag - ${message()}" }
-      LogLevel.WARN -> logger.warn { "$tag - ${message()}" }
-      LogLevel.ERROR -> logger.error { "$tag - ${message()}" }
-      LogLevel.ASSERT -> logger.error { "-----ASSERT----- $tag - ${message()}" }
+      LogLevel.VERBOSE -> logger.trace(e) { "$tag - ${message()}" }
+      LogLevel.DEBUG -> logger.debug(e) { "$tag - ${message()}" }
+      LogLevel.INFO -> logger.info(e) { "$tag - ${message()}" }
+      LogLevel.WARN -> logger.warn(e) { "$tag - ${message()}" }
+      LogLevel.ERROR -> logger.error(e) { "$tag - ${message()}" }
+      LogLevel.ASSERT -> logger.error(e) { "-----ASSERT----- $tag - ${message()}" }
     }
   }
 

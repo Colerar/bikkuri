@@ -16,14 +16,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
+import kotlinx.datetime.toKotlinInstant
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.General
-import me.hbj.bikkuri.data.GuardData
 import me.hbj.bikkuri.data.GuardFetcher
-import me.hbj.bikkuri.data.GuardInfo
 import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.data.LiverGuard
+import me.hbj.bikkuri.db.GuardLastUpdate
+import me.hbj.bikkuri.db.GuardList
 import me.hbj.bikkuri.exception.ReconnectException
 import me.hbj.bikkuri.util.after1Day
 import me.hbj.bikkuri.util.after30Days
@@ -67,10 +67,10 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 
 private fun CoroutineScope.launchCleanJob() = launch {
   while (isActive) {
-    val sizeBefore = LiverGuard.size()
+    val sizeBefore = GuardList.count()
     logger.info { "Cleaning live guards..." }
-    LiverGuard.cleanup()
-    val now = LiverGuard.size()
+    GuardList.cleanup()
+    val now = GuardList.count()
     logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
     delay(General.time.guardCleanup)
   }
@@ -157,14 +157,16 @@ class UpdateRoomConnection(
   private fun CoroutineScope.launchFetchAllJob(): Job =
     launch {
       while (isActive) {
-        val lastList = LiverGuard.map.getOrPut(mid) { GuardData() }.lastList
+        val lastList = GuardLastUpdate.get(mid.toLong())?.let {
+          it[GuardLastUpdate.lastUpdate]
+        }?.toKotlinInstant()
         if (lastList == null || (now() - lastList >= 1.toDuration(DurationUnit.DAYS))) {
           fetchAllGuardList(roomId, mid)
             .flowOn(Dispatchers.IO + CoroutineName("guard-lister-$mid"))
             .collect {
-              LiverGuard.updateGuard(mid, it.uid ?: return@collect, GuardInfo(after1Day, GuardFetcher.LIST))
+              GuardList.insertOrUpdate(mid.toLong(), it.uid?.toLong() ?: return@collect, after1Day, GuardFetcher.LIST)
             }
-          LiverGuard.updateListTime(mid, now())
+          GuardLastUpdate.insertOrUpdate(mid.toLong(), now())
         }
         delay(10_000)
       }
@@ -226,20 +228,19 @@ class UpdateRoomConnection(
           return@collect
         val uid = it.data?.liveUser?.mid ?: return@collect
 
-        LiverGuard.updateGuard(mid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after1Day, GuardFetcher.MESSAGE)
       }
 
       flow.filterIsInstance<GuardBuyCmd>().collect { cmd ->
         val uid = cmd.data?.uid ?: return@collect
-        val expiresAt = /* cmd.data!!.endTime?.let { Instant.fromEpochSeconds(it) } ?: */ after30Days
-        LiverGuard.updateGuard(mid, uid, GuardInfo(expiresAt, GuardFetcher.JOIN))
+        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after30Days, GuardFetcher.JOIN)
       }
 
       flow.filterIsInstance<SuperChatMsgCmd>().collect {
         val uid = it.data?.uid ?: return@collect
         val allowed = listOf(GuardLevel.CAPTAIN, GuardLevel.GOVERNOR, GuardLevel.ADMIRAL)
         if (!allowed.contains(it.data?.medalInfo?.guardLevel)) return@collect
-        LiverGuard.updateGuard(mid, uid, GuardInfo(after1Day, GuardFetcher.MESSAGE))
+        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after1Day, GuardFetcher.MESSAGE)
       }
     }
   }

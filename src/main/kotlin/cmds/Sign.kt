@@ -10,12 +10,11 @@ import me.hbj.bikkuri.data.GlobalAutoApprove
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.data.MemberToApprove
 import me.hbj.bikkuri.data.ValidateMode
+import me.hbj.bikkuri.db.GuardList
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
-import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.uidRegex
 import me.hbj.bikkuri.validator.RecvMessageValidator
 import me.hbj.bikkuri.validator.SendMessageValidator
@@ -76,7 +75,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
 
       val medal = client.getUserSpace(uid!!).data?.fansMedal?.medal
 
-      val inList = LiverGuard.getGuard(data.userBind!!.toInt(), uid!!).let { it != null && it.expiresAt >= now() }
+      val inList = GuardList.validate(data.userBind!!, uid!!.toLong())
 
       val medalNotNull = medal != null
       val medalUserFit = medal?.targetId == data.userBind?.toInt()

@@ -1,12 +1,16 @@
 package me.hbj.bikkuri.cmds
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.util.clearIndent
 import me.hbj.bikkuri.util.requireOperator
+import moe.sdl.yabapi.api.getUserCard
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
@@ -47,6 +51,12 @@ object Config : CompositeCommand(
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
+  private suspend fun getUserInfo(mid: Long?): String {
+    return client.getUserCard(mid?.toInt() ?: return "null", false).data?.card?.name?.let {
+      "$it(uid$mid)"
+    } ?: mid.toString()
+  }
+
   @SubCommand
   suspend fun MemberCommandSender.bind(bind: Long) {
     requireOperator(this)
@@ -54,7 +64,11 @@ object Config : CompositeCommand(
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.userBind
     data.userBind = bind
-    group.sendMessage("绑定用户的 UID 变化： $last -> $bind")
+    coroutineScope {
+      val lastInfo = async { getUserInfo(last) }
+      val info = async { getUserInfo(bind) }
+      group.sendMessage("绑定用户的变化： ${lastInfo.await()} -> ${info.await()}")
+    }
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
