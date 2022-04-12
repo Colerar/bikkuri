@@ -45,7 +45,7 @@ object GuardList : Table() {
     }.firstOrNull() != null
   }
 
-  fun insertOrUpdate(liverUid: Long, guardUid: Long, time: Instant, fetcher: GuardFetcher){
+  fun insertOrUpdate(liverUid: Long, guardUid: Long, time: Instant, fetcher: GuardFetcher) = transaction {
     if (contains(liverUid, guardUid)) {
       update(liverUid, guardUid, time, fetcher)
     } else {
@@ -110,6 +110,4 @@ object GuardLastUpdate : Table() {
       body = { it[lastUpdate] = instant.toJavaInstant() }
     )
   }
-
-  override val primaryKey = PrimaryKey(liverId)
 }
