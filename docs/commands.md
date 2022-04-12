@@ -65,6 +65,15 @@
 - `/block ban <At|QQ号>` 添加某人到屏蔽列表，移出本群，同时使用QQ的拉黑功能
 - `/block remove/rm <At|QQ号>` 将某人移出屏蔽列表
 
+**block link**
+
+- 本指令用于同步群之间的屏蔽列表，类似于 Linux 上的软链接，link 后的群的所有操作都会 redirect 到对应的群
+- 操作该指令，操作者需要是涉及到的每一个群的管理, 如 update 就需要是本群、更新前链接到的群、更新后链接到的群，三群的管理。
+- `b link <add> <目标群号>` 添加拦截名单
+- `b link <rm|remove>` 移除当前链接
+- `b link <upd|update> <新链接群号>` 更新当前链接
+- `b link <now|see>` 查看当前链接到的群
+
 ### checklogin
 
 - `/checklogin` 缩写 `/cl` 检查机器人 B 站登录状态

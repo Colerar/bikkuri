@@ -128,3 +128,5 @@ run/
 
 # secrets or personal settings
 local.properties
+
+/logs
