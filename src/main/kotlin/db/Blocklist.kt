@@ -27,12 +27,12 @@ object Blocklist : Table() {
 
   fun eqToGroup(group: Group) = with(group) {
     (botId eq bot.id) and
-      (groupId eq group.id)
+      (groupId eq group.redirectBlockId())
   }
 
   fun eqToMember(member: Member) = with(member) {
     (botId eq bot.id) and
-      (groupId eq group.id) and
+      (groupId eq group.redirectBlockId()) and
       (memberId eq id)
   }
 }
@@ -46,7 +46,10 @@ fun Group.listBlocked(page: Long, size: Int = 10) = transaction {
 }
 
 fun Group.blockedTime(id: Long) = transaction {
-  Blocklist.select { eqToGroup(this@blockedTime) and (memberId eq id) }.map { it[updateInstant] }.firstOrNull()
+  Blocklist
+    .select { eqToGroup(this@blockedTime) and (memberId eq id) }
+    .map { it[updateInstant] }
+    .firstOrNull()
 }
 
 fun Member.blockedTime(id: Long) = transaction {
@@ -62,7 +65,7 @@ fun Group.blockedSize() = transaction {
 fun Group.addBlock(id: Long) = transaction {
   Blocklist.insert {
     it[botId] = bot.id
-    it[groupId] = this@addBlock.id
+    it[groupId] = this@addBlock.redirectBlockId()
     it[memberId] = id
     it[updateInstant] = now().toJavaInstant()
   }

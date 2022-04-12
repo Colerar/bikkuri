@@ -22,6 +22,8 @@ fun Friend?.toString() = this?.let { "Friend-$remarkOrNick($id)" } ?: "UnkFriend
 
 fun Member.toFriendly() = this.let { "$nameCardOrNick($id)" }
 
+fun Group?.toFriendly(idFallback: Long? = null) = this?.let { "$name($id)" } ?: idFallback?.let { toString() } ?: "未知群聊"
+
 private val readableDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
 
 private val readableDateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd")

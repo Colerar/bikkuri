@@ -18,9 +18,11 @@ import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.data.LiverGuard
 import me.hbj.bikkuri.db.Blocklist
+import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.BotAccepted
+import me.hbj.bikkuri.db.GuardLastUpdate
+import me.hbj.bikkuri.db.GuardList
 import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberJoin
@@ -73,20 +75,20 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-    listOf(General, ListenerData, Keygen, LiverGuard).forEach { it.reload() }
+    listOf(General, ListenerData, Keygen).forEach { it.reload() }
 
   private fun loadDb() {
     val path = resolveDataPath("data.db").absolutePathString()
     val db = Database.connect("jdbc:sqlite:$path", "org.sqlite.JDBC")
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
-      SchemaUtils.create(Blocklist, BotAccepted)
+      SchemaUtils.create(Blocklist, BlocklistLink, BotAccepted, GuardList, GuardLastUpdate)
     }
   }
 
   private fun cleanupData() = runBlocking {
     Keygen.cleanup()
-    LiverGuard.cleanup()
+    GuardList.cleanup()
   }
 
   private fun subscribeEvents() = GlobalEventChannel.apply {
