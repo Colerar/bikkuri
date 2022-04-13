@@ -4,8 +4,12 @@ import kotlinx.atomicfu.atomic
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toJavaZoneId
 import kotlinx.datetime.toLocalDateTime
+import me.hbj.bikkuri.data.General
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -26,7 +30,10 @@ val after30Days
 
 object Formatter {
   val dateTime: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"))
+  val dateTime2: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"))
 }
 
-fun Instant.toFriendly(timeZone: TimeZone): String? =
-  Formatter.dateTime.format(toLocalDateTime(timeZone).toJavaLocalDateTime())
+fun Instant.toFriendly(timeZone: TimeZone = General.timeZone, formatter: DateTimeFormatter = Formatter.dateTime): String? =
+  formatter.format(toLocalDateTime(timeZone).toJavaLocalDateTime())
+
+fun Instant.toZonedUtc(): ZonedDateTime = toJavaInstant().atZone(TimeZone.UTC.toJavaZoneId())

@@ -15,6 +15,7 @@ import me.hbj.bikkuri.cmds.Version
 import me.hbj.bikkuri.config.MAIN_GROUP
 import me.hbj.bikkuri.config.NAME
 import me.hbj.bikkuri.config.VERSION
+import me.hbj.bikkuri.data.BackupTasks
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.ListenerData
@@ -31,6 +32,7 @@ import me.hbj.bikkuri.events.onMessagePreSend
 import me.hbj.bikkuri.events.onMessageReceived
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
+import me.hbj.bikkuri.tasks.launchBackupJob
 import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
 import me.hbj.bikkuri.tasks.setMessageTask
 import net.mamoe.mirai.console.command.Command
@@ -75,7 +77,7 @@ object Bikkuri : KotlinPlugin(
   }
 
   private fun loadData() =
-    listOf(General, ListenerData, Keygen).forEach { it.reload() }
+    listOf(General, BackupTasks, ListenerData, Keygen).forEach { it.reload() }
 
   private fun loadDb() {
     val path = resolveDataPath("data.db").absolutePathString()
@@ -110,6 +112,7 @@ object Bikkuri : KotlinPlugin(
       ::launchAutoApproveTask,
       ::launchUpdateGuardListTask,
       ::setMessageTask,
+      ::launchBackupJob,
     ).forEach {
       coroutineScope { it() }
     }

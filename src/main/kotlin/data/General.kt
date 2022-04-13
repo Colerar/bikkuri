@@ -1,10 +1,12 @@
 package me.hbj.bikkuri.data
 
+import kotlinx.datetime.TimeZone
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 
 object General : AutoSavePluginConfig("_General") {
+  val timeZone by value(TimeZone.currentSystemDefault())
   val retryTimes by value(5)
   val joinRequiredLevel by value(21)
   val keygen by value(KeygenConfig())
@@ -24,6 +26,8 @@ data class TaskDelay(
   val timeout: Long = 5_000L,
 
   val autoApprove: Long = 2_000L,
+
+  val backupScan: Long = 10_000L,
 
   val autoKick: Long = 5_000L,
   val messageNoticeBetweenKick: Long = 500L,
