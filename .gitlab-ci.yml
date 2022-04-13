@@ -1,0 +1,28 @@
+image: openjdk:17-jdk-alpine
+
+stages:
+  - build
+
+before_script:
+  - apk update && apk upgrade && apk add curl wget bash tar rsync openssh-client git
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - echo "brotli.target=osx-x86_64,linux-x86_64,windows-x86_64" >> ./local.properties
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+build:
+  stage: build
+  script:
+    - ./gradlew shadowJar
+  artifacts:
+    paths:
+      - build/libs/*-all.jar
+    expire_in: 1 week
+  only:
+    - this-for-no-trigger
+
+after_script:
+  - echo "End CI"
