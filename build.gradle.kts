@@ -80,6 +80,8 @@ dependencies {
   implementation("org.jetbrains.exposed:exposed-dao:_")
   implementation("org.jetbrains.exposed:exposed-jdbc:_")
   implementation("org.jetbrains.exposed:exposed-java-time:_")
+  // cron
+  implementation("com.cronutils:cron-utils:_")
   // BiliBili
   implementation("moe.sdl.yabapi:yabapi-core-jvm:_")
   // Ktor

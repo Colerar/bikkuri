@@ -4,6 +4,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
+import me.hbj.bikkuri.data.General
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -36,6 +37,6 @@ fun jLocalDateTime.toReadDate(): String? {
   return format(readableDateFormatter)
 }
 
-fun jInstant.toLocalDateTime(zone: TimeZone = TimeZone.currentSystemDefault()): jLocalDateTime {
+fun jInstant.toLocalDateTime(zone: TimeZone = General.timeZone): jLocalDateTime {
   return toKotlinInstant().toLocalDateTime(zone).toJavaLocalDateTime()
 }

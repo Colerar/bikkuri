@@ -3,8 +3,8 @@ package me.hbj.bikkuri.tasks
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.datetime.TimeZone
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.toFriendly
 import mu.KotlinLogging
@@ -26,7 +26,7 @@ class MemberBackupTask(
   suspend fun run() {
     logger.info { "Start backup for ${group.name}(${group.id})" }
     val file = Bikkuri.resolveDataFile(
-      "./member_backup/${group.id}/${now().toFriendly(TimeZone.UTC)}.csv"
+      "./member_backup/${group.id}/${now().toFriendly(General.timeZone)}.csv"
     ).apply {
       parentFile?.mkdirs()
       if (exists()) {
