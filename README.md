@@ -2,6 +2,20 @@
 
 License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 
+## CI
+
+[Jobs 列表](https://gitlab.com/233hbj/bikkuri/-/jobs)下可看到自动构建列表。
+
+<details>
+<summary>Jobs</summary>
+
+<img src="docs/imgs/ci-artifact.webp" width=1000 alt="Jobs 视图">
+
+<img src="docs/imgs/ci-artifact-2.webp" width=300 alt="Jar 包位置">
+
+</details>
+
+
 ## Build
 
 - 需要 JDK 17
@@ -10,7 +24,7 @@ License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 <summary>打包成 cli 形式</summary>
 
 1. Clone 本仓库
-2. 运行命令 `./gradlew :installDist` or `gralew.bat :intallDist`
+2. 运行命令 `./gradlew :installDist` or `gradlew.bat :intallDist`
 3. 等待一会儿, 可在 `build/install/` 下看到 `Bikkuri`
 4. 运行 `Bikkuri` 下的 `./bin/Bikkuri` 或 `./bin/Bikkuri.bat`, 检查是否能够启动
 5. Done
