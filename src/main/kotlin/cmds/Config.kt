@@ -7,6 +7,7 @@ import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.GroupListener
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.TimerTrigger
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.util.clearIndent
 import me.hbj.bikkuri.util.requireOperator
@@ -48,6 +49,24 @@ object Config : CompositeCommand(
         if (bind == null) appendLine("没有配置绑定的用户 UID，输入 /config bind [B站UID] 配置！")
       }.clearIndent()
     )
+    logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
+  }
+
+  @SubCommand
+  suspend fun MemberCommandSender.trigger(trigger: String) {
+    requireOperator(this)
+    val id = group.id
+    ListenerData.map.getOrPut(id) { GroupListener() }
+    val last = ListenerData.map[id]?.trigger
+
+    val trigger0 = TimerTrigger.from(trigger) ?: run {
+      sendMessage("输入错误，可用 msg 和 join")
+      return
+    }
+
+    ListenerData.map[id]?.trigger = trigger0
+
+    group.sendMessage("计时器重置条件变化： ${last?.toFriendly()} -> ${trigger0.toFriendly()}")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 

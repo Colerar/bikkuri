@@ -19,6 +19,7 @@ data class GroupListener(
   var enable: Boolean = false,
   var userBind: Long? = null, // binds to bilibili mid
   var mode: ValidateMode = ValidateMode.SEND,
+  var trigger: TimerTrigger = TimerTrigger.ON_MSG,
   var targetGroup: Long? = null,
   var kickDuration: ULong = 0uL,
 )
@@ -26,4 +27,25 @@ data class GroupListener(
 @Serializable
 enum class ValidateMode {
   RECV, SEND;
+}
+
+@Serializable
+enum class TimerTrigger {
+  ON_JOIN, ON_MSG;
+
+  fun toFriendly(): String = when(this) {
+    ON_JOIN -> "进群时重置"
+    ON_MSG -> "发消息和进群时重置"
+  }
+  companion object {
+    fun from(str: String): TimerTrigger? = when(str.lowercase()) {
+      "msg" -> ON_MSG
+      "join" -> ON_JOIN
+      "on_msg" -> ON_MSG
+      "on_join" -> ON_JOIN
+      "进群" -> ON_JOIN
+      "发消息" -> ON_MSG
+      else -> null
+    }
+  }
 }
