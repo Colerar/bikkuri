@@ -43,7 +43,9 @@ fun Instant.toFriendly(
 fun Instant.toZonedUtc(): ZonedDateTime = toJavaInstant().atZone(TimeZone.UTC.toJavaZoneId())
 
 private val durationRegex =
+  /* ktlint-disable max-line-length */
   Regex("""((\d{1,2})[yY年])?((\d{1,2})(月|mon|Mon))?((\d{1,2})[dD天])?((\d{1,2})(小时|时|h|H))?((\d{1,2})(分钟|分|m|M)(?!on))?((\d{1,7})(秒钟|秒|s|S))?""")
+/* ktlint-enable max-line-length */
 
 private val yearRegex = Regex("""(\d{1,2})[yY年]""")
 private val monRegex = Regex("""(\d{1,2})(月|mon|Mon)""")

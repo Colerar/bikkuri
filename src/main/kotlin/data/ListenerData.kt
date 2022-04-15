@@ -34,12 +34,12 @@ enum class ValidateMode {
 enum class TimerTrigger {
   ON_JOIN, ON_MSG;
 
-  fun toFriendly(): String = when(this) {
+  fun toFriendly(): String = when (this) {
     ON_JOIN -> "进群时重置"
     ON_MSG -> "发消息和进群时重置"
   }
   companion object {
-    fun from(str: String): TimerTrigger? = when(str.lowercase()) {
+    fun from(str: String): TimerTrigger? = when (str.lowercase()) {
       "msg" -> ON_MSG
       "join" -> ON_JOIN
       "on_msg" -> ON_MSG

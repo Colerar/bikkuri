@@ -40,7 +40,7 @@ data class BackupTask(
     cron.nextExecutionTime(now) ?: error("Failed to calculate next execution time")
 
   fun <T> withDo(now: Instant = now(), action: BackupTask.() -> T): T? {
-    if (shouldDo()) {
+    if (shouldDo(now)) {
       willDo()
       return action(this)
     }

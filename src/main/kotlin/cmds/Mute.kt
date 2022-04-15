@@ -14,7 +14,7 @@ import kotlin.time.toDuration
 
 object Mute : SimpleCommand(Bikkuri, "mute"), RegisteredCmd {
   // 30*24*60*60, a month
-  const val MAX_MUTE_TIME: Long = 2592000
+  private const val MAX_MUTE_TIME: Long = 2592000
 
   private fun parseMuteTime(expr: String): Int? {
     val dur = parseTime(expr) ?: return null
@@ -24,7 +24,8 @@ object Mute : SimpleCommand(Bikkuri, "mute"), RegisteredCmd {
   @Handler
   suspend fun MemberCommandSender.handle(message: MessageChain, duration: String) {
     requireOperator(this)
-    parseMessageMember(message,
+    parseMessageMember(
+      message,
       onMember = {
         val muteTime = parseMuteTime(duration) ?: run {
           sendMessage("输入的表达式错误。")
@@ -44,7 +45,8 @@ object Unmute : SimpleCommand(Bikkuri, "unmute"), RegisteredCmd {
   @Handler
   suspend fun MemberCommandSender.handle(message: MessageChain) {
     requireOperator(this)
-    parseMessageMember(message,
+    parseMessageMember(
+      message,
       onMember = {
         if (it.isMuted) {
           it.unmute()

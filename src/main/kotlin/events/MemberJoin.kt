@@ -38,7 +38,7 @@ fun Events.onMemberJoin() {
           }
         }.getOrNull() != null
         if (kicked) {
-          group.sendMessage("自动将 ${member.toFriendly()} 踢出并拉黑，因为超过了进群限额 ${joinTimes}/${listener.joinTimeLimit}")
+          group.sendMessage("自动将 ${member.toFriendly()} 踢出并拉黑，因为超过了进群限额 $joinTimes/${listener.joinTimeLimit}")
         } else {
           group.sendMessage("因为超过了进群限额 $joinTimes，已将 ${member.toFriendly()} 拉黑，但机器人不是管理员。")
         }

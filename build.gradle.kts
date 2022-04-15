@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "0.9.0"
+version = "1.0.0"
 
 repositories {
   mavenCentral()
@@ -142,6 +142,7 @@ buildConfig {
   string("BUILD_BRANCH", branch)
   string("BUILD_TIME", time)
   string("COMMIT_HASH", commitHash)
+  string("PROJECT_URL", "https://github.com/Colerar/bikkuri")
   long("BUILD_EPOCH_TIME", epochTime)
   string("VERSION_LONG", "$version-[$branch]$commitHash $time")
   string("MIRAI_VERSION", versions["version.net.mamoe..mirai-core"]?.toString() ?: "unk")

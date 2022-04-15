@@ -13,9 +13,11 @@ import net.mamoe.mirai.message.data.MessageChain
 
 private val logger = mu.KotlinLogging.logger {}
 
-object JoinLimit : CompositeCommand(
-  Bikkuri, "joinlimit", "limit"
-), RegisteredCmd {
+object JoinLimit :
+  CompositeCommand(
+    Bikkuri, "joinlimit", "limit"
+  ),
+  RegisteredCmd {
   @SubCommand("set")
   suspend fun MemberCommandSender.set(limit: String) {
     requireOperator(this)

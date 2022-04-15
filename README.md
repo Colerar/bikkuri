@@ -2,20 +2,6 @@
 
 License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 
-## CI
-
-[Jobs 列表](https://gitlab.com/233hbj/bikkuri/-/jobs)下可看到自动构建列表。
-
-<details>
-<summary>Jobs</summary>
-
-<img src="docs/imgs/ci-artifact.webp" width=1000 alt="Jobs 视图">
-
-<img src="docs/imgs/ci-artifact-2.webp" width=300 alt="Jar 包位置">
-
-</details>
-
-
 ## Build
 
 - 需要 JDK 17
@@ -61,4 +47,4 @@ License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 ## Contact
 
 如有问题或建议可 <a href="mailto:233hbj@gmail.com" target="_blank">邮件联系我</a>
-或 [提 issue](https://gitlab.com/233hbj/bikkuri/-/issues/new?issue)
+或 [提 issue](https://github.com/Colerar/bikkuri/issues/new/choose)

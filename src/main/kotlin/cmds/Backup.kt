@@ -27,7 +27,7 @@ object Backup : CompositeCommand(Bikkuri, "backup"), RegisteredCmd {
   @SubCommand("task")
   suspend fun MemberCommandSender.task(msg: String) {
     requireOperator(this)
-     val expr = msg.replace('|', ' ')
+    val expr = msg.replace('|', ' ')
     val cron = parseCron(expr) ?: run {
       sendMessage("表达式输入有误。")
       return

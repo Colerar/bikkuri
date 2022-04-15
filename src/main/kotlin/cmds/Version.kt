@@ -8,6 +8,7 @@ import me.hbj.bikkuri.config.BUILD_BRANCH
 import me.hbj.bikkuri.config.BUILD_EPOCH_TIME
 import me.hbj.bikkuri.config.COMMIT_HASH
 import me.hbj.bikkuri.config.MIRAI_VERSION
+import me.hbj.bikkuri.config.PROJECT_URL
 import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.util.clearIndent
@@ -15,10 +16,12 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import java.time.format.DateTimeFormatter
 
-object Version : SimpleCommand(
-  Bikkuri, "version", "版本", "v",
-  description = "查看版本信息"
-), RegisteredCmd {
+object Version :
+  SimpleCommand(
+    Bikkuri, "version", "版本", "v",
+    description = "查看版本信息"
+  ),
+  RegisteredCmd {
   private val buildTime by lazy {
     val instant = Instant.fromEpochSeconds(BUILD_EPOCH_TIME)
     instant.toLocalDateTime(General.timeZone).toJavaLocalDateTime()
@@ -32,7 +35,7 @@ object Version : SimpleCommand(
             Bikkuri Q群机器人 - $VERSION[$BUILD_BRANCH]$COMMIT_HASH
             ⏱ Built at $buildTime
             ❤️ With Kotlin ${KotlinVersion.CURRENT} & Mirai $MIRAI_VERSION
-            📦 Repo at https://gitlab.com/233hbj/bikkuri
+            📦 Repo at $PROJECT_URL
         """.clearIndent()
     )
   }
