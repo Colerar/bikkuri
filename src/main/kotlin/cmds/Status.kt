@@ -7,7 +7,7 @@ import oshi.SystemInfo
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-object Status : SimpleCommand(Bikkuri, "bstatus", "bikkuri", description = "查看当前机器人系统状态") {
+object Status : SimpleCommand(Bikkuri, "bstatus", "bikkuri", description = "查看当前机器人系统状态"), RegisteredCmd {
   private val sys = SystemInfo()
   private val os
     get() = sys.operatingSystem

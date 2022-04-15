@@ -18,6 +18,7 @@ object ListenerData : AutoSavePluginData("ListenerData") {
 data class GroupListener(
   var enable: Boolean = false,
   var userBind: Long? = null, // binds to bilibili mid
+  var joinTimeLimit: UInt = 0u, // 0 for non limit
   var mode: ValidateMode = ValidateMode.SEND,
   var trigger: TimerTrigger = TimerTrigger.ON_MSG,
   var targetGroup: Long? = null,

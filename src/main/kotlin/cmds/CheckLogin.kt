@@ -8,7 +8,7 @@ import moe.sdl.yabapi.data.GeneralCode
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 
-object CheckLogin : SimpleCommand(Bikkuri, "checklogin", "cl") {
+object CheckLogin : SimpleCommand(Bikkuri, "checklogin", "cl"), RegisteredCmd {
   @Handler
   suspend fun MemberCommandSender.handler() {
     requireOperator(this)

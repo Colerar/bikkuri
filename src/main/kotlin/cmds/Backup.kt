@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.Group
 
-object Backup : CompositeCommand(Bikkuri, "backup") {
+object Backup : CompositeCommand(Bikkuri, "backup"), RegisteredCmd {
   @SubCommand("run")
   suspend fun MemberCommandSender.run() {
     requireOperator(this)

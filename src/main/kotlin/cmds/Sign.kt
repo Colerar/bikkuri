@@ -33,7 +33,7 @@ import kotlin.time.toDuration
 
 private val logger = KotlinLogging.logger {}
 
-object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证") {
+object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
   @Handler
   suspend fun MemberCommandSender.handle() {
     val data = ListenerData.map[group.id]

@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
 object Version : SimpleCommand(
   Bikkuri, "version", "版本", "v",
   description = "查看版本信息"
-) {
+), RegisteredCmd {
   private val buildTime by lazy {
     val instant = Instant.fromEpochSeconds(BUILD_EPOCH_TIME)
     instant.toLocalDateTime(General.timeZone).toJavaLocalDateTime()
