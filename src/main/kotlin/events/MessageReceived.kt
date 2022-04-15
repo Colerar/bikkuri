@@ -4,9 +4,9 @@ import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.TimerTrigger
 import me.hbj.bikkuri.util.executeCommandSafely
 import me.hbj.bikkuri.util.now
-import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -15,8 +15,6 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.content
-
-private val logger = KotlinLogging.logger {}
 
 private val allCommandSymbol by lazy {
   (
@@ -40,7 +38,11 @@ fun Events.onMessageReceived() {
     }
   }
   subscribeAlways<GroupMessageEvent> {
-    if (sender is NormalMember && ListenerData.isEnabled(group.id)) {
+    if (
+      sender is NormalMember && // 只用刷新普通成员的上次消息
+      ListenerData.isEnabled(group.id) && // 需要开启监听
+      ListenerData.map[group.id]?.trigger == TimerTrigger.ON_MSG // 需要有 ON MSG trigger
+    ) {
       GlobalLastMsg[bot.id][group.id].map[sender.id] = now()
     }
   }
