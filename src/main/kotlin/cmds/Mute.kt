@@ -14,7 +14,7 @@ import kotlin.time.toDuration
 
 object Mute : SimpleCommand(Bikkuri, "mute"), RegisteredCmd {
   // 30*24*60*60, a month
-  const val MAX_MUTE_TIME: Long = 2592000
+  private const val MAX_MUTE_TIME: Long = 2592000
 
   private fun parseMuteTime(expr: String): Int? {
     val dur = parseTime(expr) ?: return null
