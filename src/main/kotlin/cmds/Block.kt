@@ -25,7 +25,7 @@ import kotlin.math.max
 
 object Block : CompositeCommand(
   Bikkuri, "blocklist", "block", "b"
-) {
+), RegisteredCmd {
   override val usage: String = """
     /blocklist 屏蔽指令，缩写 /block /b
     <> 表示必需参数 [] 表示可选参数

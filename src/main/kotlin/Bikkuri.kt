@@ -3,15 +3,7 @@ package me.hbj.bikkuri
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.hbj.bikkuri.cmds.Approve
-import me.hbj.bikkuri.cmds.Backup
-import me.hbj.bikkuri.cmds.Block
-import me.hbj.bikkuri.cmds.CheckLogin
-import me.hbj.bikkuri.cmds.Config
-import me.hbj.bikkuri.cmds.LoginBili
-import me.hbj.bikkuri.cmds.Sign
-import me.hbj.bikkuri.cmds.Status
-import me.hbj.bikkuri.cmds.Version
+import me.hbj.bikkuri.cmds.RegisteredCmd
 import me.hbj.bikkuri.config.MAIN_GROUP
 import me.hbj.bikkuri.config.NAME
 import me.hbj.bikkuri.config.VERSION
@@ -24,6 +16,7 @@ import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.BotAccepted
 import me.hbj.bikkuri.db.GuardLastUpdate
 import me.hbj.bikkuri.db.GuardList
+import me.hbj.bikkuri.db.JoinTimes
 import me.hbj.bikkuri.events.onBotOffline
 import me.hbj.bikkuri.events.onBotOnline
 import me.hbj.bikkuri.events.onMemberJoin
@@ -56,7 +49,9 @@ object Bikkuri : KotlinPlugin(
   }
 ) {
   internal val registeredCmds by lazy {
-    listOf<Command>(Approve, Backup, Block, CheckLogin, Config, LoginBili, Sign, Status, Version)
+    RegisteredCmd::class.sealedSubclasses
+      .mapNotNull { it.objectInstance }
+      .filterIsInstance(Command::class.java)
   }
 
   @OptIn(MiraiExperimentalApi::class)
@@ -84,7 +79,7 @@ object Bikkuri : KotlinPlugin(
     val db = Database.connect("jdbc:sqlite:$path", "org.sqlite.JDBC")
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
-      SchemaUtils.create(Blocklist, BlocklistLink, BotAccepted, GuardList, GuardLastUpdate)
+      SchemaUtils.create(Blocklist, BlocklistLink, BotAccepted, JoinTimes, GuardList, GuardLastUpdate)
     }
   }
 
@@ -104,6 +99,7 @@ object Bikkuri : KotlinPlugin(
 
   private fun registerCommands() {
     registeredCmds.forEach(CommandManager::registerCommand)
+    logger.info("Registered ${registeredCmds.count()} commands by Bikkuri.")
   }
 
   private fun launchTasks() = launch {

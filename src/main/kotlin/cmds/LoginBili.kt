@@ -19,7 +19,7 @@ private val logger = KotlinLogging.logger {}
 object LoginBili : CompositeCommand(
   Bikkuri, "loginbili", "bililogin",
   description = "登录 B 站帐号"
-) {
+), RegisteredCmd {
   private suspend fun logOutIfLogin() {
     if (client.getBasicInfo().data.isLogin)
       client.logOut()

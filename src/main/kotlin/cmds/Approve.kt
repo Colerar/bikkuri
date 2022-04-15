@@ -17,7 +17,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object Approve : CompositeCommand(Bikkuri, "approve", "ap") {
+object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
   @SubCommand("queryqq")
   suspend fun MemberCommandSender.queryQQ(message: MessageChain) {
     requireOperator(this)
