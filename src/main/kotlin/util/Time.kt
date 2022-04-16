@@ -85,3 +85,10 @@ fun Duration.toFriendly(msMode: Boolean = false): String {
     }
   }
 }
+
+fun Duration.toHMS() = toComponents { h, m, s, _ ->
+  val hour = h.toString().padStart(2, '0')
+  val min = m.toString().padStart(2, '0')
+  val sec = s.toString().padStart(2, '0')
+  "$hour:$min:$sec"
+}
