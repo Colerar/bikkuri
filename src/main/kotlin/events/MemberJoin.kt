@@ -28,7 +28,7 @@ fun Events.onMemberJoin() {
     GlobalLastMsg[bot.id][groupId].map[member.id] = now()
     run joinTimesLimit@{
       val joinTimes = user.recordJoin()
-      if (joinTimes >= listener.joinTimeLimit) {
+      if ((joinTimes >= listener.joinTimeLimit) && (joinTimes != 0u)) {
         user.addBlock()
         val kicked = kotlin.runCatching {
           (user as? NormalMember)?.kick("超过入群限制自动拉黑。")
