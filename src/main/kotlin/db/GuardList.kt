@@ -15,10 +15,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
 object GuardList : Table() {
-  private val liverId = long("liver_id").index()
-  private val biliUserId = long("bili_user_id").index()
+  private val liverId = long("liver_id")
+  private val biliUserId = long("bili_user_id")
   private val expiresAt = timestamp("expires_at")
   private val fetcherType = enumeration("fetcher_type", GuardFetcher::class)
+
+  override val primaryKey = PrimaryKey(liverId, biliUserId)
 
   fun cleanup() = transaction {
     val now = now().toJavaInstant()
@@ -45,7 +47,7 @@ object GuardList : Table() {
     }.firstOrNull() != null
   }
 
-  fun insertOrUpdate(liverUid: Long, guardUid: Long, time: Instant, fetcher: GuardFetcher) = transaction {
+  fun insertOrUpdate(liverUid: Long, guardUid: Long, time: Instant, fetcher: GuardFetcher): Unit = transaction {
     if (contains(liverUid, guardUid)) {
       update(liverUid, guardUid, time, fetcher)
     } else {
@@ -65,10 +67,9 @@ object GuardList : Table() {
   fun update(liverUid: Long, guardUid: Long, time: Instant, fetcher: GuardFetcher) = transaction {
     update(
       where = {
-        liverId eq liverUid
+        (liverId eq liverUid) and (biliUserId eq guardUid)
       },
       body = {
-        it[biliUserId] = guardUid
         it[expiresAt] = time.toJavaInstant()
         it[fetcherType] = fetcher
       }
