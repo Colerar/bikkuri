@@ -25,10 +25,10 @@ object JoinLimit :
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.joinTimeLimit
     data.joinTimeLimit = limit.toUIntOrNull() ?: run {
-      group.sendMessage("需输入非负整数, 0 代表不自动踢人")
+      group.sendMessage("❌ 需输入非负整数, 0 代表不自动踢人")
       return
     }
-    group.sendMessage("进群限制次数变化: $last -> $limit, 0 表示关闭")
+    group.sendMessage("🔄 进群限制次数变化: $last -> $limit, 0 表示关闭")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
@@ -47,14 +47,14 @@ object JoinLimit :
         sendMessage(
           if (delete(group.id, it.id))
             "🔄 成功将 ${it.toFriendly()} 的进群记录重置。"
-          else "成员 ${it.toFriendly()} 不存在进群记录。"
+          else "🈳 成员 ${it.toFriendly()} 不存在进群记录。"
         )
       },
       onId = {
         sendMessage(
           if (delete(group.id, it))
             "🔄 成功将 $it 的进群记录重置。"
-          else "成员 $it 不存在进群记录。"
+          else "🈳 成员 $it 不存在进群记录。"
         )
       }
     )

@@ -42,11 +42,11 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
       }
     }
     if (list.isEmpty()) {
-      sendMessage("未发现对 $memberStr 的记录。")
+      sendMessage("🈚️ 未发现对 $memberStr 的记录。")
       return
     }
     val str = buildString {
-      appendLine("查询到 ${list.size} 条数据")
+      appendLine("🔍 查询到 ${list.size} 条数据")
       appendLine("日期 - 绑定的B站帐号uid")
       list.forEach {
         append(it.first ?: "unk")
@@ -71,11 +71,11 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
       }
     }
     if (list.isEmpty()) {
-      sendMessage("未发现对 B 站 uid $id 的记录")
+      sendMessage("🈚️ 未发现对 B 站 uid $id 的记录")
       return
     }
     val str = buildString {
-      appendLine("查询到 ${list.size} 条数据")
+      appendLine("🔍 查询到 ${list.size} 条数据")
       appendLine("日期 - 绑定的Q号")
       list.forEach {
         append(it.first)

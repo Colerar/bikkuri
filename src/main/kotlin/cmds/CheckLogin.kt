@@ -14,9 +14,9 @@ object CheckLogin : SimpleCommand(Bikkuri, "checklogin", "cl"), RegisteredCmd {
     requireOperator(this)
     val resp = client.getBasicInfo()
     if (resp.code == GeneralCode.SUCCESS && resp.data.isLogin) {
-      sendMessage("当前登录的帐号 ${resp.data.username}(${resp.data.mid})")
+      sendMessage("🔍 当前登录的帐号 ${resp.data.username}(${resp.data.mid})")
     } else {
-      sendMessage("当前未登录: ${resp.code} - ${resp.message}")
+      sendMessage("❌ 当前未登录: ${resp.code} - ${resp.message}")
     }
   }
 }

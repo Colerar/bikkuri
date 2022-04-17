@@ -29,7 +29,7 @@ object Config :
   suspend fun MemberCommandSender.list() {
     requireOperator(this)
     val data = ListenerData.map.getOrPut(group.id) { GroupListener() }
-    group.sendMessage("当前配置: $data")
+    group.sendMessage("🔍 当前配置: $data")
   }
 
   @SubCommand
@@ -46,9 +46,9 @@ object Config :
 
     group.sendMessage(
       buildString {
-        appendLine("本群已${if (ListenerData.map[id]?.enable == true) "开启" else "关闭"}监听！")
-        if (target == null) appendLine("没有配置审核通过后的目标群聊，输入 /config target [群号] 配置！")
-        if (bind == null) appendLine("没有配置绑定的用户 UID，输入 /config bind [B站UID] 配置！")
+        appendLine("✅ 本群已${if (ListenerData.map[id]?.enable == true) "开启" else "关闭"}监听！")
+        if (target == null) appendLine("没有配置审核通过后的目标群聊，可输入 /config target [群号] 配置。")
+        if (bind == null) appendLine("没有配置绑定的用户 UID，可输入 /config bind [B站UID] 配置。")
       }.clearIndent()
     )
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
@@ -62,13 +62,13 @@ object Config :
     val last = ListenerData.map[id]?.trigger
 
     val trigger0 = TimerTrigger.from(trigger) ?: run {
-      sendMessage("输入错误，可用 msg 和 join")
+      sendMessage("❌ 输入错误，可用 msg 和 join")
       return
     }
 
     ListenerData.map[id]?.trigger = trigger0
 
-    group.sendMessage("计时器重置条件变化： ${last?.toFriendly()} -> ${trigger0.toFriendly()}")
+    group.sendMessage("🔄 计时器重置条件变化： ${last?.toFriendly()} -> ${trigger0.toFriendly()}")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
@@ -88,7 +88,7 @@ object Config :
     coroutineScope {
       val lastInfo = async { getUserInfo(last) }
       val info = async { getUserInfo(bind) }
-      group.sendMessage("绑定用户的变化： ${lastInfo.await()} -> ${info.await()}")
+      group.sendMessage("🔄 绑定用户的变化： ${lastInfo.await()} -> ${info.await()}")
     }
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
@@ -100,7 +100,7 @@ object Config :
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.targetGroup
     data.targetGroup = target
-    group.sendMessage("绑定群聊变化： $last -> $target\n记得在目标群聊设置机器人为管理员哦~")
+    group.sendMessage("🔄 绑定群聊变化： $last -> $target\n记得在目标群聊设置机器人为管理员哦~")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 
@@ -111,14 +111,14 @@ object Config :
       "recv" -> ValidateMode.RECV
       "send" -> ValidateMode.SEND
       else -> {
-        group.sendMessage("输入错误，需要为 RECV 或 SEND。即机器人收消息或机器人发消息。")
+        group.sendMessage("❌ 输入错误，需要为 RECV 或 SEND。即机器人收消息或机器人发消息。")
         return
       }
     }
     val data = ListenerData.map.getOrPut(group.id) { GroupListener(true) }
     val last = data.mode
     data.mode = modeEnum
-    group.sendMessage("验证模式变化： $last -> $modeEnum")
+    group.sendMessage("🔄 验证模式变化： $last -> $modeEnum")
     logger.debug { "GroupListener[${group.id}] : ${ListenerData.map[group.id]}" }
   }
 
@@ -129,10 +129,10 @@ object Config :
     val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
     val last = data.kickDuration
     data.kickDuration = duration.toULongOrNull() ?: run {
-      group.sendMessage("需输入非负整数, 0 代表不自动踢人")
+      group.sendMessage("❌ 需输入非负整数, 0 代表不自动踢人")
       return
     }
-    group.sendMessage("自动踢人时长变化： $last -> $duration\n注意单位是秒, 0 表示关闭")
+    group.sendMessage("🔄 自动踢人时长变化： $last -> $duration\n注意单位是秒, 0 表示关闭")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 }

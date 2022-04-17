@@ -67,9 +67,9 @@ object Block :
     parseMessageMember(
       message,
       onMember = { member ->
-        require(this@underlyingAdd, !member.isOperator()) { "你没有权限！" }
+        require(this@underlyingAdd, !member.isOperator()) { "❌ 你没有权限！" }
         if (member.isBlocked()) {
-          group.sendMessage("成员 ${member.toFriendly()} 已经位于拦截名单中。")
+          group.sendMessage("❌ 成员 ${member.toFriendly()} 已经位于拦截名单中。")
         } else {
           member.addBlock()
           val extraMessage = if (kick) {
@@ -78,15 +78,15 @@ object Block :
               "，同时将其移出本群。"
             } else "，机器人没有管理员权限，无法踢出该成员。"
           } else "。"
-          group.sendMessage("成功将 ${member.toFriendly()} 添加至拦截列表$extraMessage")
+          group.sendMessage("✅ 成功将 ${member.toFriendly()} 添加至拦截列表$extraMessage")
         }
       },
       onId = { id ->
         if (group.isBlocked(id)) {
-          group.sendMessage("用户 $id 已经位于拦截名单中。")
+          group.sendMessage("❌ 用户 $id 已经位于拦截名单中。")
         } else {
           group.addBlock(id)
-          group.sendMessage("成功将 $id 添加至拦截列表。")
+          group.sendMessage("✅ 成功将 $id 添加至拦截列表。")
         }
       }
     )
@@ -100,17 +100,17 @@ object Block :
       onMember = { member ->
         if (member.isBlocked()) {
           member.removeBlock()
-          group.sendMessage("成功将 ${member.toFriendly()} 移出拦截列表。")
+          group.sendMessage("✅ 成功将 ${member.toFriendly()} 移出拦截列表。")
         } else {
-          group.sendMessage("成员 ${member.toFriendly()} 不存在于拦截列表。")
+          group.sendMessage("❌ 成员 ${member.toFriendly()} 不存在于拦截列表。")
         }
       },
       onId = { id ->
         if (group.isBlocked(id)) {
           group.removeBlock(id)
-          group.sendMessage("成功将 $id 移出拦截列表。")
+          group.sendMessage("✅ 成功将 $id 移出拦截列表。")
         } else {
-          group.sendMessage("成员 $id 不存在于拦截列表。")
+          group.sendMessage("❌ 成员 $id 不存在于拦截列表。")
         }
       }
     )
@@ -128,10 +128,10 @@ object Block :
     id ?: return
     val memberStr = group[id!!]?.toFriendly() ?: id.toString()
     if (group.isBlocked(id!!)) {
-      val date = group.blockedTime(id!!)?.toLocalDateTime()?.toReadDateTime() ?: "未知"
-      group.sendMessage("$memberStr 在拦截名单中，添加于 $date。")
+      val date = group.blockedTime(id!!)?.toLocalDateTime()?.toReadDateTime() ?: "未知时间"
+      group.sendMessage("🔍 $memberStr 在拦截名单中，添加于 $date。")
     } else {
-      group.sendMessage("$memberStr 在拦截名单中。")
+      group.sendMessage("🔍 $memberStr 不在拦截名单中。")
     }
   }
 
@@ -146,15 +146,15 @@ object Block :
     val size = 10
     val maxPage = group.blockedSize() / size + 1
     if (page !in 1..max(1L, maxPage)) {
-      group.sendMessage("页码超出范围")
+      group.sendMessage("❌ 页码超出范围")
       return
     }
     if (maxPage <= 0) {
-      group.sendMessage("当前无拦截名单")
+      group.sendMessage("🈚️ 当前无拦截名单")
       return
     }
     val sb = StringBuilder()
-    sb.appendLine("当前拦截名单(按添加时间排序):")
+    sb.appendLine("📝 当前拦截名单(按添加时间排序):")
     group.listBlocked(page, size).forEach { (id, time) ->
       val member = group.getMember(id)
       sb.appendLine("${member?.toFriendly() ?: id} - ${time.toLocalDateTime().toReadDateTime()}")
@@ -172,7 +172,7 @@ object Block :
     val toGroup = bot.getGroup(to)
 
     if (!checkIsAdmin(fromGroup, toGroup)) {
-      sendMessage("⚠️ 需要在两个群都为管理才能设置本选项。")
+      sendMessage("❌ 需要在两个群都为管理才能设置本选项。")
       return
     }
 
