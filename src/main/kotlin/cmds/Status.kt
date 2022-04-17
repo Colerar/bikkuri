@@ -5,18 +5,20 @@ import me.hbj.bikkuri.util.RuntimeUtil
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 
-object Status : SimpleCommand(
-  Bikkuri,
-  primaryName = "bstatus",
-  secondaryNames = arrayOf("bikkuri"),
-  description = "查看当前机器人系统状态"
-), RegisteredCmd {
+object Status :
+  SimpleCommand(
+    Bikkuri,
+    primaryName = "bstatus",
+    secondaryNames = arrayOf("bikkuri"),
+    description = "查看当前机器人系统状态"
+  ),
+  RegisteredCmd {
   private suspend fun shortInfo() = """
     OS   | ${RuntimeUtil.osName}
     TIME | ${RuntimeUtil.uptime}
     MEM  | ${RuntimeUtil.Mem.used.toShow()}/${RuntimeUtil.Mem.total.toShow()}
     CPU  | ${RuntimeUtil.getCpuRate()}
-    """.trimIndent()
+  """.trimIndent()
 
   private suspend fun longInfo() = """
     OS   | ${RuntimeUtil.osName}

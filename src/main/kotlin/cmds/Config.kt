@@ -18,10 +18,12 @@ import net.mamoe.mirai.console.command.MemberCommandSender
 
 private val logger = KotlinLogging.logger {}
 
-object Config : CompositeCommand(
-  Bikkuri, "config", "配置", "c",
-  description = "配置指令"
-), RegisteredCmd {
+object Config :
+  CompositeCommand(
+    Bikkuri, "config", "配置", "c",
+    description = "配置指令"
+  ),
+  RegisteredCmd {
 
   @SubCommand
   suspend fun MemberCommandSender.list() {

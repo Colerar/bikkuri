@@ -22,7 +22,7 @@ class RuntimeUtilTest {
       Free  : ${free.toShow()}
       Total : ${total.toShow()}
       Max   : ${max.toShow()}
-    """.trimIndent()
+      """.trimIndent()
     )
   }
 

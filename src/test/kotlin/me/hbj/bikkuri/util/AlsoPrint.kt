@@ -1,6 +1,5 @@
 package me.hbj.bikkuri.util
 
-
 fun <T> T.alsoPrint(): T = this.apply {
   when (this) {
     is DoubleArray -> this.contentToString()
