@@ -43,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: jar
-          path: build/distributions/**/*.jar
+          path: build/libs/**/*.jar
