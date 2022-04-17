@@ -4,6 +4,7 @@ package me.hbj.bikkuri.data
 
 import com.cronutils.model.Cron
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -16,12 +17,39 @@ import kotlinx.serialization.encoding.Encoder
 import me.hbj.bikkuri.util.nextExecutionTime
 import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.parseCron
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.contact.Group
 
 object BackupTasks : AutoSavePluginData("BackupTasks") {
-  val set: MutableSet<BackupTask> by value(mutableSetOf())
-  val lock = Mutex()
+  private val set: MutableSet<BackupTask> by value(mutableSetOf())
+  private val lock = Mutex()
+
+  private suspend inline fun filterSet(bot: Bot, group: Group) = lock.withLock {
+    set.filter { it.botId == bot.id }
+      .firstOrNull { it.groupId == group.id }
+  }
+
+  suspend fun getAll() = lock.withLock {
+    set.toList()
+  }
+
+  suspend fun add(backupTask: BackupTask) = lock.withLock {
+    set.add(backupTask)
+  }
+
+  suspend fun contains(bot: Bot, group: Group) = filterSet(bot, group) != null
+
+  suspend fun get(bot: Bot, group: Group) = filterSet(bot, group)
+
+  suspend fun remove(task: BackupTask) = lock.withLock {
+    set.remove(task)
+  }
+
+  suspend fun remove(bot: Bot, group: Group) = lock.withLock {
+    set.removeIf { it.botId == bot.id && it.groupId == group.id }
+  }
 }
 
 @Serializable

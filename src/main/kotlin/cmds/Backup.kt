@@ -2,7 +2,6 @@ package me.hbj.bikkuri.cmds
 
 import com.cronutils.model.Cron
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.data.BackupTask
@@ -24,43 +23,55 @@ object Backup : CompositeCommand(Bikkuri, "backup"), RegisteredCmd {
     group.backup()
   }
 
+  private suspend fun MemberCommandSender.addTask(cron: Cron) =
+    BackupTasks.add(BackupTask(cron, true, group.id, bot.id))
+
   @SubCommand("task")
   suspend fun MemberCommandSender.task(msg: String) {
     requireOperator(this)
     val expr = msg.replace('|', ' ')
     val cron = parseCron(expr) ?: run {
-      sendMessage("表达式输入有误。")
+      sendMessage("❌ 表达式输入有误。")
       return
     }
 
-    val task = BackupTasks.lock.withLock {
-      BackupTasks.set.asSequence()
-        .filter { it.botId == bot.id }
-        .firstOrNull { it.groupId == group.id }
-    }
+    val task = BackupTasks.get(bot, group)
 
     task?.let {
-      BackupTasks.lock.withLock {
-        BackupTasks.set.remove(it)
-      }
+      BackupTasks.remove(it)
       addTask(cron)
     } ?: run {
       addTask(cron)
     }
-    sendMessage("已经成功设置定时任务，预计下次运行于 ${cron.nextExecutionTime()?.toFriendly(formatter = Formatter.dateTime2)}")
+    sendMessage("✅ 已经成功设置定时任务，预计下次运行于 ${cron.nextExecutionTime()?.toFriendly(formatter = Formatter.dateTime2)}")
   }
 
-  private suspend fun MemberCommandSender.addTask(cron: Cron) = BackupTasks.lock.withLock {
-    BackupTasks.set.add(BackupTask(cron, true, group.id, bot.id))
+  @SubCommand("rmtask", "removetask")
+  suspend fun MemberCommandSender.removeTask() {
+    requireOperator(this)
+    if (BackupTasks.remove(bot, group)) {
+      sendMessage("💥 已成功移除定时任务。")
+    } else sendMessage("🈚️ 本群无定时任务。")
+  }
+
+  @SubCommand("see", "now", "next")
+  suspend fun MemberCommandSender.next() {
+    requireOperator(this)
+    val cron = BackupTasks.get(bot, group)?.cron
+    val nextTime = cron?.nextExecutionTime()?.toFriendly(formatter = Formatter.dateTime2)
+    val msg = if (nextTime == null) {
+      "🈚️ 本群暂无定时任务"
+    } else "⏱ 预计下次备份于 $nextTime, 目前 cron 表达式为 ${cron.asString()}"
+    sendMessage(msg)
   }
 }
 
 suspend fun Group.backup() {
-  sendMessage("开始备份群员列表……")
+  sendMessage("⏱ 开始备份群员列表……")
   val task = MemberBackupTask(this).apply {
     withContext(Dispatchers.IO) {
       run()
     }
   }
-  sendMessage("备份完成! 已保存 ${task.savedMember} 名群员。")
+  sendMessage("✅ 备份完成! 已保存 ${task.savedMember} 名群员。")
 }

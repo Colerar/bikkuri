@@ -17,8 +17,8 @@ import net.mamoe.mirai.Bot
 fun CoroutineScope.launchBackupJob(): Job = launch {
   while (isActive) {
     delay(General.time.backupScan)
-    BackupTasks.set.asFlow().buffer().map {
-      it.withDo {
+    BackupTasks.getAll().asFlow().buffer().map { task ->
+      task.withDo {
         val bot = Bot.instances.firstOrNull { it.bot.id == botId }
         bot?.getGroup(groupId)
       }
