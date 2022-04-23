@@ -22,7 +22,7 @@ class RecvMessageValidator(
       """
       [${keygen.keygen}]
       麻烦您按顺序完成以下两个步骤：
-      ① 复制本条消息，b站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
+      ① 复制整条消息，b站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
       ② 私信后返回本群发送任何消息开始验证。（本条 ${keygen.expire} 秒内有效）
       """.trimIndent()
     )
