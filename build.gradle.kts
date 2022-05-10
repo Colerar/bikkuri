@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
   mavenCentral()
