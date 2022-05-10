@@ -31,6 +31,7 @@ val after30Days
 
 object Formatter {
   val dateTime: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"))
+  val urlSafe: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"))
   val dateTime2: DateTimeFormatter by atomic(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm"))
 }
 

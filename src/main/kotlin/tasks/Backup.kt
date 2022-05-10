@@ -12,7 +12,10 @@ import kotlinx.coroutines.launch
 import me.hbj.bikkuri.cmds.backup
 import me.hbj.bikkuri.data.BackupTasks
 import me.hbj.bikkuri.data.General
+import mu.KotlinLogging
 import net.mamoe.mirai.Bot
+
+private val logger = KotlinLogging.logger {}
 
 fun CoroutineScope.launchBackupJob(): Job = launch {
   while (isActive) {
@@ -23,7 +26,11 @@ fun CoroutineScope.launchBackupJob(): Job = launch {
         bot?.getGroup(groupId)
       }
     }.filterNotNull().collect {
-      it.backup()
+      try {
+        it.backup()
+      } catch (e: Exception) {
+        logger.error(e) { "An error occurred when backup member" }
+      }
     }
   }
 }

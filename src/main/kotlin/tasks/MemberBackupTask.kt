@@ -5,6 +5,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.asFlow
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.data.General
+import me.hbj.bikkuri.util.Formatter
 import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.toFriendly
 import mu.KotlinLogging
@@ -26,7 +27,7 @@ class MemberBackupTask(
   suspend fun run() {
     logger.info { "Start backup for ${group.name}(${group.id})" }
     val file = Bikkuri.resolveDataFile(
-      "./member_backup/${group.id}/${now().toFriendly(General.timeZone)}.csv"
+      "./member_backup/${group.id}/${now().toFriendly(General.timeZone, Formatter.urlSafe)}.csv"
     ).apply {
       parentFile?.mkdirs()
       if (exists()) {
@@ -41,19 +42,22 @@ class MemberBackupTask(
       (group.members).apply {
         this@MemberBackupTask.totalMember = size
       }.asFlow().collect {
-        logger.trace { "Write row $it" }
-        writeRow(
-          /* id */ it.id,
-          /* name_card */ it.nameCard,
-          /* nick */ it.nick,
-          /* join_time */ it.joinTimestamp,
-          /* last_msg */ it.lastSpeakTimestamp,
-          /* is_admin */ it.isAdministrator(),
-          /* is_owner */ it.isOwner()
-        )
-        this@MemberBackupTask.savedMember++
+        try {
+          logger.trace { "Write row $it" }
+          writeRow(
+            /* id */ it.id,
+            /* name_card */ it.nameCard,
+            /* nick */ it.nick,
+            /* join_time */ it.joinTimestamp,
+            /* last_msg */ it.lastSpeakTimestamp,
+            /* is_admin */ it.isAdministrator(),
+            /* is_owner */ it.isOwner()
+          )
+          this@MemberBackupTask.savedMember++
+        } catch (e: Exception) {
+          logger.error(e) { "Error occurred when backup member" }
+        }
       }
     }
-    logger.info { "Backup finished for ${group.name}(${group.id}), saved $savedMember..." }
   }
 }

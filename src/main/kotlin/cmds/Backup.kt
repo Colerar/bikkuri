@@ -1,8 +1,6 @@
 package me.hbj.bikkuri.cmds
 
 import com.cronutils.model.Cron
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.data.BackupTask
 import me.hbj.bikkuri.data.BackupTasks
@@ -12,6 +10,7 @@ import me.hbj.bikkuri.util.nextExecutionTime
 import me.hbj.bikkuri.util.parseCron
 import me.hbj.bikkuri.util.requireOperator
 import me.hbj.bikkuri.util.toFriendly
+import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.Group
@@ -69,9 +68,9 @@ object Backup : CompositeCommand(Bikkuri, "backup"), RegisteredCmd {
 suspend fun Group.backup() {
   sendMessage("⏱ 开始备份群员列表……")
   val task = MemberBackupTask(this).apply {
-    withContext(Dispatchers.IO) {
-      run()
-    }
+    run()
   }
-  sendMessage("✅ 备份完成! 已保存 ${task.savedMember} 名群员。")
+  if (task.savedMember == 0) {
+    sendMessage("❌ 备份时发生错误，详情请查看后台")
+  } else sendMessage("✅ 备份完成! 已保存 ${task.savedMember} 名群员。")
 }

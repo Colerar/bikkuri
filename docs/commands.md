@@ -52,11 +52,13 @@
 ### backup
 
 - `/backup run` 用于储存所有群员列表
+- `/backup task <cron表达式>` 用于启用定时任务，比如 `/backup task 0|17|1/3|*|*`，表达式使用UTC时间，所以对应每3天的凌晨1点，具体 cron
+  表达式的写法可以参照[维基百科 - Cron](https://zh.wikipedia.org/wiki/Cron)，也可直接使用[在线生成工具](https://tool.lu/crontab/)。记得把空格换成竖线 `|`。
 - 会在后台 `mirai/data/me.hbj.bikkuri/member_backup/群号/日期和时间.csv` 下，生成逗号分隔符表格
 - 备份过程非常快，即使是几千人的大群也只需要几秒钟
 
 ### blocklist
-    
+
 - `/blocklist` 屏蔽指令，缩写 `/block` `/b`
 - `/block help` 显示帮助页面
 - `/block list/ls` [页码] 查看当前屏蔽列表
@@ -78,7 +80,7 @@
 
 - `/checklogin` 缩写 `/cl` 检查机器人 B 站登录状态
 
-### config 
+### config
 
 - `/config` 配置指令，缩写 `/c`
 - `/config list` 查看当前配置
