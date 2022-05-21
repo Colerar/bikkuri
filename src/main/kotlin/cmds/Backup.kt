@@ -10,7 +10,6 @@ import me.hbj.bikkuri.util.nextExecutionTime
 import me.hbj.bikkuri.util.parseCron
 import me.hbj.bikkuri.util.requireOperator
 import me.hbj.bikkuri.util.toFriendly
-import mu.KotlinLogging
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.Group

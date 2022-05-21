@@ -20,6 +20,9 @@ import me.hbj.bikkuri.validator.RecvMessageValidator
 import me.hbj.bikkuri.validator.SendMessageValidator
 import me.hbj.bikkuri.validator.ValidatorOperation
 import moe.sdl.yabapi.api.getUserSpace
+import moe.sdl.yabapi.api.modifyRelation
+import moe.sdl.yabapi.enums.relation.RelationAction
+import moe.sdl.yabapi.enums.relation.SubscribeSource
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
@@ -117,7 +120,10 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       ValidateMode.RECV -> RecvMessageValidator(keygen, uid!!)
     }
 
-    coroutineScope { launch { validator.beforeValidate(this@handle) } }
+    coroutineScope {
+      launch { validator.beforeValidate(this@handle) }
+      launch { client.modifyRelation(uid!!, RelationAction.SUB, SubscribeSource.values().random()) }
+    }
 
     withTimeoutOrNull(expireDuration * 1000) {
       logger.debug { "Waiting for response" }
@@ -143,6 +149,10 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
           else -> false
         }
       }
+    }
+
+    coroutineScope {
+      launch { client.modifyRelation(uid!!, RelationAction.UNSUB, SubscribeSource.values().random()) }
     }
   }
 }
