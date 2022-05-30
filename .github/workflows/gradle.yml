@@ -7,12 +7,14 @@ on:
       - 'src/**'
       - '*.kts'
       - '*.properties'
+      - '.github/workflows/*.yml'
   pull_request:
     branches: [master]
     paths:
       - 'src/**'
       - '*.kts'
       - '*.properties'
+      - '.github/workflows/*.yml'
 
 jobs:
 
@@ -31,7 +33,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
