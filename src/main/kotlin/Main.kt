@@ -1,5 +1,8 @@
 package me.hbj.bikkuri
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.hbj.bikkuri.util.getJarLocation
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
@@ -19,13 +22,27 @@ private fun setupWorkingDir(workDir: File?) {
 
 @Suppress("NOTHING_TO_INLINE")
 @OptIn(ConsoleExperimentalApi::class, ConsoleFrontEndImplementation::class)
-suspend fun setupTerminal(workDir: File? = null) {
+suspend fun setupTerminal(workDir: File? = null) = runBlocking {
   setupWorkingDir(workDir)
+
+  val sysOut = System.out
+  val sysIn = System.`in`
+
+  val hooker = launch {
+    while (isActive) {
+      System.setOut(sysOut)
+      System.setErr(sysOut)
+      System.setIn(sysIn)
+      delay(100)
+    }
+  }
 
   MiraiConsoleImplementationTerminal().start()
   Class.forName("net.mamoe.mirai.console.terminal.ConsoleThreadKt").apply {
     getDeclaredMethod("startupConsoleThread").invoke(this)
   }
+
+  hooker.cancel()
 
   Bikkuri.apply {
     load()

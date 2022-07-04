@@ -1,5 +1,7 @@
 package me.hbj.bikkuri
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -14,6 +16,9 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.db.Blocklist
 import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.BotAccepted
+import me.hbj.bikkuri.db.ForwardTable
+import me.hbj.bikkuri.db.ForwardToGroupSet
+import me.hbj.bikkuri.db.ForwardeeSet
 import me.hbj.bikkuri.db.GuardLastUpdate
 import me.hbj.bikkuri.db.GuardList
 import me.hbj.bikkuri.db.JoinTimes
@@ -26,6 +31,7 @@ import me.hbj.bikkuri.events.onMessageReceived
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
 import me.hbj.bikkuri.tasks.launchBackupJob
+import me.hbj.bikkuri.tasks.launchUpdateForwardTask
 import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
 import me.hbj.bikkuri.tasks.setMessageTask
 import net.mamoe.mirai.console.command.Command
@@ -34,7 +40,6 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.utils.LoggerAdapters
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.info
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -54,7 +59,6 @@ object Bikkuri : KotlinPlugin(
       .filterIsInstance(Command::class.java)
   }
 
-  @OptIn(MiraiExperimentalApi::class)
   override fun onEnable() {
     LoggerAdapters.useLog4j2()
     logger.info { "Bikkuri Plugin Enabled, v$VERSION" }
@@ -76,10 +80,26 @@ object Bikkuri : KotlinPlugin(
 
   private fun loadDb() {
     val path = resolveDataPath("data.db").absolutePathString()
-    val db = Database.connect("jdbc:sqlite:$path", "org.sqlite.JDBC")
+    val config = HikariConfig().apply {
+      jdbcUrl = "jdbc:sqlite:$path"
+      driverClassName = "org.sqlite.JDBC"
+      maximumPoolSize = 1
+    }
+    val source = HikariDataSource(config)
+    Database.connect(source)
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
-      SchemaUtils.create(Blocklist, BlocklistLink, BotAccepted, JoinTimes, GuardList, GuardLastUpdate)
+      SchemaUtils.create(
+        Blocklist,
+        BlocklistLink,
+        BotAccepted,
+        JoinTimes,
+        GuardList,
+        GuardLastUpdate,
+        ForwardTable,
+        ForwardToGroupSet,
+        ForwardeeSet,
+      )
     }
   }
 
@@ -109,6 +129,7 @@ object Bikkuri : KotlinPlugin(
       ::launchUpdateGuardListTask,
       ::setMessageTask,
       ::launchBackupJob,
+      ::launchUpdateForwardTask,
     ).forEach {
       coroutineScope { it() }
     }

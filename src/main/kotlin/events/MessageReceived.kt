@@ -1,10 +1,13 @@
 package me.hbj.bikkuri.events
 
+import kotlinx.coroutines.launch
 import me.hbj.bikkuri.Bikkuri.registeredCmds
 import me.hbj.bikkuri.cmds.Sign
 import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.TimerTrigger
+import me.hbj.bikkuri.tasks.groupsToForward
+import me.hbj.bikkuri.util.Forwarder
 import me.hbj.bikkuri.util.executeCommandSafely
 import me.hbj.bikkuri.util.now
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
@@ -15,6 +18,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.content
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 private val allCommandSymbol by lazy {
   (
@@ -50,6 +54,21 @@ fun Events.onMessageReceived() {
     if (!ListenerData.isEnabled(group.id)) return@subscribeAlways
     if (it.message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
       (it.sender as? NormalMember)?.asCommandSender(false)?.executeCommandSafely("/${Sign.primaryName}")
+    }
+  }
+
+  subscribeAlways<GroupMessageEvent> {
+    newSuspendedTransaction l@{
+      val rel = groupsToForward[it.group.id] ?: return@l
+      if (!rel.enabled) return@l
+      if (!rel.forwardAll && !rel.forwardees.contains(it.sender.id)) return@l
+      if (sender !is NormalMember) return@l
+
+      rel.toGroups.forEach {
+        bot.launch {
+          Forwarder.forward(bot.getGroup(it) ?: return@launch, sender as NormalMember, message)
+        }
+      }
     }
   }
 }

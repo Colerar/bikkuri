@@ -80,6 +80,7 @@ dependencies {
   implementation("org.jetbrains.exposed:exposed-dao:_")
   implementation("org.jetbrains.exposed:exposed-jdbc:_")
   implementation("org.jetbrains.exposed:exposed-java-time:_")
+  implementation("com.zaxxer:HikariCP:_")
   // cron
   implementation("com.cronutils:cron-utils:_")
   // BiliBili
