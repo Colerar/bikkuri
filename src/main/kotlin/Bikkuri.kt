@@ -89,7 +89,7 @@ object Bikkuri : KotlinPlugin(
     Database.connect(source)
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
-      SchemaUtils.create(
+      SchemaUtils.createMissingTablesAndColumns(
         Blocklist,
         BlocklistLink,
         BotAccepted,

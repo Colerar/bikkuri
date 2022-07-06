@@ -63,10 +63,10 @@ fun Events.onMessageReceived() {
       if (!rel.enabled) return@l
       if (!rel.forwardAll && !rel.forwardees.contains(it.sender.id)) return@l
       if (sender !is NormalMember) return@l
-
+      val showHint = rel.showHint
       rel.toGroups.forEach {
         bot.launch {
-          Forwarder.forward(bot.getGroup(it) ?: return@launch, sender as NormalMember, message)
+          Forwarder.forward(bot.getGroup(it) ?: return@launch, sender as NormalMember, message, showHint)
         }
       }
     }

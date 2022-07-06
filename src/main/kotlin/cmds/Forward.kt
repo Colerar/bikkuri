@@ -82,6 +82,19 @@ object Forward : CompositeCommand(Bikkuri, "forward", "fwd"), RegisteredCmd {
     }
   }
 
+  @SubCommand
+  suspend fun MemberCommandSender.hint() {
+    requireOperator(this)
+    newSuspendedTransaction {
+      val rel = ForwardRelation.findByIdOrNew(id = group.id)
+      rel.showHint = !rel.showHint
+      when (rel.showHint) {
+        true -> sendMessage("✅ 将会在转发时显示说话人")
+        false -> sendMessage("🚫 转发时将不会显示说话人")
+      }
+    }
+  }
+
   @Suppress("UNCHECKED_CAST")
   @SubCommand
   suspend fun MemberCommandSender.forwardee(forwardee: String) {

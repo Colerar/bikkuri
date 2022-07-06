@@ -22,6 +22,7 @@ object ForwardTable : IdTable<Long>("forward_table") {
   override val id: Column<EntityID<Long>> = long("group").entityId()
   val enabled = bool("enabled").default(false)
   val forwardAll = bool("forward_all").default(false)
+  val showHint = bool("show_hint").default(true)
 }
 
 class ForwardRelation(id: EntityID<Long>) : LongEntity(id) {
@@ -32,6 +33,7 @@ class ForwardRelation(id: EntityID<Long>) : LongEntity(id) {
   }
 
   var enabled by ForwardTable.enabled
+  var showHint by ForwardTable.showHint
   var forwardAll by ForwardTable.forwardAll
   val toGroups = SQLDatabaseSet(id, ForwardToGroupSet)
   val forwardees = SQLDatabaseSet(id, ForwardeeSet)
