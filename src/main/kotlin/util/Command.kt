@@ -5,9 +5,11 @@ import me.hbj.bikkuri.exception.command.CommandCancellation
 import me.hbj.bikkuri.exception.command.CommandPermissionException
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandExecuteResult
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.FriendCommandSender
+import net.mamoe.mirai.console.command.IllegalCommandArgumentException
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -70,11 +72,18 @@ fun Command.require(require: Boolean) {
 suspend fun CommandSender.executeCommandSafely(message: MessageChain) {
   cmdLock {
     try {
-      CommandManager.executeCommand(this, message, false)
+      val cmd = CommandManager.executeCommand(this, message, false)
+      if (cmd is CommandExecuteResult.Failure) {
+        cmd.exception?.let { throw it }
+      }
+    } catch (e: IllegalCommandArgumentException) {
+      logger.debug(e) { "Invalid command input:" }
     } catch (e: CommandCancellation) {
       logger.trace(e) { "Cancelled Command ${e.command.primaryName}:" }
     } catch (e: CancellationException) {
       logger.warn(e) { "Cancelled command:" }
+    } catch (e: Exception) {
+      logger.error(e) { "Command exception:" }
     }
   }
 }

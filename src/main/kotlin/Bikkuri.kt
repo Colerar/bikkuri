@@ -16,6 +16,9 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.db.Blocklist
 import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.BotAccepted
+import me.hbj.bikkuri.db.DuplicateAllowlist
+import me.hbj.bikkuri.db.DuplicateGroupSet
+import me.hbj.bikkuri.db.DuplicateTable
 import me.hbj.bikkuri.db.ForwardTable
 import me.hbj.bikkuri.db.ForwardToGroupSet
 import me.hbj.bikkuri.db.ForwardeeSet
@@ -31,6 +34,7 @@ import me.hbj.bikkuri.events.onMessageReceived
 import me.hbj.bikkuri.tasks.launchAutoApproveTask
 import me.hbj.bikkuri.tasks.launchAutoKickTask
 import me.hbj.bikkuri.tasks.launchBackupJob
+import me.hbj.bikkuri.tasks.launchDetectDuplicate
 import me.hbj.bikkuri.tasks.launchUpdateForwardTask
 import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
 import me.hbj.bikkuri.tasks.setMessageTask
@@ -93,6 +97,9 @@ object Bikkuri : KotlinPlugin(
         Blocklist,
         BlocklistLink,
         BotAccepted,
+        DuplicateTable,
+        DuplicateGroupSet,
+        DuplicateAllowlist,
         JoinTimes,
         GuardList,
         GuardLastUpdate,
@@ -126,6 +133,7 @@ object Bikkuri : KotlinPlugin(
     listOf(
       ::launchAutoKickTask,
       ::launchAutoApproveTask,
+      ::launchDetectDuplicate,
       ::launchUpdateGuardListTask,
       ::setMessageTask,
       ::launchBackupJob,
