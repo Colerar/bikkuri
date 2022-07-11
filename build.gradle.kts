@@ -58,6 +58,10 @@ var versions = Properties().apply {
 }
 
 dependencies {
+  constraints {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  }
+
   // Kotlinx
   implementation(KotlinX.datetime)
   implementation(KotlinX.coroutines.core)
