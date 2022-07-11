@@ -28,26 +28,29 @@ fun CoroutineScope.launchDetectDuplicate() = launch {
       }
       enabled.forEach { config ->
         fun newJob() =
-          DetectDuplicate(config.checkInterval, launch {
-            newSuspendedTransaction {
-              val bot = Bot.instances.first()
-              config.groups.forEach {
-                logger.info { "$it" }
-              }
-              val groups = config.groups.mapNotNull { bot.getGroup(it) }
-              val toKick = bot.checkDuplicate(groups, config.allowed)
-              if (toKick.size >= 50) error("Too many duplicate, may be program error...")
-              // toKick.kickAll()
-              if (toKick.isNotEmpty()) {
-                groups.map { group ->
-                  launch {
-                    group.sendMessage("以下群员因重复进群被踢出：\n${toKick.toTreeString()}".trimEnd())
+          DetectDuplicate(
+            config.checkInterval,
+            launch {
+              newSuspendedTransaction {
+                val bot = Bot.instances.first()
+                config.groups.forEach {
+                  logger.info { "$it" }
+                }
+                val groups = config.groups.mapNotNull { bot.getGroup(it) }
+                val toKick = bot.checkDuplicate(groups, config.allowed)
+                if (toKick.size >= 50) error("Too many duplicate, may be program error...")
+                // toKick.kickAll()
+                if (toKick.isNotEmpty()) {
+                  groups.map { group ->
+                    launch {
+                      group.sendMessage("以下群员因重复进群被踢出：\n${toKick.toTreeString()}".trimEnd())
+                    }
                   }
                 }
               }
+              delay(config.checkInterval.toKotlinDuration())
             }
-            delay(config.checkInterval.toKotlinDuration())
-          })
+          )
 
         val jobEntry = detectJobs.getOrPut(config.id.value, ::newJob)
         if (jobEntry.checkInterval != config.checkInterval) {

@@ -66,7 +66,7 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
           """
           ✅ 添加成功，当前配置：
           ${config.toFriendly()}
-        """.trimIndent()
+          """.trimIndent()
         )
       }.onFailure {
         sendMessage("❌ 添加失败")
@@ -100,12 +100,12 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
     memberIds: Collection<Long>,
     config: DuplicateConfig,
   ) = memberIds.joinToString { id ->
-      val groups = buildSet {
-        add(group)
-        addAll(config.groups.mapNotNull { bot.getGroup(it) })
-      }
-      getMemberByGroups(id, groups)?.toFriendly() ?: id.toString()
+    val groups = buildSet {
+      add(group)
+      addAll(config.groups.mapNotNull { bot.getGroup(it) })
     }
+    getMemberByGroups(id, groups)?.toFriendly() ?: id.toString()
+  }
 
   @SubCommand("addwl", "addwhitelist")
   suspend fun MemberCommandSender.addwl(dupId: Int, members: String) {
@@ -159,10 +159,12 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
         }
         getMemberByGroups(id, groups)?.toFriendly() ?: id.toString()
       }
-      sendMessage(buildString {
-        appendLine("位于白名单中的成员:")
-        append(result)
-      })
+      sendMessage(
+        buildString {
+          appendLine("位于白名单中的成员:")
+          append(result)
+        }
+      )
     }
   }
 
@@ -215,9 +217,11 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
       }
       buildString {
         appendLine(if (tasks.isEmpty()) "暂无去重任务。" else "有 ${tasks.count()} 个去重任务:")
-        append(tasks.joinToString("\n") {
-          it.toFriendly()
-        })
+        append(
+          tasks.joinToString("\n") {
+            it.toFriendly()
+          }
+        )
       }
     }
     group.sendMessage(msg)

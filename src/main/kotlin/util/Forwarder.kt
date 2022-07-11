@@ -35,12 +35,14 @@ object Forwarder {
       }
       to.sendMessage(message)
     } catch (e: Exception) {
-      logger.error(e) { """
+      logger.error(e) {
+        """
         Failed to send message 
         Message : $message
         To      : $to
         Sender  : $sender
-        """.trimIndent() }
+        """.trimIndent()
+      }
       to.sendMessage("转发失败…… 该消息类型可能暂未支持")
     } finally {
       lastForwardee[to.id] = sender.id
