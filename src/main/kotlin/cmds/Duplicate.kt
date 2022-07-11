@@ -88,30 +88,55 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
     }
   }
 
+  private suspend fun MemberCommandSender.parseQQId(string: String) =
+    string.split(',').map {
+      it.toLongOrNull() ?: run {
+        sendMessage("❌ 输入含有无效QQ号")
+        throw CommandCancellation(Duplicate)
+      }
+    }
+
+  private fun MemberCommandSender.getMembersStr(
+    memberIds: Collection<Long>,
+    config: DuplicateConfig,
+  ) = memberIds.joinToString { id ->
+      val groups = buildSet {
+        add(group)
+        addAll(config.groups.mapNotNull { bot.getGroup(it) })
+      }
+      getMemberByGroups(id, groups)?.toFriendly() ?: id.toString()
+    }
+
   @SubCommand("addwl", "addwhitelist")
   suspend fun MemberCommandSender.addwl(dupId: Int, members: String) {
     requireOperator(this)
-    val parsedIds = members.split(',').map {
-      it.toLongOrNull() ?: run {
-        sendMessage("❌ 输入含有无效QQ号")
-        return
-      }
-    }
+    val parsedIds = parseQQId(members)
     newSuspendedTransaction {
       val config = findDupConfig(dupId)
       runCatching {
-        config.allowed.addAll(parsedIds)
+        config.allowed.addAll(parsedIds.filterNot { config.allowed.contains(it) })
       }.onSuccess {
-        val memberStr = parsedIds.joinToString { id ->
-          val groups = buildSet {
-            add(group)
-            addAll(config.groups.mapNotNull { bot.getGroup(it) })
-          }
-          getMemberByGroups(id, groups)?.toFriendly() ?: id.toString()
-        }
+        val memberStr = getMembersStr(parsedIds, config)
         sendMessage("已将以下成员添加到去重白名单: $memberStr")
       }.onFailure {
         sendMessage("❌ 添加失败")
+      }.getOrThrow()
+    }
+  }
+
+  @SubCommand("rmwl", "removewl")
+  suspend fun MemberCommandSender.removeWhitelist(dupId: Int, members: String) {
+    requireOperator(this)
+    val parsedIds = parseQQId(members)
+    newSuspendedTransaction {
+      val config = findDupConfig(dupId)
+      runCatching {
+        config.allowed.removeAll(parsedIds.filter { config.allowed.contains(it) })
+      }.onSuccess {
+        val memberStr = getMembersStr(parsedIds, config)
+        sendMessage("已将以下成员移出去重白名单: $memberStr")
+      }.onFailure {
+        sendMessage("❌ 移除失败")
       }.getOrThrow()
     }
   }
