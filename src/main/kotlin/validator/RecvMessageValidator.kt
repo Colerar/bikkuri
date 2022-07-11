@@ -6,16 +6,23 @@ import me.hbj.bikkuri.data.fitKeygen
 import moe.sdl.yabapi.api.fetchSessionMessage
 import moe.sdl.yabapi.api.getBasicInfo
 import moe.sdl.yabapi.data.message.contents.Text
+import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.content
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private val logger = mu.KotlinLogging.logger {}
 
 class RecvMessageValidator(
   private val keygen: KeygenData,
   private val uid: Int,
-) : MessageValidator {
+) : MessageValidatorWithLoop {
+  override val loopInterval: Duration
+    get() = 10.toDuration(DurationUnit.SECONDS)
+
   override suspend fun beforeValidate(sender: MemberCommandSender) {
     val basicInfo = client.getBasicInfo().data
     sender.sendMessage(
@@ -31,13 +38,18 @@ class RecvMessageValidator(
 
   override suspend fun validate(event: GroupMessageEvent): ValidatorOperation {
     if (event.message.content == "quit") return ValidatorOperation.FAILED
+    return validateLoop(event.toCommandSender()).also {
+      if (it != ValidatorOperation.PASSED)
+        event.group.sendMessage("验证失败，稍后重试看看... 如有问题请 @ 管理，发送 quit 可退出验证。")
+    }
+  }
+
+  override suspend fun validateLoop(member: MemberCommandSender): ValidatorOperation {
     val pass = client.fetchSessionMessage(uid, size = 10).data?.messages.orEmpty().asSequence()
       .map { it.content }
       .filterIsInstance<Text>()
       .any { it.content.fitKeygen(keygen) }
-    if (pass) return ValidatorOperation.PASSED else {
-      event.group.sendMessage("验证失败，稍后重试看看... 如有问题请 @ 管理，发送 quit 可退出验证。")
-    }
+    if (pass) return ValidatorOperation.PASSED
     return ValidatorOperation.CONTINUED
   }
 }

@@ -1,6 +1,11 @@
 package me.hbj.bikkuri.cmds
 
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import me.hbj.bikkuri.Bikkuri
@@ -13,9 +18,11 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.MemberToApprove
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.db.GuardList
+import me.hbj.bikkuri.exception.command.CommandCancellation
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
 import me.hbj.bikkuri.util.uidRegex
+import me.hbj.bikkuri.validator.MessageValidatorWithLoop
 import me.hbj.bikkuri.validator.RecvMessageValidator
 import me.hbj.bikkuri.validator.SendMessageValidator
 import me.hbj.bikkuri.validator.ValidatorOperation
@@ -125,30 +132,66 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       launch { client.modifyRelation(uid!!, RelationAction.SUB, SubscribeSource.values().random()) }
     }
 
-    withTimeoutOrNull(expireDuration * 1000) {
-      logger.debug { "Waiting for response" }
-      var loop = true
+    var passed by atomic(false)
+    suspend fun whenPassed() {
+      if (passed) return
+      passed = true
+      val map = GlobalAutoApprove[bot.id][data.targetGroup!!].map
+      map[this.user.id] = MemberToApprove(
+        uid!!.toLong(),
+        this.group.id,
+      )
+      group.sendMessage(
+        """
+        成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
+        【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
+        """.trimIndent()
+      )
+    }
 
-      while (loop) nextMsgEvent().apply {
-        loop = when (validator.validate(this)) {
-          ValidatorOperation.CONTINUED -> true
-          ValidatorOperation.PASSED -> {
-            val map = GlobalAutoApprove[bot.id][data.targetGroup!!].map
-            map[sender.id] = MemberToApprove(
-              uid!!.toLong(),
-              this.group.id,
-            )
-            group.sendMessage(
-              """
-              成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
-              【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
-              """.trimIndent()
-            )
-            false
+    coroutineScope {
+      val waitReply: Job?
+      var loopJob: Job? = null
+
+      waitReply = launch {
+        withTimeoutOrNull(expireDuration * 1000) {
+          logger.debug { "Waiting for response" }
+          var loop = true
+
+          while (loop) nextMsgEvent().apply {
+            loop = when (validator.validate(this)) {
+              ValidatorOperation.CONTINUED -> true
+              ValidatorOperation.PASSED -> {
+                whenPassed()
+                false
+              }
+              else -> false
+            }
+            if (!loop) loopJob?.cancel()
           }
-          else -> false
         }
       }
+
+      loopJob = if (validator is MessageValidatorWithLoop) {
+        launch {
+          while (isActive) {
+            when (validator.validateLoop(this@handle)) {
+              ValidatorOperation.PASSED -> {
+                whenPassed()
+                waitReply.cancel()
+                return@launch
+              }
+              ValidatorOperation.FAILED -> throw CommandCancellation(Sign)
+              ValidatorOperation.CONTINUED -> {
+                // continue
+              }
+            }
+            delay(validator.loopInterval)
+          }
+        }
+      } else null
+
+      listOfNotNull(waitReply, loopJob).joinAll()
     }
 
     coroutineScope {
