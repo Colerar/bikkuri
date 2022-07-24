@@ -278,7 +278,7 @@ object Duplicate : CompositeCommand(Bikkuri, "duplicate", "dup"), RegisteredCmd 
       if (event == null) {
         msgReceipt.quoteReply("询问会话超时，现已退出。")
       } else if (event.message.content == "Y") {
-        toKick.kickAll()
+        toKick.kickAll(reason = "重复加群")
         group.sendMessage("✅ 成功踢出重复群员")
       } else {
         group.sendMessage("已取消")

@@ -51,13 +51,13 @@ data class Identity(
   override fun hashCode(): Int = 0
 }
 
-suspend fun Collection<NormalMember>.kickAll(limit: Int = 4) {
+suspend fun Collection<NormalMember>.kickAll(limit: Int = 4, reason: String? = null) {
   val limiter = Semaphore(limit)
   val scope = ModuleScope("MemberDuplicateKicker")
   map {
     scope.launch {
       limiter.withPermit {
-        it.kick("重复加群")
+        it.kick(reason ?: "")
       }
     }
   }.joinAll()

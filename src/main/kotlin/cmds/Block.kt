@@ -2,6 +2,8 @@ package me.hbj.bikkuri.cmds
 
 import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.db.BlocklistLink
+import me.hbj.bikkuri.db.BotAccepted
+import me.hbj.bikkuri.db.addBiliBlock
 import me.hbj.bikkuri.db.addBlock
 import me.hbj.bikkuri.db.blockedSize
 import me.hbj.bikkuri.db.blockedTime
@@ -9,18 +11,26 @@ import me.hbj.bikkuri.db.isBlocked
 import me.hbj.bikkuri.db.listBlocked
 import me.hbj.bikkuri.db.removeBlock
 import me.hbj.bikkuri.util.clearIndent
+import me.hbj.bikkuri.util.kickAll
 import me.hbj.bikkuri.util.parseMessageMember
 import me.hbj.bikkuri.util.require
 import me.hbj.bikkuri.util.requireOperator
 import me.hbj.bikkuri.util.toFriendly
 import me.hbj.bikkuri.util.toLocalDateTime
 import me.hbj.bikkuri.util.toReadDateTime
+import me.hbj.bikkuri.util.toTreeString
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.contact.getMember
+import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.buildMessageChain
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlin.math.max
 
 object Block :
@@ -61,6 +71,39 @@ object Block :
   suspend fun MemberCommandSender.ban(message: MessageChain) {
     requireOperator(this)
     underlyingAdd(message, kick = true, block = true)
+  }
+
+  @SubCommand("banbili")
+  suspend fun MemberCommandSender.banbili(id: Long) {
+    requireOperator(this)
+    newSuspendedTransaction {
+      buildMessageChain l@{
+        group.addBiliBlock(id)
+        add("成功将 B 站用户 $id 添加至拦截名单。")
+        val membersToKick = mutableListOf<NormalMember>()
+        // val kickedMembers = mutableListOf<NormalMember>()
+        val relatedGroups = BlocklistLink.related(bot, group)
+        val relatedMembers = BotAccepted.select {
+          (BotAccepted.toGroupId inList relatedGroups.map { it.id }) and
+            BotAccepted.eqBiliUser(id)
+        }.map {
+          it[BotAccepted.fromId]
+        }
+        relatedGroups.forEach { group ->
+          if (!group.botPermission.isAdministrator()) return@l
+          val toKick = relatedMembers.mapNotNull { group.getMember(it) }
+          membersToKick.addAll(toKick)
+          toKick.forEach {
+            if (!it.isBlocked()) it.addBlock()
+          }
+        }
+        membersToKick.kickAll(reason = "已被拉黑")
+        add("同时踢出并拉黑了以下成员:\n")
+        add(membersToKick.toTreeString().trimEnd())
+      }.also {
+        sendMessage(it)
+      }
+    }
   }
 
   private suspend fun MemberCommandSender.underlyingAdd(message: MessageChain, kick: Boolean, block: Boolean) {

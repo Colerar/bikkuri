@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.db
 
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.deleteWhere
@@ -13,6 +14,20 @@ object BlocklistLink : Table() {
   private val toGroupId = long("to_group_id")
 
   override val primaryKey: PrimaryKey = PrimaryKey(fromGroupId)
+
+  fun related(bot: Bot, group: Group) = transaction {
+    val opId = group.redirectBlockId()
+    buildList {
+      add(group)
+      select {
+        toGroupId eq opId
+      }.mapNotNull {
+        bot.getGroup(it[fromGroupId])
+      }.also {
+        addAll(it)
+      }
+    }
+  }
 
   fun link(from: Long, to: Long): Unit = transaction {
     insert {

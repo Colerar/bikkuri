@@ -13,6 +13,7 @@ import me.hbj.bikkuri.data.BackupTasks
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.Keygen
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.db.BiliBlocklist
 import me.hbj.bikkuri.db.Blocklist
 import me.hbj.bikkuri.db.BlocklistLink
 import me.hbj.bikkuri.db.BotAccepted
@@ -94,6 +95,7 @@ object Bikkuri : KotlinPlugin(
     TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     transaction {
       SchemaUtils.createMissingTablesAndColumns(
+        BiliBlocklist,
         Blocklist,
         BlocklistLink,
         BotAccepted,

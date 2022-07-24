@@ -70,21 +70,21 @@ fun Command.require(require: Boolean) {
 
 @OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class)
 suspend fun CommandSender.executeCommandSafely(message: MessageChain) {
-  cmdLock {
-    try {
+  try {
+    cmdLock {
       val cmd = CommandManager.executeCommand(this, message, false)
       if (cmd is CommandExecuteResult.Failure) {
         cmd.exception?.let { throw it }
       }
-    } catch (e: IllegalCommandArgumentException) {
-      logger.debug(e) { "Invalid command input:" }
-    } catch (e: CommandCancellation) {
-      logger.trace(e) { "Cancelled Command ${e.command.primaryName}:" }
-    } catch (e: CancellationException) {
-      logger.warn(e) { "Cancelled command:" }
-    } catch (e: Exception) {
-      logger.error(e) { "Command exception:" }
     }
+  } catch (e: IllegalCommandArgumentException) {
+    logger.debug(e) { "Invalid command input:" }
+  } catch (e: CommandCancellation) {
+    logger.trace(e) { "Cancelled Command ${e.command?.primaryName}:" }
+  } catch (e: CancellationException) {
+    logger.warn(e) { "Cancelled command:" }
+  } catch (e: Exception) {
+    logger.error(e) { "Command exception:" }
   }
 }
 

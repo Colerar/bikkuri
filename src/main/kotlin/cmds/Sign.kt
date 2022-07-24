@@ -2,6 +2,7 @@ package me.hbj.bikkuri.cmds
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -18,9 +19,13 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.data.MemberToApprove
 import me.hbj.bikkuri.data.ValidateMode
 import me.hbj.bikkuri.db.GuardList
+import me.hbj.bikkuri.db.addBlock
+import me.hbj.bikkuri.db.isBiliBlocked
+import me.hbj.bikkuri.db.isBlocked
 import me.hbj.bikkuri.exception.command.CommandCancellation
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
+import me.hbj.bikkuri.util.toFriendly
 import me.hbj.bikkuri.util.uidRegex
 import me.hbj.bikkuri.validator.MessageValidatorWithLoop
 import me.hbj.bikkuri.validator.RecvMessageValidator
@@ -33,6 +38,7 @@ import moe.sdl.yabapi.enums.relation.SubscribeSource
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
@@ -81,9 +87,42 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
         group.sendMessage("输入错误, 需要纯数字 UID, 请重新输入")
         return@apply
       }
-      group.sendMessage("稍等正在查询中……")
 
-      val medal = client.getUserSpace(uid!!).data?.fansMedal?.medal
+      val userSpace = coroutineScope {
+        withTimeoutOrNull(30_000) {
+          async {
+            client.getUserSpace(uid!!)
+          }
+        }
+      }
+
+      coroutineScope {
+        launch {
+          group.sendMessage("稍等正在查询中……")
+        }
+        launch {
+          if (uid != null && group.isBiliBlocked(uid?.toLong() ?: return@launch)) {
+            launch {
+              (this@handle.user as NormalMember).kick("你已被拉黑。")
+            }
+            val buser = run {
+              val name = userSpace?.await()?.data?.name
+              name?.let { "$name ($uid)" } ?: uid.toString()
+            }
+            val msg = buildMessageChain {
+              add("因 B 站用户 $buser 已被拉黑，故将其踢出本群。")
+              if (group.isBlocked(this@handle.user.id)) {
+                group.addBlock(this@handle.user.id)
+                add("同时将其本次申请的 QQ ${user.toFriendly()} 拉黑。")
+              }
+            }
+            sendMessage(msg)
+            throw CommandCancellation(Sign)
+          }
+        }
+      }
+
+      val medal = userSpace?.await()?.data?.fansMedal?.medal
 
       val inList = GuardList.validate(data.userBind!!, uid!!.toLong())
 
