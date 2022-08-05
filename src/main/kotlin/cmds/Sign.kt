@@ -23,6 +23,7 @@ import me.hbj.bikkuri.db.addBlock
 import me.hbj.bikkuri.db.isBiliBlocked
 import me.hbj.bikkuri.db.isBlocked
 import me.hbj.bikkuri.exception.command.CommandCancellation
+import me.hbj.bikkuri.util.ModuleScope
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
 import me.hbj.bikkuri.util.toFriendly
@@ -50,6 +51,8 @@ import kotlin.time.toDuration
 private val logger = KotlinLogging.logger {}
 
 object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
+  private val signScope = ModuleScope("SignCommand")
+
   @Handler
   suspend fun MemberCommandSender.handle() {
     val data = ListenerData.map[group.id]
@@ -139,13 +142,16 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
               addImageOrText(loadImageResource("./images/guide-phone.jpg"), group)
               addImageOrText(loadImageResource("./images/guide-web.jpg"), group)
             }
+
             !medalUserFit -> buildMessageChain {
               add("呜~ 请佩戴正确的粉丝牌哦! 可再次输入 UID 重试, quit 退出")
             }
+
             @Suppress("KotlinConstantConditions")
             !medalLevel -> buildMessageChain {
               add("粉丝牌等级不足~ 需要至少 ${General.joinRequiredLevel} 级哦~")
             }
+
             else -> buildMessageChain {
               add("遇到未知错误，可再次输入 UID 重试, quit 退出")
             }
@@ -180,12 +186,14 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
         uid!!.toLong(),
         this.group.id,
       )
-      group.sendMessage(
-        """
-        成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
-        【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
-        """.trimIndent()
-      )
+      signScope.launch {
+        group.sendMessage(
+          """
+          成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
+          【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
+          """.trimIndent()
+        )
+      }
     }
 
     coroutineScope {
@@ -204,6 +212,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
                 whenPassed()
                 false
               }
+
               else -> false
             }
             if (!loop) loopJob?.cancel()
@@ -220,6 +229,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
                 waitReply.cancel()
                 return@launch
               }
+
               ValidatorOperation.FAILED -> throw CommandCancellation(Sign)
               ValidatorOperation.CONTINUED -> {
                 // continue
