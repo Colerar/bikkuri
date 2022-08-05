@@ -33,8 +33,8 @@ fun CoroutineScope.launchAutoKickTask(): Job = launch {
               val map = GlobalLastMsg[bot.id][group.id].map
               val instant = map[it.id] ?: return@group
               if (now - instant > duration) {
-                val message = "您已 ${duration.inWholeSeconds} 秒无回复，已将你移出群聊，请重新排队申请加群。"
-                it.sendMessage(message)
+                val message = "您已 ${duration.inWholeSeconds} 秒无回复，已将您移出群聊，请重新排队申请加群。"
+                group.sendMessage(message)
                 delay(General.time.messageNoticeBetweenKick)
                 it.kick(message)
                 map.remove(it.id)
