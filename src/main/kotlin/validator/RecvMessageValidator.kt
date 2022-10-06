@@ -18,7 +18,7 @@ private val logger = mu.KotlinLogging.logger {}
 
 class RecvMessageValidator(
   private val keygen: KeygenData,
-  private val uid: Int,
+  private val uid: Long,
 ) : MessageValidatorWithLoop {
   override val loopInterval: Duration
     get() = 10.toDuration(DurationUnit.SECONDS)

@@ -2,6 +2,7 @@ package me.hbj.bikkuri.db
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert

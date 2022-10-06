@@ -20,7 +20,6 @@ private fun setupWorkingDir(workDir: File?) {
   System.setProperty("user.dir", File(workDir1 ?: getJarLocation(), "mirai").absolutePath)
 }
 
-@Suppress("NOTHING_TO_INLINE")
 @OptIn(ConsoleExperimentalApi::class, ConsoleFrontEndImplementation::class)
 suspend fun setupTerminal(workDir: File? = null) = runBlocking {
   setupWorkingDir(workDir)

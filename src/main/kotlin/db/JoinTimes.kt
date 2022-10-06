@@ -1,6 +1,7 @@
 package me.hbj.bikkuri.db
 
 import net.mamoe.mirai.contact.Member
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere

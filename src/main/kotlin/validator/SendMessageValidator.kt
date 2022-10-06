@@ -25,7 +25,7 @@ private val logger = mu.KotlinLogging.logger {}
 
 class SendMessageValidator(
   private val keygen: KeygenData,
-  private val uid: Int,
+  private val uid: Long,
   private val data: GroupListener,
 ) : MessageValidator {
   private val scope = CoroutineScope(Dispatchers.IO)
@@ -33,7 +33,7 @@ class SendMessageValidator(
   override suspend fun beforeValidate(sender: MemberCommandSender) {
     val biliSenderData = client.getBasicInfo()
     val bindName = scope.async {
-      client.getUserCard(data.userBind!!.toInt(), false).data?.card?.name ?: run {
+      client.getUserCard(data.userBind!!, false).data?.card?.name ?: run {
         sender.group.sendMessage("获取绑定 UP 主信息失败~")
         data.userBind.toString()
       }

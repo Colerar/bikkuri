@@ -61,7 +61,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       group.sendMessage("配置不完整，请联系管理员")
       return
     }
-    var uid: Int? = null
+    var uid: Long? = null
 
     val expireDuration = General.keygen.timeout.toDuration(DurationUnit.MILLISECONDS)
 
@@ -86,7 +86,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
         return
       }
 
-      uid = uidRegex.find(message.content)?.groupValues?.get(2)?.toIntOrNull() ?: run {
+      uid = uidRegex.find(message.content)?.groupValues?.get(2)?.toLongOrNull() ?: run {
         group.sendMessage("输入错误, 需要纯数字 UID, 请重新输入")
         return@apply
       }
@@ -104,7 +104,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
           group.sendMessage("稍等正在查询中……")
         }
         launch {
-          if (uid != null && group.isBiliBlocked(uid?.toLong() ?: return@launch)) {
+          if (uid != null && group.isBiliBlocked(uid ?: return@launch)) {
             launch {
               (this@handle.user as NormalMember).kick("你已被拉黑。")
             }
@@ -130,7 +130,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       val inList = GuardList.validate(data.userBind!!, uid!!.toLong())
 
       val medalNotNull = medal != null
-      val medalUserFit = medal?.targetId == data.userBind?.toInt()
+      val medalUserFit = medal?.targetId == data.userBind
       val medalLevel = medal?.level?.let { it >= General.joinRequiredLevel } ?: false
 
       when {

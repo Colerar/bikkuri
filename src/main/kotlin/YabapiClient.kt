@@ -2,10 +2,10 @@ package me.hbj.bikkuri
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.UserAgent
-import io.ktor.client.features.compression.ContentEncoding
-import io.ktor.client.features.cookies.HttpCookies
-import io.ktor.client.features.websocket.WebSockets
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.compression.ContentEncoding
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
 import me.hbj.bikkuri.util.BrotliImpl

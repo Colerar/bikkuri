@@ -53,7 +53,7 @@ import kotlin.time.toDuration
 private val logger = KotlinLogging.logger {}
 
 // mid to job
-internal val jobMap: MutableMap<Int, Job> = mutableMapOf()
+internal val jobMap: MutableMap<Long, Job> = mutableMapOf()
 
 fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   if (!client.getBasicInfo().data.isLogin) {
@@ -86,7 +86,7 @@ private fun CoroutineScope.launchCollectJob() = launch {
 
     // cancel jobs
     jobMap.forEach { (mid, job) ->
-      if (!midsToListen.contains(mid.toLong())) {
+      if (!midsToListen.contains(mid)) {
         job.cancel()
         jobMap.remove(mid)
       }
@@ -94,7 +94,7 @@ private fun CoroutineScope.launchCollectJob() = launch {
 
     // enable jobs
     enabledMap.filterNot { it.value.userBind == null }.forEach { (_, data) ->
-      val mid = data.userBind!!.toInt()
+      val mid = data.userBind!!
       if (jobMap.containsKey(mid)) return@forEach
       jobMap[mid] = launch job@{
         val retry = General.retryTimes
@@ -137,10 +137,10 @@ private fun CoroutineScope.launchCollectJob() = launch {
 }
 
 class UpdateRoomConnection(
-  private val mid: Int,
-  private val roomId: Int,
-  private val realId: Int,
-  private val selfId: Int,
+  private val mid: Long,
+  private val roomId: Long,
+  private val realId: Long,
+  private val selfId: Long,
   private val stream: LiveDanmakuInfoGetResponse,
 ) {
 
@@ -157,16 +157,16 @@ class UpdateRoomConnection(
   private fun CoroutineScope.launchFetchAllJob(): Job =
     launch {
       while (isActive) {
-        val lastList = GuardLastUpdate.get(mid.toLong())?.let {
+        val lastList = GuardLastUpdate.get(mid)?.let {
           it[GuardLastUpdate.lastUpdate]
         }?.toKotlinInstant()
         if (lastList == null || (now() - lastList >= 1.toDuration(DurationUnit.DAYS))) {
           fetchAllGuardList(roomId, mid)
             .flowOn(Dispatchers.IO + CoroutineName("guard-lister-$mid"))
             .collect {
-              GuardList.insertOrUpdate(mid.toLong(), it.uid?.toLong() ?: return@collect, after1Day, GuardFetcher.LIST)
+              GuardList.insertOrUpdate(mid, it.uid ?: return@collect, after1Day, GuardFetcher.LIST)
             }
-          GuardLastUpdate.insertOrUpdate(mid.toLong(), now())
+          GuardLastUpdate.insertOrUpdate(mid, now())
         }
         delay(10_000)
       }
@@ -228,34 +228,34 @@ class UpdateRoomConnection(
           return@collect
         val uid = it.data?.liveUser?.mid ?: return@collect
 
-        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after1Day, GuardFetcher.MESSAGE)
+        GuardList.insertOrUpdate(mid, uid, after1Day, GuardFetcher.MESSAGE)
       }
 
       flow.filterIsInstance<GuardBuyCmd>().collect { cmd ->
         val uid = cmd.data?.uid ?: return@collect
-        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after30Days, GuardFetcher.JOIN)
+        GuardList.insertOrUpdate(mid, uid, after30Days, GuardFetcher.JOIN)
       }
 
       flow.filterIsInstance<SuperChatMsgCmd>().collect {
         val uid = it.data?.uid ?: return@collect
         val allowed = listOf(GuardLevel.CAPTAIN, GuardLevel.GOVERNOR, GuardLevel.ADMIRAL)
         if (!allowed.contains(it.data?.medalInfo?.guardLevel)) return@collect
-        GuardList.insertOrUpdate(mid.toLong(), uid.toLong(), after1Day, GuardFetcher.MESSAGE)
+        GuardList.insertOrUpdate(mid, uid, after1Day, GuardFetcher.MESSAGE)
       }
     }
   }
 }
 
-private fun fetchAllGuardList(roomId: Int, targetId: Int) = GuardListFetcher(roomId, targetId).fetchAllGuardList()
+private fun fetchAllGuardList(roomId: Long, targetId: Long) = GuardListFetcher(roomId, targetId).fetchAllGuardList()
 
 private class GuardListFetcher(
-  private val roomId: Int,
-  private val targetId: Int,
+  private val roomId: Long,
+  private val targetId: Long,
 ) {
   var listSize: Int? = null
     private set
 
-  var maxPage: Int? = null
+  var maxPage: Long? = null
     private set
 
   fun fetchAllGuardList() = channelFlow {

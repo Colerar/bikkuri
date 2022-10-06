@@ -73,7 +73,7 @@ object Config :
   }
 
   private suspend fun getUserInfo(mid: Long?): String {
-    return client.getUserCard(mid?.toInt() ?: return "null", false).data?.card?.name?.let {
+    return client.getUserCard(mid ?: return "null", false).data?.card?.name?.let {
       "$it(uid$mid)"
     } ?: mid.toString()
   }

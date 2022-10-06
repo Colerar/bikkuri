@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import me.hbj.bikkuri.data.GuardFetcher
 import me.hbj.bikkuri.util.now
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
