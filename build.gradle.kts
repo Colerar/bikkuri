@@ -73,6 +73,7 @@ dependencies {
   implementation("net.mamoe:mirai-core:_")
   implementation("net.mamoe:mirai-console:_")
   implementation("net.mamoe:mirai-console-terminal:_")
+  implementation("net.mamoe:mirai-console-frontend-base:_")
   // Logger
   implementation("net.mamoe:mirai-logging-slf4j-logback:_")
   implementation("io.github.microutils:kotlin-logging-jvm:_")
@@ -199,5 +200,4 @@ tasks.shadowJar {
     exclude("com/sun/jna/linux-${it}/**/*")
     exclude("com/sun/jna/win32-${it}/**/*")
   }
-  minimize { exclude(dependency("net.mamoe:.*:.*")) }
 }

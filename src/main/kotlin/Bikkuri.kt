@@ -44,7 +44,6 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel
-import net.mamoe.mirai.utils.LoggerAdapters
 import net.mamoe.mirai.utils.info
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -65,7 +64,6 @@ object Bikkuri : KotlinPlugin(
   }
 
   override fun onEnable() {
-    LoggerAdapters.useLog4j2()
     logger.info { "Bikkuri Plugin Enabled, v$VERSION" }
     initYabapi()
     loadData()
