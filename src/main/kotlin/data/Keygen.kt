@@ -3,7 +3,6 @@ package me.hbj.bikkuri.data
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import me.hbj.bikkuri.util.keygenRegex
 import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.randomKeygen
 import net.mamoe.mirai.console.data.AutoSavePluginData
@@ -31,9 +30,17 @@ data class KeygenData(
   val expire = (expiresAt - now()).inWholeSeconds
 }
 
+private val withSurround = Regex("""\[(\d+)]""")
+private val pureNumber = Regex("""(\d+)""")
+
 fun String?.fitKeygen(keygen: KeygenData): Boolean {
-  val str = keygenRegex.find(this ?: "")?.value
-  return str?.removeSurrounding("[", "]") == keygen.keygen
+  if (this == null) return false
+  return listOf(
+    { withSurround.find(this)?.value?.removeSurrounding("[", "]") },
+    { pureNumber.find(this)?.value },
+  ).any {
+    it() == keygen.keygen
+  }
 }
 
 fun KeygenData(salt: String, length: Int, expiresAfter: Duration): KeygenData =

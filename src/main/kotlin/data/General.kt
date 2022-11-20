@@ -16,7 +16,6 @@ object General : AutoSavePluginConfig("_General") {
 
 @Serializable
 data class KeygenConfig(
-  val pattern: String = "123456789QWERTYUPASDFGHJKLZXCVBNMqwertyuiopasdfghjkzxcvbnm",
   val length: Int = 6,
   val timeout: Long = 300_000L, // s
 )
