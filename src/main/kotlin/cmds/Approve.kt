@@ -1,9 +1,12 @@
 package me.hbj.bikkuri.cmds
 
+import kotlinx.datetime.toJavaInstant
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.db.BotAccepted
 import me.hbj.bikkuri.db.BotAccepted.boundBiliId
 import me.hbj.bikkuri.db.BotAccepted.fromId
+import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.parseMessageMember
 import me.hbj.bikkuri.util.requireOperator
 import me.hbj.bikkuri.util.toFriendly
@@ -14,6 +17,7 @@ import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.MessageChain
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -26,6 +30,37 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
       onMember = { underlyingQueryQQ(it.id, it) },
       onId = { underlyingQueryQQ(it, null) }
     )
+  }
+
+  @SubCommand("add")
+  suspend fun MemberCommandSender.add(bili: Long, qq: Long) {
+    requireOperator(this)
+    val sender = this
+    val data = ListenerData.map[group.id]
+    if (data == null || !data.enable) {
+      group.sendMessage("当前群未启用验证")
+      return
+    }
+    val targetGroup = data.targetGroup
+    if (targetGroup == null) {
+      group.sendMessage("当前群未设置目标群")
+      return
+    }
+    val result = transaction {
+      BotAccepted.insert {
+        it[instant] = now().toJavaInstant()
+        it[botId] = bot.id
+        it[fromId] = qq
+        it[boundBiliId] = bili
+        it[fromGroupId] = sender.group.id
+        it[toGroupId] = targetGroup
+      }
+    }
+    if (result.insertedCount <= 1) {
+      group.sendMessage("✅ 添加成功")
+    } else {
+      group.sendMessage("❌ 添加失败")
+    }
   }
 
   private suspend fun MemberCommandSender.underlyingQueryQQ(qq: Long, member: Member?) {
