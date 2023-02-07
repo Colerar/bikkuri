@@ -26,6 +26,7 @@ import me.hbj.bikkuri.exception.command.CommandCancellation
 import me.hbj.bikkuri.util.ModuleScope
 import me.hbj.bikkuri.util.addImageOrText
 import me.hbj.bikkuri.util.loadImageResource
+import me.hbj.bikkuri.util.sendMessage
 import me.hbj.bikkuri.util.toFriendly
 import me.hbj.bikkuri.util.uidRegex
 import me.hbj.bikkuri.validator.MessageValidatorWithLoop
@@ -43,6 +44,8 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.nextEvent
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
 import kotlin.time.DurationUnit
@@ -77,7 +80,10 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       it.group.id == user.group.id && it.sender.id == user.id
     }
 
-    group.sendMessage("请发送 B 站 UID~")
+    group.sendMessage {
+      +At(this@handle.user)
+      +" 请发送 B 站 UID~"
+    }
 
     var loop1 = true
     while (loop1) nextMsgEvent().apply {
@@ -87,7 +93,10 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       }
 
       uid = uidRegex.find(message.content)?.groupValues?.get(2)?.toLongOrNull() ?: run {
-        group.sendMessage("输入错误, 需要纯数字 UID, 请重新输入")
+        group.sendMessage {
+          +QuoteReply(message)
+          +"输入错误, 需要纯数字 UID, 请重新输入"
+        }
         return@apply
       }
 
@@ -108,12 +117,12 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
             launch {
               (this@handle.user as NormalMember).kick("你已被拉黑。")
             }
-            val buser = run {
+            val bUser = run {
               val name = userSpace?.await()?.data?.name
               name?.let { "$name ($uid)" } ?: uid.toString()
             }
             val msg = buildMessageChain {
-              add("因 B 站用户 $buser 已被拉黑，故将其踢出本群。")
+              add("因 B 站用户 $bUser 已被拉黑，故将其踢出本群。")
               if (group.isBlocked(this@handle.user.id)) {
                 group.addBlock(this@handle.user.id)
                 add("同时将其本次申请的 QQ ${user.toFriendly()} 拉黑。")
@@ -138,22 +147,26 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
         else -> {
           val msg = when {
             !medalNotNull -> buildMessageChain {
-              add("呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)")
+              +QuoteReply(message)
+              +"呜~ 未获取到粉丝牌信息, 请根据下图指引佩戴粉丝牌~(再次发送 UID 重试, quit 退出)"
               addImageOrText(loadImageResource("./images/guide-phone.jpg"), group)
               addImageOrText(loadImageResource("./images/guide-web.jpg"), group)
             }
 
             !medalUserFit -> buildMessageChain {
-              add("呜~ 请佩戴正确的粉丝牌哦! 可再次输入 UID 重试, quit 退出")
+              +QuoteReply(message)
+              +"呜~ 请佩戴正确的粉丝牌哦! 可再次输入 UID 重试, quit 退出"
             }
 
             @Suppress("KotlinConstantConditions")
             !medalLevel -> buildMessageChain {
-              add("粉丝牌等级不足~ 需要至少 ${General.joinRequiredLevel} 级哦~")
+              +QuoteReply(message)
+              +"粉丝牌等级不足~ 需要至少 ${General.joinRequiredLevel} 级哦~"
             }
 
             else -> buildMessageChain {
-              add("遇到未知错误，可再次输入 UID 重试, quit 退出")
+              +QuoteReply(message)
+              +"遇到未知错误，可再次输入 UID 重试, quit 退出"
             }
           }
           group.sendMessage(msg)
@@ -182,17 +195,19 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       if (passed) return
       passed = true
       val map = GlobalAutoApprove[bot.id][data.targetGroup!!].map
-      map[this.user.id] = MemberToApprove(
+      map[user.id] = MemberToApprove(
         uid!!.toLong(),
-        this.group.id,
+        group.id,
       )
       signScope.launch {
-        group.sendMessage(
-          """
+        group.sendMessage {
+          +At(user)
+          +" "
+          +"""
           成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
           【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
           """.trimIndent()
-        )
+        }.recallIn(30_000L)
       }
     }
 

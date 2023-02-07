@@ -3,18 +3,19 @@ package me.hbj.bikkuri.validator
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.fitKeygen
+import me.hbj.bikkuri.util.sendMessage
 import moe.sdl.yabapi.api.fetchSessionMessage
 import moe.sdl.yabapi.api.getBasicInfo
 import moe.sdl.yabapi.data.message.contents.Text
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.content
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
-private val logger = mu.KotlinLogging.logger {}
 
 class RecvMessageValidator(
   private val keygen: KeygenData,
@@ -25,14 +26,16 @@ class RecvMessageValidator(
 
   override suspend fun beforeValidate(sender: MemberCommandSender) {
     val basicInfo = client.getBasicInfo().data
-    sender.sendMessage(
-      """
+    sender.sendMessage {
+      +At(sender.user)
+      +" "
+      +"""
       [${keygen.keygen}]
-      麻烦您按顺序完成以下两个步骤：
-      ① 复制整条消息，b站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
-      ② 私信后返回本群发送任何消息开始验证。（本条 ${keygen.expire} 秒内有效）
+      请您按以下操作完成最后一步：
+      1. 复制本条消息，前往 B 站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
+      2. 返回 QQ，发送任意消息完成验证。
       """.trimIndent()
-    )
+    }
     sender.sendMessage("网页版直达链接: https://message.bilibili.com/#/whisper/mid${basicInfo.mid}")
   }
 
@@ -40,7 +43,10 @@ class RecvMessageValidator(
     if (event.message.content == "quit") return ValidatorOperation.FAILED
     return validateLoop(event.toCommandSender()).also {
       if (it != ValidatorOperation.PASSED)
-        event.group.sendMessage("验证失败，稍后重试看看... 如有问题请 @ 管理，发送 quit 可退出验证。")
+        event.group.sendMessage {
+          +QuoteReply(event.message)
+          +" 验证失败，稍后重试看看... 如有问题请 @ 管理，发送 quit 可退出验证。"
+        }
     }
   }
 
