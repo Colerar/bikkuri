@@ -30,10 +30,10 @@ class RecvMessageValidator(
       +At(sender.user)
       +" "
       +"""
-      [${keygen.keygen}]
       请您按以下操作完成最后一步：
-      1. 复制本条消息，前往 B 站私信验证机器人：${basicInfo.username} （注：uid${basicInfo.mid}）
-      2. 返回 QQ，发送任意消息完成验证。
+      1. 前往 B 站私信验证机器人：${basicInfo.username} （UID:${basicInfo.mid}），发送验证码 [${keygen.keygen}]。
+      2. 若因 B 站风控无法发送，请先关注机器人。
+      3. 返回 QQ，发送任意消息完成验证。
       """.trimIndent()
     }
     sender.sendMessage("网页版直达链接: https://message.bilibili.com/#/whisper/mid${basicInfo.mid}")

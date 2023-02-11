@@ -23,6 +23,8 @@ data class GroupListener(
   var trigger: TimerTrigger = TimerTrigger.ON_MSG,
   var targetGroup: Long? = null,
   var kickDuration: ULong = 0uL,
+  var recallDuration: Long = 0L,
+  var queueSize: Int = 1,
 )
 
 @Serializable

@@ -10,6 +10,7 @@ import mu.KotlinLogging
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.concurrent.ConcurrentLinkedDeque
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,4 +49,4 @@ fun Events.onMemberRequest() {
   }
 }
 
-val queuedMemberRequest = mutableListOf<MemberJoinRequestEvent>()
+val queuedMemberRequest = ConcurrentLinkedDeque<MemberJoinRequestEvent>()

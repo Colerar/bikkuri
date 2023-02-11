@@ -19,15 +19,15 @@ fun CoroutineScope.launchAutoApproveTask(): Job = launch {
     delay(General.time.autoApprove)
     ListenerData.map
       .filter { it.value.enable }
-      .forEach { (groupId, _) ->
+      .forEach { (groupId, listener ) ->
         val e = queuedMemberRequest
           .firstOrNull { it.groupId == groupId } ?: return@forEach
 
         // Bot must be admin
         if (e.group?.getMember(e.bot.id)?.isOperator() == false) return@forEach
 
-        // keep only one in group
-        if (e.group?.members?.count { !it.isOperator() } != 0) return@forEach
+        val count = e.group?.members?.count { !it.isOperator() } ?: return@forEach
+        if (count >= listener.queueSize) return@forEach
 
         e.accept()
 

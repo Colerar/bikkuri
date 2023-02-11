@@ -9,8 +9,10 @@ import kotlinx.datetime.Clock
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.GlobalLastMsg
 import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.util.sendMessage
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.isOperator
+import net.mamoe.mirai.message.data.At
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -34,7 +36,11 @@ fun CoroutineScope.launchAutoKickTask(): Job = launch {
               val instant = map[it.id] ?: return@group
               if (now - instant > duration) {
                 val message = "您已 ${duration.inWholeSeconds} 秒无回复，已将您移出群聊，请重新排队申请加群。"
-                group.sendMessage(message)
+                group.sendMessage {
+                  +At(it)
+                  +" "
+                  +message
+                }
                 delay(General.time.messageNoticeBetweenKick)
                 it.kick(message)
                 map.remove(it.id)

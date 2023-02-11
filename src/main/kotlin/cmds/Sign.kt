@@ -34,9 +34,6 @@ import me.hbj.bikkuri.validator.RecvMessageValidator
 import me.hbj.bikkuri.validator.SendMessageValidator
 import me.hbj.bikkuri.validator.ValidatorOperation
 import moe.sdl.yabapi.api.getUserSpace
-import moe.sdl.yabapi.api.modifyRelation
-import moe.sdl.yabapi.enums.relation.RelationAction
-import moe.sdl.yabapi.enums.relation.SubscribeSource
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
@@ -185,10 +182,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       ValidateMode.RECV -> RecvMessageValidator(keygen, uid!!)
     }
 
-    coroutineScope {
-      launch { validator.beforeValidate(this@handle) }
-      launch { client.modifyRelation(uid!!, RelationAction.SUB, SubscribeSource.values().random()) }
-    }
+    validator.beforeValidate(this@handle)
 
     var passed by atomic(false)
     suspend fun whenPassed() {
@@ -200,14 +194,17 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
         group.id,
       )
       signScope.launch {
-        group.sendMessage {
+        val receipt = group.sendMessage {
           +At(user)
           +" "
           +"""
           成功通过审核~~~ 舰长群号 ${data.targetGroup}，申请后会自动同意。
           【❗重要：入群后先阅读群规，否则后果自负！】如有其他审核问题请联系管理员。
           """.trimIndent()
-        }.recallIn(30_000L)
+        }
+        if (data.recallDuration != 0L) {
+          receipt.recallIn(data.recallDuration * 1000)
+        }
       }
     }
 
@@ -256,10 +253,6 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       } else null
 
       listOfNotNull(waitReply, loopJob).joinAll()
-    }
-
-    coroutineScope {
-      launch { client.modifyRelation(uid!!, RelationAction.UNSUB, SubscribeSource.values().random()) }
     }
   }
 }

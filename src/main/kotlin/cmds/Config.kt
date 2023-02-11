@@ -132,7 +132,38 @@ object Config :
       group.sendMessage("❌ 需输入非负整数, 0 代表不自动踢人")
       return
     }
-    group.sendMessage("🔄 自动踢人时长变化： $last -> $duration\n注意单位是秒, 0 表示关闭")
+    group.sendMessage("🔄 自动踢人时长变化： $last -> $duration\n单位为秒, 0 表示关闭")
+    logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
+  }
+
+  @SubCommand("recall")
+  suspend fun MemberCommandSender.recall(duration: Long) {
+    requireOperator(this)
+    val id = group.id
+    val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
+    val last = data.recallDuration
+    if (duration !in 0..300) {
+      group.sendMessage("❌ 自动撤回时长超出允许值，应满足: 0 ≤ n ≤ 300，单位为秒。")
+      return
+    }
+    data.recallDuration = duration
+
+    group.sendMessage("🔄 撤回群号间隔变化： $last -> $duration\n单位为秒, 0 代表不撤回")
+    logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
+  }
+
+  @SubCommand("queue")
+  suspend fun MemberCommandSender.queue(size: Int) {
+    requireOperator(this)
+    val id = group.id
+    val data = ListenerData.map.getOrPut(id) { GroupListener(true) }
+    val last = data.queueSize
+    if (size !in 1..10) {
+      group.sendMessage("❌ 队列大小超出允许值，应满足: 1 ≤ n ≤ 10")
+      return
+    }
+    data.queueSize = size
+    group.sendMessage("🔄 队列大小变化： $last -> $size")
     logger.debug { "GroupListener[$id] : ${ListenerData.map[id]}" }
   }
 }
