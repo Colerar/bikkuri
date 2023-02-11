@@ -61,7 +61,7 @@
 
 - `/blocklist` 屏蔽指令，缩写 `/block` `/b`
 - `/block help` 显示帮助页面
-- `/block list/ls` [页码] 查看当前屏蔽列表
+- `/block list/ls [页码]` 查看当前屏蔽列表
 - `/block add <At|QQ号>` 添加某人到屏蔽列表
 - `/block kick <At|QQ号>` 添加某人到屏蔽列表，同时移出本群
 - `/block ban <At|QQ号>` 添加某人到屏蔽列表，移出本群，同时使用QQ的拉黑功能
@@ -89,6 +89,8 @@
 - `/config bind <UID>` 绑定目标 UP 主，也就是需要审核的牌子的主播的 **UID**
 - `/config autokick <时间长度>` 设置自动踢出的时间, 以秒为单位, `0` 表示不会自动踢出, 推荐 `300` 秒
 - `/config mode <recv|send>` 设置验证器模式
+- `/config queue <时间长度>` 设置同时最多审核多少人。默认为 1。
+- `/config recall <撤回时长>` 设置多久后撤回群号消息，默认为 0，即不撤回。
 
 ### joinlimit
 
