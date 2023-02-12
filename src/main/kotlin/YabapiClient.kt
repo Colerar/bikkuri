@@ -8,15 +8,12 @@ import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
-import me.hbj.bikkuri.util.BrotliImpl
 import moe.sdl.yabapi.BiliClient
 import moe.sdl.yabapi.Yabapi
 import moe.sdl.yabapi.enums.LogLevel
 import moe.sdl.yabapi.storage.FileCookieStorage
 import mu.KotlinLogging
 import okio.Path.Companion.toOkioPath
-
-private val logger = KotlinLogging.logger {}
 
 // Safari + MacOS User Agent
 private const val WEB_USER_AGENT: String =
@@ -50,7 +47,6 @@ private inline fun JsonBuilder.buildDefault() {
   isLenient = true
   coerceInputValues = true
   ignoreUnknownKeys = true
-  encodeDefaults = true
 }
 
 internal val json by lazy {
@@ -64,19 +60,19 @@ internal val prettyPrintJson = Json {
   prettyPrint = true
 }
 
+private val yabapiLogger = KotlinLogging.logger("Yabapi")
+
 internal fun initYabapi() = Yabapi.apply {
   defaultJson.getAndSet(json)
 
   log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
     when (level) {
-      LogLevel.VERBOSE -> logger.trace(e) { "$tag - ${message()}" }
-      LogLevel.DEBUG -> logger.debug(e) { "$tag - ${message()}" }
-      LogLevel.INFO -> logger.info(e) { "$tag - ${message()}" }
-      LogLevel.WARN -> logger.warn(e) { "$tag - ${message()}" }
-      LogLevel.ERROR -> logger.error(e) { "$tag - ${message()}" }
-      LogLevel.ASSERT -> logger.error(e) { "-----ASSERT----- $tag - ${message()}" }
+      LogLevel.VERBOSE -> yabapiLogger.trace(e) { "$tag - ${message()}" }
+      LogLevel.DEBUG -> yabapiLogger.debug(e) { "$tag - ${message()}" }
+      LogLevel.INFO -> yabapiLogger.info(e) { "$tag - ${message()}" }
+      LogLevel.WARN -> yabapiLogger.warn(e) { "$tag - ${message()}" }
+      LogLevel.ERROR -> yabapiLogger.error(e) { "$tag - ${message()}" }
+      LogLevel.ASSERT -> yabapiLogger.error(e) { "-----ASSERT----- $tag - ${message()}" }
     }
   }
-
-  brotliImpl.getAndSet(BrotliImpl)
 }

@@ -99,12 +99,6 @@ dependencies {
   implementation(Square.okio)
   // csv
   implementation("com.github.doyaaaaaken:kotlin-csv-jvm:_")
-  // Brotli
-  implementation("com.aayushatharva.brotli4j:brotli4j:_")
-  val brotli4jVer = versions["version.com.aayushatharva.brotli4j..brotli4j"]
-  targets.forEach {
-    implementation("com.aayushatharva.brotli4j:native-$it:$brotli4jVer")
-  }
   // runtime system info
   implementation("com.github.oshi:oshi-core-java11:_")
   // Test framework
