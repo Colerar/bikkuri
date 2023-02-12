@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.hbj.bikkuri"
-version = "1.1.1"
+version = "1.2.0"
 
 repositories {
   mavenCentral()
@@ -49,6 +49,7 @@ val targets by lazy {
       hostArch.isArm -> arrayOf("linux-aarch64")
       else -> arrayOf("linux-x86_64")
     }
+
     else -> error("unsupported target for ${hostOs.name}/$hostArch")
   }
 }
