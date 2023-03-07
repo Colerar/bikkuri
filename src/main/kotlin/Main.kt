@@ -52,5 +52,6 @@ suspend fun setupTerminal(workDir: File? = null) = runBlocking {
 }
 
 fun main() = runBlocking {
+  fixProtoVersion()
   setupTerminal()
 }
