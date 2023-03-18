@@ -97,9 +97,11 @@ object Block :
             if (!it.isBlocked()) it.addBlock()
           }
         }
-        membersToKick.kickAll(reason = "已被拉黑")
-        add("同时踢出并拉黑了以下成员:\n")
-        add(membersToKick.toTreeString().trimEnd())
+        if (membersToKick.isNotEmpty()) {
+          membersToKick.kickAll(reason = "已被拉黑")
+          add("同时踢出并拉黑了以下成员:\n")
+          add(membersToKick.toTreeString().trimEnd())
+        }
       }.also {
         sendMessage(it)
       }
@@ -236,6 +238,7 @@ object Block :
           sendMessage("🤔 已有重定向 $fromStr 🔗 $beforeGroup 存在。考虑使用 update 命令进行更新。")
         }
       }
+
       op("update", "upd") -> {
         if (toBefore != null) {
           if (!checkIsAdmin(toBefore!!)) {
@@ -248,6 +251,7 @@ object Block :
           sendMessage("🈳 本群没有拦截列表重定向。")
         }
       }
+
       else -> sendMessage("❌ 错误的操作输入: $operator")
     }
   }
@@ -278,6 +282,7 @@ object Block :
           return
         }
       }
+
       op("now", "see") -> {
         if (toBefore == null) {
           sendMessage("🈳 本群没有拦截列表重定向。")
@@ -286,6 +291,7 @@ object Block :
         val linkStr = bot.getGroup(toBefore!!).toFriendly(toBefore)
         sendMessage("🔍 当前拦截列表重定向 $fromStr 🔗 $linkStr")
       }
+
       else -> sendMessage("❌ 错误的操作输入: $operator")
     }
   }
