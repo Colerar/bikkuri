@@ -116,6 +116,7 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
         append(it.first)
         append(" - ")
         append(it.second)
+        appendLine()
       }
     }
     sendMessage(str)
