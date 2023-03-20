@@ -12,6 +12,7 @@ object General : AutoSavePluginConfig("_General") {
   val keygen by value(KeygenConfig())
   val time by value(TaskDelay())
   val randomReply by value(RandomReply())
+  val operationGroups by value(listOf<Long>())
 }
 
 @Serializable

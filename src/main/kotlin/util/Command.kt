@@ -1,6 +1,7 @@
 package me.hbj.bikkuri.util
 
 import kotlinx.coroutines.CancellationException
+import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.exception.command.CommandCancellation
 import me.hbj.bikkuri.exception.command.CommandPermissionException
 import mu.KotlinLogging
@@ -43,7 +44,9 @@ suspend inline fun <T : CommandSender> T.cmdLock(crossinline action: suspend T.(
 }
 
 fun Command.requireOperator(sender: MemberCommandSender) {
-  if (!sender.user.isOperator()) throw CommandPermissionException(sender, this)
+  if (!sender.user.isOperator() && !General.operationGroups.contains(sender.group.id)) {
+    throw CommandPermissionException(sender, this)
+  }
 }
 
 suspend fun Command.require(sender: MemberCommandSender, require: Boolean, lazyMessage: () -> String) {
