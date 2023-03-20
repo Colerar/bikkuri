@@ -1,7 +1,5 @@
 package me.hbj.bikkuri.db
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -31,9 +29,9 @@ object BotAccepted : Table() {
 
   override val primaryKey: PrimaryKey = PrimaryKey(eventId)
 
-  fun eq(bot: Bot, group: Group): Op<Boolean> =
-    (botId eq bot.id) and
-      ((fromGroupId eq group.id) or (toGroupId eq group.id))
+  fun eq(bot: Long, group: Long): Op<Boolean> =
+    (botId eq bot) and
+      ((fromGroupId eq group) or (toGroupId eq group))
 
   fun eqMember(memberId: Long): Op<Boolean> = fromId eq memberId
   fun eqMember(member: Member): Op<Boolean> = fromId eq member.id

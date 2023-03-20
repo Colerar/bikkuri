@@ -6,6 +6,7 @@ import me.hbj.bikkuri.data.ListenerData
 import me.hbj.bikkuri.db.BotAccepted
 import me.hbj.bikkuri.db.BotAccepted.boundBiliId
 import me.hbj.bikkuri.db.BotAccepted.fromId
+import me.hbj.bikkuri.db.redirectApproveLink
 import me.hbj.bikkuri.util.now
 import me.hbj.bikkuri.util.parseMessageMember
 import me.hbj.bikkuri.util.requireOperator
@@ -35,13 +36,8 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
   @SubCommand("add")
   suspend fun MemberCommandSender.add(bili: Long, qq: Long) {
     requireOperator(this)
-    val sender = this
-    val data = ListenerData.map[group.id]
-    if (data == null || !data.enable) {
-      group.sendMessage("当前群未启用验证")
-      return
-    }
-    val targetGroup = data.targetGroup
+    val approveId = this.group.redirectApproveLink()
+    val targetGroup = ListenerData.map[approveId]?.targetGroup
     if (targetGroup == null) {
       group.sendMessage("当前群未设置目标群")
       return
@@ -52,7 +48,7 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
         it[botId] = bot.id
         it[fromId] = qq
         it[boundBiliId] = bili
-        it[fromGroupId] = sender.group.id
+        it[fromGroupId] = approveId
         it[toGroupId] = targetGroup
       }
     }
@@ -70,7 +66,7 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
     val list = transaction {
       val table = BotAccepted
       table.select {
-        table.eq(bot, group) and table.eqMember(qq)
+        table.eq(bot.id, group.redirectApproveLink()) and table.eqMember(qq)
       }.toList().map {
         it[BotAccepted.instant].toLocalDateTime().toReadDateTime() to
           it[boundBiliId].toString()
@@ -87,6 +83,7 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
         append(it.first ?: "unk")
         append(" - ")
         append(it.second)
+        appendLine()
       }
     }
     sendMessage(str)
@@ -99,7 +96,7 @@ object Approve : CompositeCommand(Bikkuri, "approve", "ap"), RegisteredCmd {
     val list = transaction {
       val table = BotAccepted
       table.select {
-        table.eq(bot, group) and table.eqBiliUser(id)
+        table.eq(bot.id, group.redirectApproveLink()) and table.eqBiliUser(id)
       }.toList().map {
         it[BotAccepted.instant].toLocalDateTime().toReadDateTime() to
           it[fromId].toString()
