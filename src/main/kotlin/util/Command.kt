@@ -83,6 +83,8 @@ suspend fun CommandSender.executeCommandSafely(message: MessageChain) {
     logger.trace(e) { "Cancelled Command ${e.command?.primaryName}:" }
   } catch (e: CancellationException) {
     logger.warn(e) { "Cancelled command:" }
+  } catch (e: CommandPermissionException) {
+    logger.info { e.message }
   } catch (e: Exception) {
     logger.error(e) { "Command exception:" }
   }
