@@ -167,19 +167,19 @@ data class BiliVideo(
   val title: String,
 ) {
   suspend fun toLong(): BiliVideo? = runCatching {
-    if (!url.contains("b23.tv")) {
-      return this
-    }
-    val html = clientNoRedirect.get(url).bodyAsText()
-    val aTag = A_TAG_REGEX.find(html)?.value ?: return@runCatching null
-    val document = aTag.readToXmlDocument()
-    val href =
+    val url = if (url.contains("b23.tv")) {
+      val html = clientNoRedirect.get(url).bodyAsText()
+      val aTag = A_TAG_REGEX.find(html)?.value ?: return@runCatching null
+      val document = aTag.readToXmlDocument()
       document.byTagFirst("a")
         ?.attributes
         ?.getNamedItem("href")
         ?.nodeValue
         ?: return@runCatching null
-    val builder = URLBuilder(href)
+    } else {
+      url
+    }
+    val builder = URLBuilder(url)
     builder.parameters.names().toList() // copy
       .filter { it != "p" && it != "t" }
       .forEach { builder.parameters.remove(it) }
