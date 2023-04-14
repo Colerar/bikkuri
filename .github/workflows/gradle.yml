@@ -39,7 +39,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: shadowJar
-          gradle-version: 7.4.2
+          gradle-version: wrapper
 
       - name: upload artifact
         uses: actions/upload-artifact@v2
