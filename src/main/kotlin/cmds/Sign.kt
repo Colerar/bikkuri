@@ -10,6 +10,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import me.hbj.bikkuri.Bikkuri
+import me.hbj.bikkuri.api.getUserSpaceWbi
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.GlobalAutoApprove
@@ -33,7 +34,6 @@ import me.hbj.bikkuri.validator.MessageValidatorWithLoop
 import me.hbj.bikkuri.validator.RecvMessageValidator
 import me.hbj.bikkuri.validator.SendMessageValidator
 import me.hbj.bikkuri.validator.ValidatorOperation
-import moe.sdl.yabapi.api.getUserSpace
 import mu.KotlinLogging
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
@@ -100,7 +100,7 @@ object Sign : SimpleCommand(Bikkuri, "sign", "s", "验证"), RegisteredCmd {
       val userSpace = coroutineScope {
         withTimeoutOrNull(30_000) {
           async {
-            client.getUserSpace(uid!!)
+            client.getUserSpaceWbi(uid!!)
           }
         }
       }
