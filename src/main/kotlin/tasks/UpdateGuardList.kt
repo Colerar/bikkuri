@@ -2,38 +2,22 @@ package me.hbj.bikkuri.tasks
 
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
-import me.hbj.bikkuri.Bikkuri
 import me.hbj.bikkuri.client
-import me.hbj.bikkuri.data.General
 import me.hbj.bikkuri.data.GuardFetcher
-import me.hbj.bikkuri.data.ListenerData
+import me.hbj.bikkuri.data.ListenerPersist
 import me.hbj.bikkuri.db.GuardLastUpdate
 import me.hbj.bikkuri.db.GuardList
 import me.hbj.bikkuri.exception.ReconnectException
-import me.hbj.bikkuri.util.after1Day
-import me.hbj.bikkuri.util.after30Days
-import me.hbj.bikkuri.util.now
-import moe.sdl.yabapi.api.createLiveDanmakuConnection
-import moe.sdl.yabapi.api.getBasicInfo
-import moe.sdl.yabapi.api.getGuardList
-import moe.sdl.yabapi.api.getLiveDanmakuInfo
-import moe.sdl.yabapi.api.getRoomIdByUid
-import moe.sdl.yabapi.api.getRoomInitInfo
+import me.hbj.bikkuri.utils.after1Day
+import me.hbj.bikkuri.utils.after30Days
+import me.hbj.bikkuri.utils.now
+import moe.sdl.yabapi.api.*
 import moe.sdl.yabapi.connect.LiveDanmakuConnectConfig
 import moe.sdl.yabapi.connect.onCertificateResponse
 import moe.sdl.yabapi.connect.onCommandResponse
@@ -44,20 +28,21 @@ import moe.sdl.yabapi.data.live.commands.DanmakuMsgCmd
 import moe.sdl.yabapi.data.live.commands.GuardBuyCmd
 import moe.sdl.yabapi.data.live.commands.SuperChatMsgCmd
 import mu.KotlinLogging
-import net.mamoe.mirai.console.util.retryCatching
+import net.mamoe.mirai.utils.retryCatching
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 private val logger = KotlinLogging.logger {}
 
 // mid to job
-internal val jobMap: MutableMap<Long, Job> = mutableMapOf()
+internal val jobMap: ConcurrentHashMap<Long, Job> = ConcurrentHashMap()
 
 fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
   if (!client.getBasicInfo().data.isLogin) {
-    Bikkuri.logger.info("检测到未登录，请使用 loginbili 指令登录后重启")
+    logger.info { "检测到未登录，请使用 loginbili 指令登录后重启" }
     return@launch
   }
   listOf(launchCleanJob(), launchCollectJob()).joinAll()
@@ -72,15 +57,16 @@ private fun CoroutineScope.launchCleanJob() = launch {
     GuardList.cleanup()
     val now = GuardList.count()
     logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
-    delay(General.time.guardCleanup)
+    delay(300_000L)
   }
 }
 
 private fun CoroutineScope.launchCollectJob() = launch {
   while (isActive) {
-    delay(General.time.guardJobScan)
-    val enabledMap = ListenerData.enabledMap
-    val midsToListen = enabledMap.mapNotNull { it.value.userBind }
+    delay(10_000L)
+    val midsToListen = ListenerPersist.listeners
+      .filterValues { it.enable }
+      .mapNotNull { it.value.userBind }
 
     logger.trace { "Refresh guard list fetch jobs..." }
 
@@ -93,46 +79,49 @@ private fun CoroutineScope.launchCollectJob() = launch {
     }
 
     // enable jobs
-    enabledMap.filterNot { it.value.userBind == null }.forEach { (_, data) ->
-      val mid = data.userBind!!
-      if (jobMap.containsKey(mid)) return@forEach
-      jobMap[mid] = launch job@{
-        val retry = General.retryTimes
+    ListenerPersist.listeners
+      .filterValues { it.enable }
+      .filterNot { it.value.userBind == null }
+      .forEach { (_, data) ->
+        val mid = data.userBind!!
+        if (jobMap.containsKey(mid)) return@forEach
+        jobMap[mid] = launch job@{
+          val retry = 5
 
-        val deferredId = async {
-          retryCatching(retry) {
-            client.getBasicInfo().data.mid ?: error("Failed to get self mid")
-          }.onFailure {
-            logger.warn { "Failed to get self mid after $retry times" }
-          }.getOrNull()
-        }
-
-        val roomId = retryCatching(retry) {
-          client.getRoomIdByUid(mid).roomId ?: error("Failed to get room id")
-        }.onFailure {
-          logger.warn(it) { "Failed to get room id of $mid after $retry times" }
-        }.getOrNull() ?: return@job
-
-        val realRoomId = retryCatching(retry) {
-          client.getRoomInitInfo(roomId).data?.roomId ?: error("Failed to get room id")
-        }.onFailure {
-          logger.warn(it) { "Failed to get room id $mid after $retry times" }
-        }.getOrNull() ?: return@job
-
-        val stream = retryCatching(General.retryTimes) {
-          client.getLiveDanmakuInfo(roomId).also {
-            requireNotNull(it.data?.token)
-            requireNotNull(it.data?.hostList)
+          val deferredId = async {
+            retryCatching(retry) {
+              client.getBasicInfo().data.mid ?: error("Failed to get self mid")
+            }.onFailure {
+              logger.warn { "Failed to get self mid after $retry times" }
+            }.getOrNull()
           }
-        }.onFailure {
-          logger.warn(it) { "Failed to get message stream info after ${General.retryTimes} times" }
-        }.getOrNull() ?: return@job
 
-        val selfId = deferredId.await() ?: return@job
+          val roomId = retryCatching(retry) {
+            client.getRoomIdByUid(mid).roomId ?: error("Failed to get room id")
+          }.onFailure {
+            logger.warn(it) { "Failed to get room id of $mid after $retry times" }
+          }.getOrNull() ?: return@job
 
-        UpdateRoomConnection(mid, roomId, realRoomId, selfId, stream).run { start() }
+          val realRoomId = retryCatching(retry) {
+            client.getRoomInitInfo(roomId).data?.roomId ?: error("Failed to get room id")
+          }.onFailure {
+            logger.warn(it) { "Failed to get room id $mid after $retry times" }
+          }.getOrNull() ?: return@job
+
+          val stream = retryCatching(5) {
+            client.getLiveDanmakuInfo(roomId).also {
+              requireNotNull(it.data?.token)
+              requireNotNull(it.data?.hostList)
+            }
+          }.onFailure {
+            logger.warn(it) { "Failed to get message stream info after 5 times" }
+          }.getOrNull() ?: return@job
+
+          val selfId = deferredId.await() ?: return@job
+
+          UpdateRoomConnection(mid, roomId, realRoomId, selfId, stream).run { start() }
+        }
       }
-    }
   }
 }
 
@@ -176,13 +165,16 @@ class UpdateRoomConnection(
     suspend fun createConnection() {
       runCatching {
         client.createLiveDanmakuConnection(
-          selfId, realId, stream.data!!.token!!, stream.data!!.hostList.first()
+          selfId,
+          realId,
+          stream.data!!.token!!,
+          stream.data!!.hostList.first(),
         ) {
           onResponse()
         }
         while (isActive) {
           val time = lastHeartbeatResp.value
-          if (time != null && now() - time >= General.time.reconnectNoResponse.toDuration(DurationUnit.MILLISECONDS)) {
+          if (time != null && now() - time >= 35_000L.toDuration(DurationUnit.MILLISECONDS)) {
             throw ReconnectException("Long time no response, try to reconnect")
           }
         }
@@ -192,16 +184,17 @@ class UpdateRoomConnection(
           is ReconnectException -> {
             logger.warn(it) { "Try to reconnect, because:" }
           }
+
           is UnresolvedAddressException -> {
-            val delay = General.time.reconnectNoInternetMs
-            logger.warn(it) { "Try to reconnect after $delay ms, because:" }
-            delay(delay)
+            logger.warn(it) { "Try to reconnect after 10s, because:" }
+            delay(10_000L)
           }
+
           is IOException -> {
-            val delay = General.time.reconnectIOExceptionMs
-            logger.warn(it) { "Try to reconnect after $delay ms, because an IOException:" }
-            delay(delay)
+            logger.warn(it) { "Try to reconnect after 2s, because an IOException:" }
+            delay(2_000L)
           }
+
           else -> {
             logger.warn(it) { "An exception occurred, try to reconnect" }
           }
@@ -224,8 +217,9 @@ class UpdateRoomConnection(
         val roomId = it.data?.medal?.roomId ?: return@collect
         val lv = it.data?.medal?.level
         if (!(lv != null && lv >= 21)) return@collect
-        if (roomId == this@UpdateRoomConnection.roomId || roomId == this@UpdateRoomConnection.realId)
+        if (roomId == this@UpdateRoomConnection.roomId || roomId == this@UpdateRoomConnection.realId) {
           return@collect
+        }
         val uid = it.data?.liveUser?.mid ?: return@collect
 
         GuardList.insertOrUpdate(mid, uid, after1Day, GuardFetcher.MESSAGE)

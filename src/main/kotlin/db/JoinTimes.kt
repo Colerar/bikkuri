@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.update
 
 private val logger = mu.KotlinLogging.logger {}
 
-@OptIn(ExperimentalUnsignedTypes::class)
 object JoinTimes : Table() {
   val groupId = long("group_id").index()
   val memberId = long("member_id").index()
@@ -40,7 +39,7 @@ object JoinTimes : Table() {
     val db = this@JoinTimes
     update(
       where = { (db.groupId eq groupId) and (db.memberId eq memberId) },
-      body = { it[joinTimes] = times }
+      body = { it[joinTimes] = times },
     )
     times
   }

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+INPUT_FILE=$1
+
+START_LINE=$(head -n1 "$INPUT_FILE")
+
+PATTERN='^(feat(ure)?|fix|docs|style|refactor|ci|chore|perf|build|test|revert)(\(.+\))?(!)?: .+$'
+
+if [ "${#START_LINE}" -gt "72" ]; then
+  echo -e "Message too long! Assert length <= 72."
+  exit
+fi
+
+if ! [[ "$START_LINE" =~ $PATTERN ]]; then
+  echo -e "$START_LINE"
+  echo
+  echo -e "↑ Bad commit message, it does not meet the Conventional Commit standard."
+  echo -e "See more: https://www.conventionalcommits.org/en/v1.0.0/"
+  exit 1
+fi

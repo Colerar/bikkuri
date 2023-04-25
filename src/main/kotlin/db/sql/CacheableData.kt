@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.select
 
 abstract class CacheableData<TID : Comparable<TID>>(
   protected val id: EntityID<TID>,
-  private val table: IdTable<TID>
+  private val table: IdTable<TID>,
 ) {
 
   private var cache: Query = originalData

@@ -2,7 +2,7 @@ package me.hbj.bikkuri.db
 
 import me.hbj.bikkuri.db.sql.SQLDatabaseSet
 import me.hbj.bikkuri.db.sql.SetTable
-import me.hbj.bikkuri.util.toFriendly
+import me.hbj.bikkuri.utils.toFriendly
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -39,13 +39,17 @@ class DuplicateConfig(id: EntityID<Int>) : IntEntity(id) {
     相关群聊: ${groups.joinToString(", ")}
     检测间隔: ${checkInterval.toKotlinDuration().toFriendly()}
     """.trimIndent()
-  } else buildString {
-    append("[${id.value}] ")
-    append(if (enabled) "✅ 已开启" else "🚫 未开启")
-    append("，相关群聊: ")
-    if (groups.isEmpty()) {
-      append("无")
-    } else append(groups.joinToString(", "))
+  } else {
+    buildString {
+      append("[${id.value}] ")
+      append(if (enabled) "✅ 已开启" else "🚫 未开启")
+      append("，相关群聊: ")
+      if (groups.isEmpty()) {
+        append("无")
+      } else {
+        append(groups.joinToString(", "))
+      }
+    }
   }
 }
 

@@ -9,14 +9,14 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 
 abstract class SetTable<TID : Comparable<TID>, V>(
-  tableName: String
+  tableName: String,
 ) : IdTable<TID>(tableName) {
   abstract val value: Column<V>
 }
 
 class SQLDatabaseSet<TID : Comparable<TID>, V>(
   id: EntityID<TID>,
-  private val setTable: SetTable<TID, V>
+  private val setTable: SetTable<TID, V>,
 ) : CacheableData<TID>(id, setTable), MutableSet<V> {
 
   private val values

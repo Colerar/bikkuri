@@ -1,68 +1,69 @@
 package me.hbj.bikkuri.events
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.URLBuilder
-import kotlinx.coroutines.launch
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import me.hbj.bikkuri.Bikkuri.registeredCmds
-import me.hbj.bikkuri.cmds.Sign
-import me.hbj.bikkuri.data.GlobalLastMsg
-import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.data.TimerTrigger
-import me.hbj.bikkuri.tasks.groupsToForward
-import me.hbj.bikkuri.util.Forwarder
-import me.hbj.bikkuri.util.byTagFirst
-import me.hbj.bikkuri.util.executeCommandSafely
-import me.hbj.bikkuri.util.now
-import me.hbj.bikkuri.util.readToXmlDocument
-import me.hbj.bikkuri.util.sendMessage
-import me.hbj.bikkuri.util.toList
-import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
-import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import me.hbj.bikkuri.command.CommandManager
+import me.hbj.bikkuri.command.ContextManager
+import me.hbj.bikkuri.command.JobIdentity
+import me.hbj.bikkuri.command.MiraiCommandSender
+import me.hbj.bikkuri.data.ListenerPersist
+import me.hbj.bikkuri.utils.byTagFirst
+import me.hbj.bikkuri.utils.readToXmlDocument
+import me.hbj.bikkuri.utils.sendMessage
+import me.hbj.bikkuri.utils.toList
+import mu.KotlinLogging
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.message.data.LightApp
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.message.data.SimpleServiceMessage
-import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.message.data.firstIsInstanceOrNull
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.w3c.dom.Document
-import kotlin.collections.set
+import java.awt.SystemColor.text
 
-private val allCommandSymbol by lazy {
-  (
-    registeredCmds.map { it.primaryName } +
-      registeredCmds.map { it.secondaryNames.toList() }.flatten()
-    ).sorted().toTypedArray()
+private val logger = KotlinLogging.logger {}
+
+val commandCtxManager = ContextManager()
+
+fun executeCommandSafely(event: MessageEvent, text: String) {
+  if (!text.startsWith("/")) return
+  val group = (event.sender as? Member)?.group?.id
+  val i = JobIdentity(event.bot.id, group, event.sender.id)
+  if (text == "/cancel") {
+    CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), text.removePrefix("/"))
+    return
+  }
+  val begin = commandCtxManager.contextBegin(
+    i = i,
+    jobInitializer = {
+      CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), text.removePrefix("/"))
+    },
+  )
+  if (!begin) {
+    logger.debug { "Command job for $i does not begin" }
+  }
 }
 
-private val cmdRegex by lazy { Regex("""/(\S+)""") }
-
-@OptIn(ExperimentalCommandDescriptors::class, ConsoleExperimentalApi::class, MiraiExperimentalApi::class)
+@OptIn(MiraiExperimentalApi::class)
 fun Events.onMessageReceived() {
   filter {
     it is GroupMessageEvent || it is FriendMessageEvent
-  }.subscribeAlways<MessageEvent> {
-    val content = message.content
-    if (content.startsWith("/")) {
-      val cmd = cmdRegex.find(content)?.groupValues?.get(1) ?: return@subscribeAlways
-      if (allCommandSymbol.binarySearch(cmd) < 0) return@subscribeAlways
-      sender.asCommandSender(false).executeCommandSafely(message)
-    }
+  }.subscribeAlways<MessageEvent> e@{ event ->
+    if (sender !is Member && sender !is Friend) return@e
+    message.all { it is PlainText || it is At }
+    val text = message.content
+    executeCommandSafely(event, text)
   }
 
   subscribeAlways<MessageEvent> {
@@ -115,33 +116,12 @@ fun Events.onMessageReceived() {
     }
   }
 
-  subscribeAlways<GroupMessageEvent> {
-    if (
-      sender is NormalMember && // 只用刷新普通成员的上次消息
-      ListenerData.isEnabled(group.id) && // 需要开启监听
-      ListenerData.map[group.id]?.trigger == TimerTrigger.ON_MSG // 需要有 ON MSG trigger
-    ) {
-      GlobalLastMsg[bot.id][group.id].map[sender.id] = now()
-    }
-  }
-  subscribeAlways<GroupMessageEvent> {
-    if (!ListenerData.isEnabled(group.id)) return@subscribeAlways
-    if (it.message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
-      (it.sender as? NormalMember)?.asCommandSender(false)?.executeCommandSafely("/${Sign.primaryName}")
-    }
-  }
-
-  subscribeAlways<GroupMessageEvent> l@{
-    val rel = groupsToForward[it.group.id] ?: return@l
-    if (!rel.enabled) return@l
-    if (!rel.forwardAll && !rel.forwardees.contains(it.sender.id)) return@l
-    if (sender !is NormalMember) return@l
-    newSuspendedTransaction {
-      rel.toGroups.forEach {
-        bot.launch {
-          Forwarder.forward(bot.getGroup(it) ?: return@launch, sender as NormalMember, message, rel.showHint)
-        }
-      }
+  subscribeAlways<GroupMessageEvent> { event ->
+    val enabled = ListenerPersist.listeners.filter { it.value.enable }
+    if (!enabled.containsKey(group.id)) return@subscribeAlways
+    if (message.content.matches(Regex("""(["“”]?(开始)?(验证|驗證)["“”]?|^.+/验证$)"""))) {
+      if (sender !is NormalMember) return@subscribeAlways
+      executeCommandSafely(event, "/sign")
     }
   }
 }
@@ -171,18 +151,13 @@ data class BiliVideo(
       val html = clientNoRedirect.get(url).bodyAsText()
       val aTag = A_TAG_REGEX.find(html)?.value ?: return@runCatching null
       val document = aTag.readToXmlDocument()
-      document.byTagFirst("a")
-        ?.attributes
-        ?.getNamedItem("href")
-        ?.nodeValue
-        ?: return@runCatching null
+      document.byTagFirst("a")?.attributes?.getNamedItem("href")?.nodeValue ?: return@runCatching null
     } else {
       url
     }
     val builder = URLBuilder(url)
     builder.parameters.names().toList() // copy
-      .filter { it != "p" && it != "t" }
-      .forEach { builder.parameters.remove(it) }
+      .filter { it != "p" && it != "t" }.forEach { builder.parameters.remove(it) }
 
     if (builder.parameters.names().contains("p") && builder.parameters["p"] == "1") {
       builder.parameters.remove("p")

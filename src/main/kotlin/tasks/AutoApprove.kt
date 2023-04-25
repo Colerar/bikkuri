@@ -1,12 +1,7 @@
 package me.hbj.bikkuri.tasks
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import me.hbj.bikkuri.data.General
-import me.hbj.bikkuri.data.ListenerData
+import kotlinx.coroutines.*
+import me.hbj.bikkuri.data.ListenerPersist
 import me.hbj.bikkuri.events.queuedMemberRequest
 import mu.KotlinLogging
 import net.mamoe.mirai.contact.getMember
@@ -16,16 +11,17 @@ private val logger = KotlinLogging.logger {}
 
 fun CoroutineScope.launchAutoApproveTask(): Job = launch {
   while (isActive) {
-    delay(General.time.autoApprove)
-    ListenerData.map
-      .filter { it.value.enable }
-      .forEach { (groupId, listener ) ->
+    delay(5_000)
+    ListenerPersist.data.listener.asSequence()
+      .filter { (_, v) -> v.enable }
+      .forEach { (groupId, listener) ->
         val e = queuedMemberRequest
           .firstOrNull { it.groupId == groupId } ?: return@forEach
 
         // Bot must be admin
         if (e.group?.getMember(e.bot.id)?.isOperator() == false) return@forEach
 
+        // Requires total - operator < queue
         val count = e.group?.members?.count { !it.isOperator() } ?: return@forEach
         if (count >= listener.queueSize) return@forEach
 

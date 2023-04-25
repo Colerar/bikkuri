@@ -12,8 +12,8 @@
 
 ### 在控制台
 
-- 使用命令 `autologin` 设置自动登录帐号。详见 [~~登录QQ~~(正在施工)]() 一节。
-- 使用 `loginbili` 登录 B 站帐号。详见 [~~登录B站~~(正在施工)]() 一节。
+- 第一次启动会告诉你如何添加自动登录，按照提示即可。推荐使用 QR 登录，但协议需为 `ANDROID_WATCH`。
+- 使用 `loginbili` 登录 B 站帐号。默认使用二维码，按照提示来即可。
 
 ### 群设置
 
@@ -26,19 +26,19 @@
 
 **必须**
 
-- `/config switch` 开启机器人
-- `/config target <目标群号>` 绑定目标群
-- `/config bind <UID>` 绑定目标 UP 主，也就是需要审核的牌子的主播的 UID。
+- `/config --on` 开启机器人
+- `/config --target <目标群号>` 绑定目标群
+- `/config --bind <UID>` 绑定目标 UP 主，也就是需要审核的牌子的主播的 UID。
 
 **可选**
 
-- `/config autokick <时间长度>` 设置自动踢出的时间, 以秒为单位, `0` 表示不会自动踢出, 推荐 `300` 秒
-- `/config mode <recv|send>` 设置验证器模式，详情查看[审核相关介绍](audit.md)。
+- `/config --kick <时长>` 设置自动踢出的时间, 以秒为单位, `0` 表示不会自动踢出, 推荐 `300` 秒
+- `/config --mode <recv|send>` 设置验证器模式，详情查看[审核相关介绍](audit.md)。
 
 ### 其他
 
 - 建议在 `mirai/data/me.hbj.bikkuri/images` 文件夹下提供 `guide-phone.jpg`(手机挂牌子指引) 以及 `guide-web.jpg`(网页挂牌子指引), 否则将会显示占位符 `[图片]`
 
-之后可将审核群号公开, 或进行测试（发送 `/s` `/sign` 或者 `验证`）。
+之后可将审核群号公开, 或进行测试（发送 `/sign` 或者 `验证`）。
 
 > [返回导航](../README.md)

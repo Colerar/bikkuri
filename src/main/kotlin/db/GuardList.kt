@@ -1,9 +1,9 @@
 package me.hbj.bikkuri.db
 
+import kotlinx.datetime.Clock.System.now
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import me.hbj.bikkuri.data.GuardFetcher
-import me.hbj.bikkuri.util.now
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
@@ -73,7 +73,7 @@ object GuardList : Table() {
       body = {
         it[expiresAt] = time.toJavaInstant()
         it[fetcherType] = fetcher
-      }
+      },
     )
   }
 }
@@ -109,7 +109,7 @@ object GuardLastUpdate : Table() {
   fun update(liverMid: Long, instant: Instant) = transaction {
     update(
       where = { liverId eq liverMid },
-      body = { it[lastUpdate] = instant.toJavaInstant() }
+      body = { it[lastUpdate] = instant.toJavaInstant() },
     )
   }
 }

@@ -1,112 +1,138 @@
+import com.diffplug.gradle.spotless.FormatExtension
 import com.github.gmazzo.gradle.plugins.BuildConfigSourceSet
-import org.gradle.nativeplatform.platform.internal.ArchitectureInternal
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.gradle.nativeplatform.platform.internal.DefaultOperatingSystem
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import org.gradle.internal.os.OperatingSystem
+import java.nio.file.Files
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Properties
-
-plugins {
-  application
-  kotlin("jvm")
-  kotlin("plugin.serialization")
-  id("com.github.gmazzo.buildconfig")
-  id("org.jlleitschuh.gradle.ktlint")
-  id("org.jlleitschuh.gradle.ktlint-idea")
-  id("com.github.johnrengelman.shadow")
-}
 
 group = "me.hbj.bikkuri"
-version = "1.2.2"
+version = "2.0.0"
+
+plugins {
+  // NOT AN ERROR, it's a bug, see: https://youtrack.jetbrains.com/issue/KTIJ-19369
+  // You can install a plugin to suppress it:
+  // https://plugins.jetbrains.com/plugin/18949-gradle-libs-error-suppressor
+  kotlin("jvm") version libs.versions.kotlin
+  application
+  alias(libs.plugins.spotless)
+  alias(libs.plugins.shadow)
+  alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.buildconfig)
+}
 
 repositories {
   mavenCentral()
-  maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-  maven("https://maven.aliyun.com/repository/public")
-}
-
-configurations.all {
-  resolutionStrategy.cacheChangingModulesFor(0, "minutes")
-}
-
-val prop = Properties().apply {
-  val file = project.rootProject.file("local.properties")
-  if (file.exists()) load(file.inputStream())
-}
-
-val hostOs: DefaultOperatingSystem = DefaultNativePlatform.getCurrentOperatingSystem()
-
-val hostArch: ArchitectureInternal = DefaultNativePlatform.getCurrentArchitecture()
-
-val targets by lazy {
-  when {
-    prop["brotli.target"] != null -> prop["brotli.target"].toString().split(",").toTypedArray()
-    hostOs.isWindows -> arrayOf("windows-x86_64")
-    hostOs.isMacOsX -> arrayOf("osx-x86_64")
-    hostOs.isLinux -> when {
-      hostArch.isArm -> arrayOf("linux-aarch64")
-      else -> arrayOf("linux-x86_64")
-    }
-
-    else -> error("unsupported target for ${hostOs.name}/$hostArch")
-  }
-}
-
-var versions = Properties().apply {
-  load(project.rootProject.file("versions.properties").inputStream())
 }
 
 dependencies {
-  constraints {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  // Logger
+  implementation(libs.bundles.log)
+  // Bilibili
+  implementation(libs.yabapi)
+  // Coroutines
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.atomicfu)
+  // Mirai
+  implementation(libs.mirai.core.api)
+  implementation(libs.mirai.core.utils)
+  runtimeOnly(libs.mirai.log.logback)
+  runtimeOnly(libs.mirai.core)
+  // Command
+  implementation(libs.yac)
+  implementation(libs.jline)
+  // Datetime
+  implementation(libs.kotlinx.datetime)
+  // Serialization
+  implementation(libs.kotlinx.serialization.core)
+  implementation(libs.kotlinx.serialization.json)
+  implementation(libs.kaml)
+  // Ktor
+  implementation(libs.ktor.client.core)
+  implementation(libs.ktor.client.cio)
+  implementation(libs.ktor.client.encoding)
+  implementation(libs.ktor.client.content.negotiation)
+  implementation(libs.ktor.serialization.kotlinx.json)
+  // IO
+  implementation(libs.okio)
+  // Database
+  implementation(libs.sqlite)
+  implementation(libs.hikaricp)
+  implementation(libs.exposed.core)
+  implementation(libs.exposed.dao)
+  implementation(libs.exposed.jdbc)
+  implementation(libs.exposed.java.time)
+  // Cron
+  implementation(libs.cronutils)
+  // Test
+  testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+  testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
+
+application {
+  mainClass.set("me.hbj.bikkuri.MainKt")
+}
+
+tasks.named<Test>("test") {
+  useJUnitPlatform()
+}
+
+spotless {
+  fun FormatExtension.excludes() {
+    targetExclude("**/build/", "**/generated/", "**/resources/")
   }
 
-  // Kotlinx
-  implementation(KotlinX.datetime)
-  implementation(KotlinX.coroutines.core)
-  implementation(KotlinX.Serialization.core)
-  implementation(KotlinX.Serialization.json)
-  implementation("org.jetbrains.kotlinx:atomicfu:_")
-  implementation("org.jetbrains.kotlin:kotlin-reflect:_")
-  // Mirai
-  implementation("net.mamoe:mirai-core:_")
-  implementation("net.mamoe:mirai-console:_")
-  implementation("net.mamoe:mirai-console-terminal:_")
-  implementation("net.mamoe:mirai-console-frontend-base:_")
-  // Logger
-  implementation("net.mamoe:mirai-logging-slf4j-logback:_")
-  implementation("io.github.microutils:kotlin-logging-jvm:_")
-  implementation("ch.qos.logback:logback-core:_")
-  implementation("ch.qos.logback:logback-classic:_")
-  // database
-  implementation("org.xerial:sqlite-jdbc:_")
-  implementation("org.jetbrains.exposed:exposed-core:_")
-  implementation("org.jetbrains.exposed:exposed-dao:_")
-  implementation("org.jetbrains.exposed:exposed-jdbc:_")
-  implementation("org.jetbrains.exposed:exposed-java-time:_")
-  implementation("com.zaxxer:HikariCP:_")
-  // cron
-  implementation("com.cronutils:cron-utils:_")
-  // BiliBili
-  implementation("moe.sdl.yabapi:yabapi-core-jvm:_")
-  // Ktor
-  implementation(Ktor.client.core)
-  implementation(Ktor.client.cio)
-  implementation(Ktor.client.websockets)
-  implementation(Ktor.client.encoding)
-  // IO
-  implementation(Square.okio)
-  // csv
-  implementation("com.github.doyaaaaaken:kotlin-csv-jvm:_")
-  // runtime system info
-  implementation("com.github.oshi:oshi-core-java11:_")
-  // Test framework
-  testImplementation(Testing.junit.jupiter.api)
-  testImplementation(Testing.junit.jupiter.engine)
-  testImplementation(Kotlin.test.junit5)
+  fun FormatExtension.common() {
+    trimTrailingWhitespace()
+    lineEndings = com.diffplug.spotless.LineEnding.UNIX
+    endWithNewline()
+  }
+
+  val ktlintConfig = mapOf(
+    "ij_kotlin_allow_trailing_comma" to "true",
+    "ij_kotlin_allow_trailing_comma_on_call_site" to "true",
+    "trailing-comma-on-declaration-site" to "true",
+    "trailing-comma-on-call-site" to "true",
+    "ktlint_standard_no-wildcard-imports" to "disabled",
+    "ktlint_disabled_import-ordering" to "disabled",
+  )
+
+  kotlin {
+    target("**/*.kt")
+    excludes()
+    common()
+    ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintConfig)
+  }
+
+  kotlinGradle {
+    target("**/*.gradle.kts")
+    excludes()
+    common()
+    ktlint(libs.versions.ktlint.get()).editorConfigOverride(ktlintConfig)
+  }
 }
+
+fun Project.installGitHooks() {
+  val git = File(project.rootProject.rootDir, ".git")
+  val target = File(project.rootProject.rootDir, ".git/hooks")
+  val source = File(project.rootProject.rootDir, ".git-hooks")
+  if (!git.exists() || !source.exists()) return
+  if (target.canonicalFile == source) return
+  target.deleteRecursively()
+  if (OperatingSystem.current().isWindows) {
+    // Windows requires Admin permission for creating symlinks.
+    source.copyRecursively(target)
+  } else {
+    Files.createSymbolicLink(target.toPath(), source.toPath())
+  }
+}
+installGitHooks()
 
 val commitHash by lazy {
   val commitHashCommand = "git rev-parse --short HEAD"
@@ -139,43 +165,15 @@ buildConfig {
   useKotlinOutput { topLevelConstants = true }
   string("VERSION", version.toString())
   string("NAME", rootProject.name)
-  string("MAIN_GROUP", group.toString())
   string("BUILD_BRANCH", branch)
   string("BUILD_TIME", time)
   string("COMMIT_HASH", commitHash)
   string("PROJECT_URL", "https://github.com/Colerar/bikkuri")
   long("BUILD_EPOCH_TIME", epochTime)
-  string("VERSION_LONG", "$version-[$branch]$commitHash $time")
-  string("MIRAI_VERSION", versions["version.net.mamoe..mirai-core"]?.toString() ?: "unk")
+  string("MIRAI_VERSION", libs.versions.mirai.get())
 
   sourceSets["test"].apply {
     string("TEST_DIR", rootProject.rootDir.absolutePath)
-  }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions.jvmTarget = "17"
-  kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-}
-
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-  }
-}
-
-tasks.withType<Test> {
-  useJUnitPlatform()
-}
-
-application {
-  mainClass.set("me.hbj.bikkuri.MainKt")
-}
-
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-  reporters {
-    reporter(ReporterType.HTML)
-    reporter(ReporterType.CHECKSTYLE)
   }
 }
 
@@ -188,17 +186,17 @@ tasks.shadowJar {
   exclude("org/sqlite/native/Linux-Android/**/*")
   exclude("org/sqlite/native/Linux-Musl/**/*")
   listOf("arm", "armv6", "armv7", "ppc64", "x86").forEach {
-    exclude("org/sqlite/native/Linux/${it}/**/*")
-    exclude("org/sqlite/native/Windows/${it}/**/*")
+    exclude("org/sqlite/native/Linux/$it/**/*")
+    exclude("org/sqlite/native/Windows/$it/**/*")
   }
   listOf("freebsd32", "freebsd64", "linux32", "windows32").forEach {
-    exclude("META-INF/native/${it}/**/*")
+    exclude("META-INF/native/$it/**/*")
   }
   listOf("aix", "freebsd", "openbsd", "sunos").forEach {
-    exclude("com/sun/jna/${it}*/**/*")
+    exclude("com/sun/jna/$it*/**/*")
   }
   listOf("arm", "armel", "loongarch64", "mips64el", "ppc", "ppc64le", "riscv64", "s390x", "x86").forEach {
-    exclude("com/sun/jna/linux-${it}/**/*")
-    exclude("com/sun/jna/win32-${it}/**/*")
+    exclude("com/sun/jna/linux-$it/**/*")
+    exclude("com/sun/jna/win32-$it/**/*")
   }
 }

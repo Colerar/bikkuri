@@ -1,52 +1,48 @@
 package me.hbj.bikkuri.tasks
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
-import me.hbj.bikkuri.data.General
-import me.hbj.bikkuri.data.GlobalLastMsg
-import me.hbj.bikkuri.data.ListenerData
-import me.hbj.bikkuri.util.sendMessage
+import kotlinx.datetime.Instant
+import me.hbj.bikkuri.data.ListenerPersist
+import me.hbj.bikkuri.data.TimerTrigger.ON_JOIN
+import me.hbj.bikkuri.data.TimerTrigger.ON_MSG
+import me.hbj.bikkuri.events.botLastOnline
+import me.hbj.bikkuri.utils.now
+import me.hbj.bikkuri.utils.sendMessage
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.message.data.At
 import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 fun CoroutineScope.launchAutoKickTask(): Job = launch {
   while (isActive) {
     val now = Clock.System.now()
-    delay(General.time.autoKick)
-    ListenerData.map.forEach { (t, _) ->
-      Bot.instances.forEach { bot ->
-        bot.groups.asSequence().filter {
-          it.id == t && it.botAsMember.isOperator()
-        }.forEach group@{ group ->
-          group.members
-            .asSequence()
-            .filterNot { it.isOperator() }
-            .forEach member@{
-              val sec = ListenerData.map[group.id]?.kickDuration?.toLong() ?: 0
-              if (sec == 0L) return@member
-              val duration = sec.toDuration(DurationUnit.SECONDS)
-              val map = GlobalLastMsg[bot.id][group.id].map
-              val instant = map[it.id] ?: return@group
-              if (now - instant > duration) {
-                val message = "您已 ${duration.inWholeSeconds} 秒无回复，已将您移出群聊，请重新排队申请加群。"
-                group.sendMessage {
-                  +At(it)
-                  +" "
-                  +message
-                }
-                delay(General.time.messageNoticeBetweenKick)
-                it.kick(message)
-                map.remove(it.id)
-              }
+    delay(5_000)
+    Bot.instances.forEach bot@{ bot ->
+      ListenerPersist.listeners.filterValues { it.enable }.forEach group@{ (groupId, data) ->
+        val group = bot.getGroup(groupId) ?: return@group
+        if (data.kickDuration <= 0) return@group
+        group.members.asSequence()
+          .filter { !it.isOperator() }
+          .filter {
+            val botLastOnline = botLastOnline.computeIfAbsent(bot.id) { now() }
+            val timestamp = when (data.trigger) {
+              ON_JOIN -> it.joinTimestamp
+              ON_MSG -> if (it.lastSpeakTimestamp == 0) it.joinTimestamp else it.lastSpeakTimestamp
+            }.toLong()
+            val memberLastActivity = Instant.fromEpochSeconds(timestamp)
+            val isTimeout = (now - memberLastActivity).toLong(DurationUnit.SECONDS) > data.kickDuration
+            isTimeout && memberLastActivity > botLastOnline
+          }.forEach {
+            val message = "您已 ${data.kickDuration} 秒内无回复，已将您移出群聊，请重新排队申请加群。"
+            group.sendMessage {
+              +At(it)
+              +" "
+              +message
             }
-        }
+            delay(5_000L)
+            it.kick(message)
+          }
       }
     }
   }

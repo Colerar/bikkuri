@@ -31,18 +31,14 @@ License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 
 ## Usage
 
-> 本程序依赖 `mirai-console` 但并不提供能装载进 `plugins` 的 `.jar` 文件，因为 `plugin` 模式依赖问题太多。请直接使用 cli 方式启动。
-
 使用 `java -jar Bikkuri.jar` 运行 Bikkuri 机器人程序。
 
-首次开启时，可能需要运行两次才能正常启动。
+首次会弹出提醒，依照提示在 `./config/auto-login.yml` 修改配置。之后即可运行。
 
-运行后会在运行目录生成 `mirai` 文件夹，用于存放数据。
+在控制台输入 `/help` 查看命令，控制台或群管理身份下，具体命令后跟 `--help` 可查看详细帮助。
 
 - [基础配置](./docs/basic.md)
 - [审核流程](./docs/audit.md)
-- [命令索引](./docs/commands.md)
-- [配置介绍](./docs/config.md)
 
 ## Contact
 

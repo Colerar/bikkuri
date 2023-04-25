@@ -1,20 +1,24 @@
 package me.hbj.bikkuri.events
 
-import me.hbj.bikkuri.data.ListenerData
-import net.mamoe.mirai.contact.getMember
-import net.mamoe.mirai.contact.isOperator
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.event.nextEvent
 
 fun Events.onBotOffline() {
-  subscribeAlways<BotOfflineEvent.Active> {
-    val enabledMap = ListenerData.enabledMap
-    queuedMemberRequest.asSequence()
-      .filter { it.bot.id == bot.id }
-      .filter { enabledMap.keys.contains(it.groupId) }
-      .filter { it.group?.getMember(this.bot.id)?.isOperator() == false }
-      .forEach {
-        it.accept()
-        queuedMemberRequest.remove(it)
+  subscribeAlways<BotOfflineEvent> { event ->
+    event.bot.launch {
+      val online = withTimeoutOrNull(20_000) {
+        nextEvent<BotOnlineEvent>() { it.bot == bot }
       }
+      if (online != null) return@launch
+      commandCtxManager.ctxMap
+        .asSequence()
+        .filter { (id, _) -> id.bot == bot.id }
+        .map { (_, job) -> job }
+        .toList()
+        .forEach { it.cancel() }
+    }
   }
 }

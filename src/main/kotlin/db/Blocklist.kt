@@ -1,10 +1,10 @@
 package me.hbj.bikkuri.db
 
+import kotlinx.datetime.Clock.System.now
 import kotlinx.datetime.toJavaInstant
 import me.hbj.bikkuri.db.Blocklist.eqToGroup
 import me.hbj.bikkuri.db.Blocklist.memberId
 import me.hbj.bikkuri.db.Blocklist.updateInstant
-import me.hbj.bikkuri.util.now
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import org.jetbrains.exposed.sql.SortOrder

@@ -1,13 +1,13 @@
 package me.hbj.bikkuri
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.UserAgent
-import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.compression.*
+import io.ktor.client.plugins.cookies.*
+import io.ktor.client.plugins.websocket.*
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonBuilder
+import me.hbj.bikkuri.utils.resolveDataDirectory
 import moe.sdl.yabapi.BiliClient
 import moe.sdl.yabapi.Yabapi
 import moe.sdl.yabapi.enums.LogLevel
@@ -30,10 +30,9 @@ internal val client by lazy {
     install(ContentEncoding) {
       gzip()
       deflate()
-      identity()
     }
     install(HttpCookies) {
-      val file = Bikkuri.resolveDataFile("cookies.json")
+      val file = resolveDataDirectory("cookies.json")
       storage = FileCookieStorage(okio.FileSystem.SYSTEM, file.toOkioPath()) {
         saveInTime = true
       }
@@ -42,28 +41,16 @@ internal val client by lazy {
   BiliClient(httpClient)
 }
 
-@Suppress("NOTHING_TO_INLINE")
-private inline fun JsonBuilder.buildDefault() {
-  isLenient = true
-  coerceInputValues = true
-  ignoreUnknownKeys = true
-}
-
-internal val json by lazy {
-  Json {
-    buildDefault()
-  }
-}
-
-internal val prettyPrintJson = Json {
-  buildDefault()
-  prettyPrint = true
-}
-
 private val yabapiLogger = KotlinLogging.logger("Yabapi")
 
 internal fun initYabapi() = Yabapi.apply {
-  defaultJson.getAndSet(json)
+  defaultJson.getAndSet(
+    Json {
+      isLenient = true
+      coerceInputValues = true
+      ignoreUnknownKeys = true
+    },
+  )
 
   log.getAndSet { tag: String, level: LogLevel, e: Throwable?, message: () -> String ->
     when (level) {
