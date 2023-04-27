@@ -22,7 +22,7 @@ kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 microutils-logging = "io.github.microutils:kotlin-logging-jvm:3.0.5"
 logback = "ch.qos.logback:logback-classic:1.4.7"
 
-cronutils = "com.cronutils:cron-utils:9.2.0"
+cronutils = "com.cronutils:cron-utils:9.2.1"
 
 atomicfu = "org.jetbrains.kotlinx:atomicfu:0.20.2"
 yac = "moe.sdl.yac:core:1.0.1"
