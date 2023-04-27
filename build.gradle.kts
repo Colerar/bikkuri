@@ -169,7 +169,6 @@ buildConfig {
   string("VERSION", version.toString())
   string("NAME", rootProject.name)
   string("BUILD_BRANCH", branch)
-  string("BUILD_TIME", time)
   string("COMMIT_HASH", commitHash)
   string("PROJECT_URL", "https://github.com/Colerar/bikkuri")
   long("BUILD_EPOCH_TIME", epochTime)
