@@ -23,4 +23,6 @@
     <appender-ref ref="FILE"/>
   </root>
   <logger name="io.netty" level="WARN"/>
+  <logger name="Exposed" level="WARN"/>
+  <logger name="com.zaxxer.hikari" level="WARN"/>
 </configuration>
