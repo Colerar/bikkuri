@@ -12,8 +12,8 @@ buildconfig = { id = "com.github.gmazzo.buildconfig", version = "3.1.0" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
 
 [libraries]
-kotlinx-serialization-core = "org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1"
-kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1"
+kotlinx-serialization-core = "org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.0"
+kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
 kaml = "com.charleskorn.kaml:kaml:0.53.0"
 
 kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
@@ -24,7 +24,7 @@ logback = "ch.qos.logback:logback-classic:1.4.7"
 
 cronutils = "com.cronutils:cron-utils:9.2.0"
 
-atomicfu = "org.jetbrains.kotlinx:atomicfu:0.18.3"
+atomicfu = "org.jetbrains.kotlinx:atomicfu:0.20.2"
 yac = "moe.sdl.yac:core:1.0.1"
 jline = "org.jline:jline:3.22.0"
 
