@@ -133,6 +133,10 @@ suspend fun loginBots() = withContext(Dispatchers.IO) {
     }
     exitProcess(0)
   }
+  if (AutoLoginConfig.data.accounts.size > 1) {
+    logger.warn { "Bikkuri v2.0 开始不再支持多帐号登录, 请不要添加多个 QQ 帐号。" }
+    exitProcess(0)
+  }
 
   AutoLoginConfig.data.accounts.forEach {
     logger.info { "Logging in ${it.account}" }
