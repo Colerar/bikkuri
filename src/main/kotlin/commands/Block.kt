@@ -7,9 +7,7 @@ import me.hbj.bikkuri.utils.lazyUnsafe
 import me.hbj.bikkuri.utils.toFriendly
 import me.hbj.bikkuri.utils.toLocalDateTime
 import me.hbj.bikkuri.utils.toReadDateTime
-import moe.sdl.yac.core.CliktCommand
 import moe.sdl.yac.core.PrintMessage
-import moe.sdl.yac.core.context
 import moe.sdl.yac.core.subcommands
 import moe.sdl.yac.parameters.arguments.argument
 import moe.sdl.yac.parameters.arguments.convert
@@ -24,16 +22,14 @@ class Block(private val sender: MiraiCommandSender) : Command(Block, Option(prin
   val member = memberOperator(sender)
 
   init {
-    context {
-      subcommands(
-        List(sender, member),
-        Link(sender, member),
-        Add(member),
-        Remove(member),
-        BiliAdd(member),
-        BiliRemove(member),
-      )
-    }
+    subcommands(
+      List(sender, member),
+      Link(sender, member),
+      Add(member),
+      Remove(member),
+      BiliAdd(member),
+      BiliRemove(member),
+    )
   }
 
   override suspend fun run() {}
@@ -48,7 +44,13 @@ class Block(private val sender: MiraiCommandSender) : Command(Block, Option(prin
 private class List(
   val sender: MiraiCommandSender,
   val member: NormalMember,
-) : CliktCommand("查看当前屏蔽列表") {
+) : Command(List) {
+  companion object : Entry(
+    name = "list",
+    help = "查看当前屏蔽列表",
+    alias = listOf("ls"),
+  )
+
   val page by argument("页码").long().default(1)
   val group = member.group
 
@@ -76,7 +78,12 @@ private class List(
 
 private class Add(
   val member: NormalMember,
-) : CliktCommand() {
+) : Command(Add) {
+  companion object : Entry(
+    name = "add",
+    help = "添加屏蔽",
+  )
+
   val id by argument("QQ", help = "要屏蔽的 QQ 号").long()
   val group = member.group
   override suspend fun run() {
@@ -91,7 +98,13 @@ private class Add(
 
 private class BiliAdd(
   val member: NormalMember,
-) : CliktCommand() {
+) : Command(BiliAdd) {
+  companion object : Entry(
+    name = "bili-add",
+    help = "添加 B 站屏蔽",
+    alias = listOf("biliadd", "add-bili", "addbili"),
+  )
+
   val id by argument("UID", help = "要屏蔽的 B 站 UID").long()
   val group = member.group
   override suspend fun run() {
@@ -106,7 +119,13 @@ private class BiliAdd(
 
 private class Remove(
   val member: NormalMember,
-) : CliktCommand() {
+) : Command(Remove) {
+  companion object : Entry(
+    name = "remove",
+    help = "移除屏蔽",
+    alias = listOf("rm"),
+  )
+
   val id by argument("QQ", help = "要屏蔽的 QQ 号").long()
   val group = member.group
   override suspend fun run() {
@@ -121,7 +140,13 @@ private class Remove(
 
 private class BiliRemove(
   val member: NormalMember,
-) : CliktCommand() {
+) : Command(BiliRemove) {
+  companion object : Entry(
+    name = "bili-remove",
+    help = "移除 B 站屏蔽",
+    alias = listOf("bili-rm", "rm-bili", "biliremove", "removebili", "rmbili", "bilirm"),
+  )
+
   val id by argument("UID", help = "要屏蔽的 B 站 UID").long()
   val group = member.group
   override suspend fun run() {
@@ -137,9 +162,14 @@ private class BiliRemove(
 private class Link(
   val sender: MiraiCommandSender,
   val member: NormalMember,
-) : CliktCommand() {
+) : Command(Link) {
+  companion object : Entry(
+    name = "link",
+    help = "链接两群的屏蔽名单",
+    alias = listOf("bili-rm", "rm-bili", "biliremove", "removebili", "rmbili", "bilirm"),
+  )
+
   val bot = member.bot
-  val group = member.group
   val source = member.group
   val operator by argument("操作")
   val target by argument("重定向后的群聊").long().convert {

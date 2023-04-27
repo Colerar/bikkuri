@@ -127,9 +127,10 @@ suspend fun setupConsole() = withContext(Dispatchers.IO) {
 
 suspend fun loginBots() = withContext(Dispatchers.IO) {
   if (AutoLoginConfig.data.accounts.isEmpty()) {
-    logger.info { "当前自动登录字段为空, 请于 ${AutoLoginConfig.file.absPath} 处修改配置文件, 示例如下:" }
-    println()
-    println(AutoLoginConfig.exampleToString())
+    logger.info {
+      "当前自动登录字段为空, 请于 ${AutoLoginConfig.file.absPath} 处修改配置文件, 示例如下:\n" +
+        AutoLoginConfig.exampleToString()
+    }
     exitProcess(0)
   }
 
