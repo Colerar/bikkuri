@@ -1,7 +1,7 @@
 package me.hbj.bikkuri
 
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.compression.*
 import io.ktor.client.plugins.cookies.*
@@ -20,7 +20,7 @@ private const val WEB_USER_AGENT: String =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15"
 
 internal val client by lazy {
-  val httpClient = HttpClient(CIO) {
+  val httpClient = HttpClient(OkHttp) {
     install(UserAgent) {
       agent = WEB_USER_AGENT
     }

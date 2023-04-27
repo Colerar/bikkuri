@@ -1,7 +1,7 @@
 package me.hbj.bikkuri.events
 
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -126,7 +126,7 @@ fun Events.onMessageReceived() {
   }
 }
 
-val clientNoRedirect = HttpClient(CIO) {
+val clientNoRedirect = HttpClient(OkHttp) {
   followRedirects = false
 }
 

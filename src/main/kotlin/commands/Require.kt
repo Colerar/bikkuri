@@ -8,7 +8,7 @@ import net.mamoe.mirai.contact.isOperator
 
 fun memberOperator(sender: MiraiCommandSender): NormalMember {
   val member = sender.contact
-  if (member !is NormalMember) throw CliktError()
+  if (member !is NormalMember) throw CliktError("Not a normal member")
   val adminGroups = General.data.adminGroups
   if (!member.isOperator() && !adminGroups.contains(member.group.id)) {
     throw CliktError("Permission Denied")

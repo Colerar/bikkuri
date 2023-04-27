@@ -39,8 +39,7 @@ hikaricp = "com.zaxxer:HikariCP:5.0.1"
 sqlite = "org.xerial:sqlite-jdbc:3.40.0.0"
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 
@@ -57,7 +56,6 @@ mirai-core-api = { module = "net.mamoe:mirai-core-api", version.ref = "mirai" }
 mirai-core-utils = { module = "net.mamoe:mirai-core-utils", version.ref = "mirai" }
 mirai-log-slf4j = { module = "net.mamoe:mirai-logging-slf4j", version.ref = "mirai" }
 mirai-log-logback = { module = "net.mamoe:mirai-logging-slf4j-logback", version.ref = "mirai" }
-
 
 [bundles]
 log = ["microutils-logging", "logback"]

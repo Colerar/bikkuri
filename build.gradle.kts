@@ -40,7 +40,6 @@ dependencies {
   runtimeOnly(libs.mirai.core)
   // Command
   implementation(libs.yac)
-  implementation(libs.jline)
   // Datetime
   implementation(libs.kotlinx.datetime)
   // Serialization
@@ -49,7 +48,7 @@ dependencies {
   implementation(libs.kaml)
   // Ktor
   implementation(libs.ktor.client.core)
-  implementation(libs.ktor.client.cio)
+  implementation(libs.ktor.client.okhttp)
   implementation(libs.ktor.client.encoding)
   implementation(libs.ktor.client.content.negotiation)
   implementation(libs.ktor.serialization.kotlinx.json)
@@ -135,13 +134,17 @@ fun Project.installGitHooks() {
 installGitHooks()
 
 val commitHash by lazy {
-  val commitHashCommand = "git rev-parse --short HEAD"
-  Runtime.getRuntime().exec(commitHashCommand).inputStream.bufferedReader().readLine() ?: "UnkCommit"
+  val p = ProcessBuilder("git", "rev-parse", "--short", "HEAD").start()
+  val commit = p.inputStream.bufferedReader().readLine() ?: "UnkCommit"
+  p.waitFor(5, TimeUnit.SECONDS)
+  commit
 }
 
 val branch by lazy {
-  val branchCommand = "git rev-parse --abbrev-ref HEAD"
-  Runtime.getRuntime().exec(branchCommand).inputStream.bufferedReader().readLine() ?: "UnkBranch"
+  val p = ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD").start()
+  val branch = p.inputStream.bufferedReader().readLine() ?: "UnkBranch"
+  p.waitFor(5, TimeUnit.SECONDS)
+  branch
 }
 
 val time: String by lazy {
@@ -178,6 +181,12 @@ buildConfig {
 }
 
 tasks.shadowJar {
+  exclude("net/mamoe/mirai/internal/deps/io/ktor/")
+  exclude("net/mamoe/mirai/internal/deps/okio/")
+  exclude("net/mamoe/mirai/internal/deps/okhttp3/")
+  relocate("net/mamoe/mirai/internal/deps/io/ktor/", "io/ktor/")
+  relocate("net/mamoe/mirai/internal/deps/okio/", "io/okio/")
+  relocate("net/mamoe/mirai/internal/deps/okhttp3/", "okhttp3/")
   exclude("checkstyle.xml")
   exclude("**/*.html")
   exclude("CronUtilsI18N*.properties")
