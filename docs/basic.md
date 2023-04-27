@@ -37,7 +37,7 @@
 
 ### 其他
 
-- 建议在 `mirai/data/me.hbj.bikkuri/images` 文件夹下提供 `guide-phone.jpg`(手机挂牌子指引) 以及 `guide-web.jpg`(网页挂牌子指引), 否则将会显示占位符 `[图片]`
+- 建议在 `./resources` 文件夹下提供 `guide-phone.jpg`(手机挂牌子指引) 以及 `guide-web.jpg`(网页挂牌子指引), 否则将会显示占位符 `[图片]`
 
 之后可将审核群号公开, 或进行测试（发送 `/sign` 或者 `验证`）。
 
