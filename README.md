@@ -2,7 +2,11 @@
 
 License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 
-## Build
+## 下载
+
+可前往 [Release](https://github.com/Colerar/bikkuri/releases/latest) 页面下载最新稳定版构建。或前往 [Actions](https://github.com/Colerar/bikkuri/actions) 页面下载开发版构建。
+
+## 构建
 
 - 需要 JDK 17
 
@@ -29,7 +33,7 @@ License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 
 </details>
 
-## Usage
+## 使用
 
 使用 `java -jar Bikkuri.jar` 运行 Bikkuri 机器人程序。
 
@@ -40,7 +44,7 @@ License under [AGPLv3](LICENSE) | 基于 APGLv3 协议开源
 - [基础配置](./docs/basic.md)
 - [审核流程](./docs/audit.md)
 
-## Contact
+## 联系
 
 如有问题或建议可 <a href="mailto:233hbj@gmail.com" target="_blank">邮件联系我</a>
 或 [提 issue](https://github.com/Colerar/bikkuri/issues/new/choose)
