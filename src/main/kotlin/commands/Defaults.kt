@@ -10,6 +10,7 @@ val defaultsCommand = listOf(
   ConsoleCommandNode(Quit) { Quit() },
   ConsoleCommandNode(LoginBili) { LoginBili() },
   MiraiCommandNode(Approve) { sender -> Approve(sender) },
+  MiraiCommandNode(Backup) { sender -> Backup(sender) },
   MiraiCommandNode(Block) { sender -> Block(sender) },
   MiraiCommandNode(Cancel) { sender -> Cancel(sender) },
   MiraiCommandNode(CheckLogin) { sender -> CheckLogin(sender) },

@@ -10,14 +10,13 @@ import me.hbj.bikkuri.config.VERSION
 import me.hbj.bikkuri.configs.AutoLoginConfig
 import me.hbj.bikkuri.configs.AutoLoginConfig.Auth.*
 import me.hbj.bikkuri.configs.General
+import me.hbj.bikkuri.data.BackupTaskPersist
 import me.hbj.bikkuri.data.ListenerPersist
 import me.hbj.bikkuri.db.*
 import me.hbj.bikkuri.events.*
 import me.hbj.bikkuri.persist.DatabaseManager
-import me.hbj.bikkuri.tasks.launchAutoApproveTask
+import me.hbj.bikkuri.tasks.*
 import me.hbj.bikkuri.tasks.launchAutoKickTask
-import me.hbj.bikkuri.tasks.launchUpdateGuardListTask
-import me.hbj.bikkuri.tasks.setMessageTask
 import me.hbj.bikkuri.utils.ModuleScope
 import me.hbj.bikkuri.utils.absPath
 import me.hbj.bikkuri.utils.globalWorkDirectory
@@ -34,7 +33,7 @@ import kotlin.system.measureTimeMillis
 
 val logger by lazy(NONE) { KotlinLogging.logger {} }
 
-val configs = listOf(AutoLoginConfig, ListenerPersist, General)
+val configs = listOf(AutoLoginConfig, ListenerPersist, BackupTaskPersist, General)
 
 val dbs = listOf(
   ApproveLink,
@@ -95,6 +94,7 @@ fun main(): Unit = runBlocking {
   val tasksModule = ModuleScope("Tasks", bikkuriScope.coroutineContext)
   tasksModule.apply {
     launchAutoApproveTask()
+    launchAutoBackupTask()
     launchAutoKickTask()
     launchUpdateGuardListTask()
     setMessageTask()

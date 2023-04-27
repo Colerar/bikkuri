@@ -62,7 +62,9 @@ dependencies {
   implementation(libs.exposed.jdbc)
   implementation(libs.exposed.java.time)
   // Cron
-  implementation(libs.cronutils)
+  implementation(libs.krontab)
+  // CSV
+  implementation(libs.doyaaaaaken.csv)
   // Test
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
@@ -188,7 +190,6 @@ tasks.shadowJar {
   relocate("net/mamoe/mirai/internal/deps/okhttp3/", "okhttp3/")
   exclude("checkstyle.xml")
   exclude("**/*.html")
-  exclude("CronUtilsI18N*.properties")
   exclude("DebugProbesKt.bin")
   exclude("org/sqlite/native/FreeBSD/**/*")
   exclude("org/sqlite/native/Linux-Android/**/*")
