@@ -26,7 +26,7 @@ cronutils = "com.cronutils:cron-utils:9.2.0"
 
 atomicfu = "org.jetbrains.kotlinx:atomicfu:0.18.3"
 yac = "moe.sdl.yac:core:1.0.1"
-jline = "org.jline:jline:3.22.0"
+jline = "org.jline:jline:3.23.0"
 
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
