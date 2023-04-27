@@ -53,10 +53,9 @@ fun CoroutineScope.launchUpdateGuardListTask(): Job = launch {
 private fun CoroutineScope.launchCleanJob() = launch {
   while (isActive) {
     val sizeBefore = GuardList.count()
-    logger.info { "Cleaning live guards..." }
     GuardList.cleanup()
     val now = GuardList.count()
-    logger.info { "Cleaned live guards, size $sizeBefore -> $now" }
+    logger.debug { "Cleaned live guards, size $sizeBefore -> $now" }
     delay(300_000L)
   }
 }
