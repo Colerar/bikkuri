@@ -31,7 +31,7 @@ class RecvMessageValidator(
       +"""
       请您按以下操作完成最后一步：
       1. 前往 B 站私信验证机器人：${basicInfo.username} （UID:${basicInfo.mid}），发送验证码 [${keygen.keygen}]。
-      2. 若因 B 站风控无法发送，请先关注机器人。
+      2. 若无法发送私信，请先关注机器人。
       3. 返回 QQ，发送任意消息完成验证。
       """.trimIndent()
     }

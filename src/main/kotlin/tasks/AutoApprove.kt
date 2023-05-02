@@ -12,6 +12,7 @@ private val logger = KotlinLogging.logger {}
 fun CoroutineScope.launchAutoApproveTask(): Job = launch {
   while (isActive) {
     delay(5_000)
+    if (queuedMemberRequest.isEmpty()) continue
     ListenerPersist.data.listener.asSequence()
       .filter { (_, v) -> v.enable }
       .forEach { (groupId, listener) ->

@@ -19,10 +19,10 @@ fun Events.onMemberJoin() {
     val listener = ListenerPersist.listeners[groupId] ?: return@subscribeAlways
     if (!listener.enable) return@subscribeAlways
 
-    delay(2_000)
+    delay(2_000) // 适当延迟, 给 QQ 客户端处理事件的时间, 避免没有 @ 到
     group.sendMessage {
       +At(user)
-      +" 欢迎进入舰长审核群。输入“验证”开始审核哦。若在审核中遇到问题，请 @ 管理员。"
+      +" 欢迎进入舰长审核群，我是自助审核机器人。输入“验证”开始审核哦。若在审核中遇到问题，请 @ 管理员。"
     }
   }
 
