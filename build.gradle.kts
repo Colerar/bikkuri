@@ -7,7 +7,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 group = "me.hbj.bikkuri"
-version = "2.0.0"
+version = "2.1.0"
 
 plugins {
   // NOT AN ERROR, it's a bug, see: https://youtrack.jetbrains.com/issue/KTIJ-19369
