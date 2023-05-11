@@ -28,9 +28,10 @@ suspend fun Bot.checkDuplicate(groups: Collection<Group>, allowList: Collection<
     .groupBy { member ->
       Identity(member.id, asyncMap[member.id]?.await().orEmpty())
     }.values
+    .asSequence()
     .filter { it.size >= 2 }
     .filterNot { list -> list.any { it.isOperator() } }
-    .flatMap { it.shuffled().take(it.size - 1) }
+    .flatten()
     .filterNot { allowList.contains(it.id) }
     .toList()
 }

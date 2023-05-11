@@ -15,5 +15,6 @@ val defaultsCommand = listOf(
   MiraiCommandNode(Cancel) { sender -> Cancel(sender) },
   MiraiCommandNode(CheckLogin) { sender -> CheckLogin(sender) },
   MiraiCommandNode(Config) { sender -> Config(sender) },
+  MiraiCommandNode(Duplicate) { sender -> Duplicate(sender) },
   MiraiCommandNode(Sign) { sender -> Sign(sender) },
 )
