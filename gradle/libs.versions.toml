@@ -36,7 +36,7 @@ exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", versio
 
 hikaricp = "com.zaxxer:HikariCP:5.0.1"
 
-sqlite = "org.xerial:sqlite-jdbc:3.41.2.2"
+sqlite = "org.xerial:sqlite-jdbc:3.42.0.0"
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
