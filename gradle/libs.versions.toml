@@ -14,7 +14,7 @@ shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
 [libraries]
 kotlinx-serialization-core = "org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1"
 kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
-kaml = "com.charleskorn.kaml:kaml:0.53.0"
+kaml = "com.charleskorn.kaml:kaml:0.54.0"
 
 kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
 kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
