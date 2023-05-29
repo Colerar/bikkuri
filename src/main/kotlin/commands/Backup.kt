@@ -1,9 +1,9 @@
 package me.hbj.bikkuri.commands
 
-import com.soywiz.klock.jvm.toDate
 import dev.inmo.krontab.buildSchedule
 import dev.inmo.krontab.doInfinity
 import dev.inmo.krontab.nextOrNow
+import korlibs.time.jvm.toDate
 import kotlinx.coroutines.launch
 import me.hbj.bikkuri.command.Command
 import me.hbj.bikkuri.command.MiraiCommandSender
