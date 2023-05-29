@@ -1,3 +1,5 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package me.hbj.bikkuri
 
 import kotlinx.coroutines.*
@@ -16,15 +18,12 @@ import me.hbj.bikkuri.db.*
 import me.hbj.bikkuri.events.*
 import me.hbj.bikkuri.persist.DatabaseManager
 import me.hbj.bikkuri.tasks.*
-import me.hbj.bikkuri.tasks.launchAutoKickTask
-import me.hbj.bikkuri.utils.ModuleScope
-import me.hbj.bikkuri.utils.absPath
-import me.hbj.bikkuri.utils.globalWorkDirectory
-import me.hbj.bikkuri.utils.lazyUnsafe
+import me.hbj.bikkuri.utils.*
 import mu.KotlinLogging
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
 import java.io.File
 import java.util.*
 import kotlin.LazyThreadSafetyMode.NONE
@@ -54,6 +53,7 @@ fun main(): Unit = runBlocking {
   logger.info { "Starting Bikkuri ${versionFormatted()}" }
   logger.info { "Working directory: $globalWorkDirectory" }
 
+  FixProtocol.update()
   System.setProperty("mirai.no-desktop", "true")
 
   val bikkuriScope = ModuleScope("Bikkuri", this.coroutineContext)
@@ -72,10 +72,6 @@ fun main(): Unit = runBlocking {
     }
     val names = defaultsCommand.map { it.entry.name }
     logger.info { "Costed $ms ms to init command, total ${names.size}: ${names.joinToString()}" }
-  }
-
-  val console = bikkuriScope.launch {
-    setupConsole()
   }
 
   joinAll(loadConfigs, loadCommands)
@@ -112,7 +108,7 @@ fun main(): Unit = runBlocking {
 
   joinAll(loginBots, loadDatabase)
 
-  console.join()
+  setupConsole()
 }
 
 suspend fun setupConsole() = withContext(Dispatchers.IO) {
@@ -163,6 +159,7 @@ suspend fun loginBots() = withContext(Dispatchers.IO) {
 
       File(globalWorkDirectory, "config").mkdir()
       this.fileBasedDeviceInfo("config/device.json")
+      logger.info { "当前登录协议 ${it.protocol}, 版本: ${MiraiProtocolInternal.protocols[it.protocol]?.ver}" }
       protocol = it.protocol
     }
 

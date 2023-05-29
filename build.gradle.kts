@@ -36,8 +36,8 @@ dependencies {
   // Mirai
   implementation(libs.mirai.core.api)
   implementation(libs.mirai.core.utils)
+  implementation(libs.mirai.core)
   runtimeOnly(libs.mirai.log.logback)
-  runtimeOnly(libs.mirai.core)
   // Command
   implementation(libs.yac)
   // Datetime
