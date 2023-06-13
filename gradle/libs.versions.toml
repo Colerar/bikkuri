@@ -20,7 +20,7 @@ kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
 kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
 microutils-logging = "io.github.microutils:kotlin-logging-jvm:3.0.5"
-logback = "ch.qos.logback:logback-classic:1.4.7"
+logback = "ch.qos.logback:logback-classic:1.4.8"
 
 krontab = "dev.inmo:krontab:2.0.0"
 doyaaaaaken-csv = "com.github.doyaaaaaken:kotlin-csv-jvm:1.9.1"
