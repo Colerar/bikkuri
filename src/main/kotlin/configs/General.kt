@@ -22,5 +22,7 @@ object General : DataFilePersist<General.Data>(
     val loginSecretCache: Boolean = true,
     val timezone: TimeZone = TimeZone.currentSystemDefault(),
     val adminGroups: List<Long> = emptyList(),
+    @YamlComment("是否开启 B 站小程序转换")
+    val biliLightAppConvert: Boolean = true,
   )
 }

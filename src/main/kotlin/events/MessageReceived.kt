@@ -5,7 +5,6 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -14,6 +13,7 @@ import me.hbj.bikkuri.command.CommandManager
 import me.hbj.bikkuri.command.ContextManager
 import me.hbj.bikkuri.command.JobIdentity
 import me.hbj.bikkuri.command.MiraiCommandSender
+import me.hbj.bikkuri.configs.General
 import me.hbj.bikkuri.data.ListenerPersist
 import me.hbj.bikkuri.utils.byTagFirst
 import me.hbj.bikkuri.utils.readToXmlDocument
@@ -30,7 +30,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import org.w3c.dom.Document
-import java.awt.SystemColor.text
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,38 +65,39 @@ fun Events.onMessageReceived() {
     executeCommandSafely(event, text)
   }
 
-  subscribeAlways<MessageEvent> {
+  subscribeAlways<MessageEvent>e@{
+    if (!General.data.biliLightAppConvert) return@e
     val simpleService = message.firstIsInstanceOrNull<SimpleServiceMessage>()
     val videoShort = if (simpleService != null) {
-      if (!simpleService.content.contains("b23.tv")) return@subscribeAlways
-      val xml = runCatching { simpleService.content.readToXmlDocument() }.getOrNull() ?: return@subscribeAlways
-      readBiliVideoOrNull(xml) ?: return@subscribeAlways
+      if (!simpleService.content.contains("b23.tv")) return@e
+      val xml = runCatching { simpleService.content.readToXmlDocument() }.getOrNull() ?: return@e
+      readBiliVideoOrNull(xml) ?: return@e
     } else {
-      val lightApp = message.firstIsInstanceOrNull<LightApp>() ?: return@subscribeAlways
-      if (!lightApp.content.contains("哔哩哔哩")) return@subscribeAlways
-      val json = Json.decodeFromString<JsonObject>(lightApp.content)
-      val meta = json["meta"]?.jsonObject ?: return@subscribeAlways
+      val lightApp = message.firstIsInstanceOrNull<LightApp>()?.content ?: return@e
+      if (arrayOf("哔哩哔哩", "b23.tv", "bilibili").none(lightApp::contains)) return@e
+      val json = Json.decodeFromString<JsonObject>(lightApp)
+      val meta = json["meta"]?.jsonObject ?: return@e
       val news = meta["news"]?.jsonObject
       val detail1 = meta["detail_1"]?.jsonObject
       when {
         news != null -> {
           BiliVideo(
-            url = news["jumpUrl"]?.jsonPrimitive?.content ?: return@subscribeAlways,
-            title = news["title"]?.jsonPrimitive?.content ?: return@subscribeAlways,
+            url = news["jumpUrl"]?.jsonPrimitive?.content ?: return@e,
+            title = news["title"]?.jsonPrimitive?.content ?: return@e,
           )
         }
 
         detail1 != null -> {
           BiliVideo(
-            url = detail1["qqdocurl"]?.jsonPrimitive?.content ?: return@subscribeAlways,
-            title = detail1["desc"]?.jsonPrimitive?.content ?: return@subscribeAlways,
+            url = detail1["qqdocurl"]?.jsonPrimitive?.content ?: return@e,
+            title = detail1["desc"]?.jsonPrimitive?.content ?: return@e,
           )
         }
 
-        else -> return@subscribeAlways
+        else -> return@e
       }
     }
-    val video = videoShort.toLong() ?: return@subscribeAlways
+    val video = videoShort.toLong() ?: return@e
 
     val common = "已转换为链接: ${video.url}"
     when (sender) {
