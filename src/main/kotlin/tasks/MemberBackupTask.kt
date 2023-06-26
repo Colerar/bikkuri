@@ -41,13 +41,20 @@ class MemberBackupTask(
         try {
           logger.trace { "Write row $it" }
           writeRow(
-            /* id */ it.id,
-            /* name_card */ it.nameCard,
-            /* nick */ it.nick,
-            /* join_time */ it.joinTimestamp,
-            /* last_msg */ it.lastSpeakTimestamp,
-            /* is_admin */ it.isAdministrator(),
-            /* is_owner */ it.isOwner(),
+            /* id */
+            it.id,
+            /* name_card */
+            it.nameCard,
+            /* nick */
+            it.nick,
+            /* join_time */
+            it.joinTimestamp,
+            /* last_msg */
+            it.lastSpeakTimestamp,
+            /* is_admin */
+            it.isAdministrator(),
+            /* is_owner */
+            it.isOwner(),
           )
           this@MemberBackupTask.savedMember++
         } catch (e: Exception) {

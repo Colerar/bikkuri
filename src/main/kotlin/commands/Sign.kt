@@ -123,6 +123,7 @@ class Sign(private val sender: MiraiCommandSender) : Command(Sign) {
       val medalUserFit = medal?.targetId == data.userBind
       val medalLevel = medal?.level?.let { it >= 21 } ?: false
 
+      @Suppress("KotlinConstantConditions")
       when {
         inList || (medalNotNull && medalUserFit && medalLevel) -> loop1 = false
         else -> {
@@ -139,7 +140,6 @@ class Sign(private val sender: MiraiCommandSender) : Command(Sign) {
               +"呜~ 请佩戴正确的粉丝牌哦! 可再次输入 UID 重试, quit 退出"
             }
 
-            @Suppress("KotlinConstantConditions")
             !medalLevel -> buildMessageChain {
               +QuoteReply(message)
               +"粉丝牌等级不足~ 需要至少 21 级哦~"
