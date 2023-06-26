@@ -84,6 +84,7 @@ object CommandManager {
     rawMsg: String,
   ): Job = commandScope.launch {
     if (rawMsg.isBlank()) {
+      if (sender is MiraiCommandSender) return@launch
       sender.sendMessage("No command input")
       return@launch
     }
