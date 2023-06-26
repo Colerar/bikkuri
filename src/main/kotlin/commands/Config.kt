@@ -25,8 +25,8 @@ class Config(private val sender: MiraiCommandSender) : Command(Config) {
   }
   val bind by option("--bind").long().help("绑定的用户 UID")
   val recall by option("--recall").long().help("群号消息的撤回间隔, 0 为不撤回")
-    .validate { it in 1..300 }
-  val kick by option("--kick").long().help("超时踢出时长, 单位为秒").validate { it in 1..300 }
+    .validate { it in 0..300 }
+  val kick by option("--kick").long().help("超时踢出时长, 单位为秒").validate { it in 0..300 }
   val queue by option("--queue").int().help("同时审批人数").validate { it in 1..10 }
   val mode by option().switch(
     "--recv" to ValidateMode.RECV,
