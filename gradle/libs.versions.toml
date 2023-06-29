@@ -16,7 +16,7 @@ kotlinx-serialization-core = "org.jetbrains.kotlinx:kotlinx-serialization-core:1
 kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
 kaml = "com.charleskorn.kaml:kaml:0.54.0"
 
-kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
+kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2"
 kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
 microutils-logging = "io.github.microutils:kotlin-logging-jvm:3.0.5"
