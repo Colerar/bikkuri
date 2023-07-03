@@ -10,9 +10,6 @@ group = "me.hbj.bikkuri"
 version = "2.2.0"
 
 plugins {
-  // NOT AN ERROR, it's a bug, see: https://youtrack.jetbrains.com/issue/KTIJ-19369
-  // You can install a plugin to suppress it:
-  // https://plugins.jetbrains.com/plugin/18949-gradle-libs-error-suppressor
   kotlin("jvm") version libs.versions.kotlin
   application
   alias(libs.plugins.spotless)
