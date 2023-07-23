@@ -64,7 +64,7 @@ dependencies {
   implementation(libs.doyaaaaaken.csv)
   // Test
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-  testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+  testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 java {
