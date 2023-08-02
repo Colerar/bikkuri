@@ -49,7 +49,7 @@ ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
 
 yabapi = "moe.sdl.yabapi:yabapi-core:0.11.2"
 
-okio = "com.squareup.okio:okio:3.3.0"
+okio = "com.squareup.okio:okio:3.5.0"
 
 mirai-core = { module = "net.mamoe:mirai-core", version.ref = "mirai" }
 mirai-core-api = { module = "net.mamoe:mirai-core-api", version.ref = "mirai" }
