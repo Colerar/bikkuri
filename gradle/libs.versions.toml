@@ -22,7 +22,7 @@ kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 microutils-logging = "io.github.microutils:kotlin-logging-jvm:3.0.5"
 logback = "ch.qos.logback:logback-classic:1.4.8"
 
-krontab = "dev.inmo:krontab:2.1.1"
+krontab = "dev.inmo:krontab:2.2.0"
 doyaaaaaken-csv = "com.github.doyaaaaaken:kotlin-csv-jvm:1.9.2"
 
 atomicfu = "org.jetbrains.kotlinx:atomicfu:0.21.0"
