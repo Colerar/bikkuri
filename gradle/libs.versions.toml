@@ -2,7 +2,7 @@
 kotlin = "1.8.22"
 ktor = "2.3.2"
 ktlint = "0.49.1"
-mirai = "2.15.0-RC"
+mirai = "2.15.0"
 exposed = "0.42.0"
 
 [plugins]
