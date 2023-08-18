@@ -8,7 +8,7 @@ exposed = "0.42.0"
 [plugins]
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version = "6.20.0" }
-buildconfig = { id = "com.github.gmazzo.buildconfig", version = "4.1.1" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version = "4.1.2" }
 shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
 
 [libraries]
