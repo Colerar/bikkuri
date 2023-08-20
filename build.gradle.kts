@@ -1,6 +1,8 @@
 import com.diffplug.gradle.spotless.FormatExtension
 import com.github.gmazzo.gradle.plugins.BuildConfigSourceSet
+import org.apache.commons.io.IOUtils
 import org.gradle.internal.os.OperatingSystem
+import java.net.URL
 import java.nio.file.Files
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -20,6 +22,24 @@ plugins {
 
 repositories {
   mavenCentral()
+  flatDir {
+    dirs(project.layout.buildDirectory.get().asFile.resolve("download"))
+  }
+}
+
+fun urlFile(url: String, name: String): ConfigurableFileCollection {
+  val download = project.layout.buildDirectory.get().asFile.resolve("download")
+  download.mkdirs()
+  val file = download.resolve(name)
+  if (!file.exists()) {
+    file.createNewFile()
+    URL(url).openStream().buffered().use { input ->
+      file.outputStream().buffered().use { output ->
+        IOUtils.copyLarge(input, output)
+      }
+    }
+  }
+  return files(file.absolutePath)
 }
 
 dependencies {
@@ -34,6 +54,17 @@ dependencies {
   implementation(libs.mirai.core.api)
   implementation(libs.mirai.core.utils)
   implementation(libs.mirai.core)
+  implementation(libs.qsign)
+//  implementation("org.asynchttpclient:async-http-client:2.12.3")
+
+//  urlFile(
+//    "https://github.com/cssxsh/fix-protocol-version/releases/download/v1.10.0/fix-protocol-version-1.10.0.mirai2.jar",
+//    "fix-protocol-version-1.10.0.mirai2.jar"
+//  )
+//  implementation(fileTree(mapOf(
+//    "dir" to "build/download",
+//    "include" to listOf("*.jar")
+//  )))
   runtimeOnly(libs.mirai.log.logback)
   // Command
   implementation(libs.yac)
@@ -188,6 +219,11 @@ tasks.shadowJar {
   exclude("checkstyle.xml")
   exclude("**/*.html")
   exclude("DebugProbesKt.bin")
+  exclude("win32-x86/**/*")
+  exclude("natives/windows_32/**/*")
+  exclude("**/libdynarmic.dylib")
+  exclude("**/libdynarmic.so")
+  exclude("**/dynarmic.dll")
   exclude("org/sqlite/native/FreeBSD/**/*")
   exclude("org/sqlite/native/Linux-Android/**/*")
   exclude("org/sqlite/native/Linux-Musl/**/*")

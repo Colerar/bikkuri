@@ -18,12 +18,16 @@ import me.hbj.bikkuri.db.*
 import me.hbj.bikkuri.events.*
 import me.hbj.bikkuri.persist.DatabaseManager
 import me.hbj.bikkuri.tasks.*
-import me.hbj.bikkuri.utils.*
+import me.hbj.bikkuri.utils.ModuleScope
+import me.hbj.bikkuri.utils.absPath
+import me.hbj.bikkuri.utils.globalWorkDirectory
+import me.hbj.bikkuri.utils.lazyUnsafe
 import mu.KotlinLogging
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.internal.utils.MiraiProtocolInternal
+import top.mrxiaom.qsign.QSignService
 import java.io.File
 import java.util.*
 import kotlin.LazyThreadSafetyMode.NONE
@@ -53,7 +57,6 @@ fun main(): Unit = runBlocking {
   logger.info { "Starting Bikkuri ${versionFormatted()}" }
   logger.info { "Working directory: $globalWorkDirectory" }
 
-  FixProtocol.update()
   System.setProperty("mirai.no-desktop", "true")
 
   val bikkuriScope = ModuleScope("Bikkuri", this.coroutineContext)
@@ -75,6 +78,23 @@ fun main(): Unit = runBlocking {
   }
 
   joinAll(loadConfigs, loadCommands)
+
+  logger.info { "useQSign = ${AutoLoginConfig.data.useQSign}" }
+  if (AutoLoginConfig.data.useQSign) {
+    val path =
+      AutoLoginConfig.data.txlibPath?.let { File(it) }
+        ?: globalWorkDirectory.resolve("txlib").apply { mkdirs() }
+    require(path.exists() && path.isDirectory) { "txlibPath should be a directory and exist" }
+    val version = AutoLoginConfig.data.txlibVersion ?: "8.9.63"
+    val txlib = path.resolve(version)
+    require(txlib.exists() && path.isDirectory) { "Cannot found ${txlib.toPath()}, is version `$version` exists?" }
+
+    QSignService.Factory.apply {
+      init(txlib)
+      loadProtocols()
+      register()
+    }
+  }
 
   GlobalEventChannel.apply {
     onBotOnline()

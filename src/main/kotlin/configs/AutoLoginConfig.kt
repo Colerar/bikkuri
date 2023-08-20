@@ -30,6 +30,9 @@ object AutoLoginConfig : DataFilePersist<AutoLoginConfig.Data>(
   @Serializable
   data class Data(
     val accounts: List<Account> = emptyList(),
+    val useQSign: Boolean = true,
+    val txlibPath: String? = null,
+    val txlibVersion: String? = null,
   )
 
   @Serializable

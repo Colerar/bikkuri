@@ -57,5 +57,7 @@ mirai-core-utils = { module = "net.mamoe:mirai-core-utils", version.ref = "mirai
 mirai-log-slf4j = { module = "net.mamoe:mirai-logging-slf4j", version.ref = "mirai" }
 mirai-log-logback = { module = "net.mamoe:mirai-logging-slf4j-logback", version.ref = "mirai" }
 
+qsign = { module = "top.mrxiaom:qsign", version = "1.0.9" }
+
 [bundles]
 log = ["microutils-logging", "logback"]
