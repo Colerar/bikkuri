@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 group = "me.hbj.bikkuri"
-version = "2.2.0"
+version = "2.3.0"
 
 plugins {
   kotlin("jvm") version libs.versions.kotlin
