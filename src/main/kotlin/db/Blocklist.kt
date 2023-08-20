@@ -7,14 +7,9 @@ import me.hbj.bikkuri.db.Blocklist.memberId
 import me.hbj.bikkuri.db.Blocklist.updateInstant
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.javatime.timestamp
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object Blocklist : Table() {
@@ -26,13 +21,11 @@ object Blocklist : Table() {
   override val primaryKey = PrimaryKey(eventId)
 
   fun eqToGroup(group: Group) = with(group) {
-    (botId eq bot.id) and
-      (groupId eq group.redirectBlockId())
+    (groupId eq group.redirectBlockId())
   }
 
   fun eqToMember(member: Member) = with(member) {
-    (botId eq bot.id) and
-      (groupId eq group.redirectBlockId()) and
+    (groupId eq group.redirectBlockId()) and
       (memberId eq id)
   }
 }

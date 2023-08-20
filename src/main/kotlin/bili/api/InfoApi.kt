@@ -2,12 +2,14 @@ package me.hbj.bikkuri.bili.api
 
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.coroutines.withContext
 import me.hbj.bikkuri.bili.BiliClient
 import me.hbj.bikkuri.bili.consts.internal.*
 import me.hbj.bikkuri.bili.data.info.*
 import me.hbj.bikkuri.bili.data.space.*
 import me.hbj.bikkuri.bili.deserializeJson
+import me.hbj.bikkuri.bili.wbiMixinKey
 import kotlin.coroutines.CoroutineContext
 
 private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
@@ -24,7 +26,15 @@ suspend fun BiliClient.getBasicInfo(
   logger.debug { "Getting basic info..." }
   client.get(BASIC_INFO_GET_URL).also {
     logger.debug { "Basic info response: $it" }
-  }.body<String>().deserializeJson()
+  }.body<String>().deserializeJson<BasicInfoGetResponse>()
+    .also {
+      val biliClient = this@getBasicInfo
+      wbiMixinKey = biliClient.getMixinKey(
+        Url(it.data.wbi.img).pathSegments.last().split('.').first(),
+        Url(it.data.wbi.sub).pathSegments.last().split('.').first(),
+      )
+      logger.debug { "Updated wbiMixinKey to `$wbiMixinKey`" }
+    }
 }
 
 /**
@@ -196,7 +206,7 @@ suspend fun BiliClient.getUserSpace(
   context: CoroutineContext = this.context,
 ): UserSpaceGetResponse = withContext(context) {
   logger.debug { "Getting User Space Info..." }
-  client.get(USER_SPACE_GET_URL) {
+  client.get(USER_SPACE_GET_WBI_URL) {
     parameter("mid", mid.toString())
   }.body<String>().deserializeJson<UserSpaceGetResponse>().also {
     logger.debug { "Got User $mid Space Info: $it" }

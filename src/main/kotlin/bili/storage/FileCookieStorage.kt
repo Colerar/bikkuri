@@ -150,7 +150,7 @@ class FileCookieStorage(
     container.getAndSet(
       container.value + wrappers.toCookies(),
     )
-    logger.debug { "Loaded FileCookieStorage: $container" }
+    logger.debug { "Loaded FileCookieStorage(${container.value.size})" }
   }
 }
 

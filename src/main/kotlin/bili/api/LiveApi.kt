@@ -179,7 +179,7 @@ suspend fun BiliClient.createLiveDanmakuConnection(
   realRoomId = realRoomId,
   token = token,
   host = host,
-  client = client,
+  client = this,
   jsonParser = Yabapi.defaultJson.value,
   context = context,
   config = config,

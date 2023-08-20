@@ -8,7 +8,8 @@ data class CertificatePacketBody(
   @SerialName("uid") val mid: Long,
   @SerialName("roomid") val roomId: Long,
   @SerialName("key") val key: String,
-  @SerialName("protover") val version: Int = 3,
-  @SerialName("platform") val platform: String = "web",
-  @SerialName("type") val type: Int = 2,
+  @SerialName("protover") val version: Int,
+  @SerialName("platform") val platform: String,
+  @SerialName("buvid") val buvid: String?,
+  @SerialName("type") val type: Int,
 )

@@ -5,25 +5,31 @@ package me.hbj.bikkuri.utils.encoding
 import me.hbj.bikkuri.utils.toInt
 import java.security.MessageDigest
 
-fun String.md5() =
+@Suppress("NOTHING_TO_INLINE")
+inline fun String.md5() =
   hashString(this, "MD5")
 
-fun ByteArray.md5() =
+@Suppress("NOTHING_TO_INLINE")
+inline fun ByteArray.md5() =
   hash(this, "MD5")
 
-fun String.sha256() =
+@Suppress("NOTHING_TO_INLINE")
+inline fun String.sha256() =
   hashString(this, "SHA-256")
 
-fun ByteArray.sha256() =
+@Suppress("NOTHING_TO_INLINE")
+inline fun ByteArray.sha256() =
   hash(this, "SHA-256")
 
-private fun hashString(input: String, algorithm: String) =
+@Suppress("NOTHING_TO_INLINE")
+inline fun hashString(input: String, algorithm: String) =
   hash(input, algorithm).hex
 
-private fun hash(input: String, algorithm: String): ByteArray =
+@Suppress("NOTHING_TO_INLINE")
+inline fun hash(input: String, algorithm: String): ByteArray =
   hash(input.toByteArray(), algorithm)
 
-private fun hash(input: ByteArray, algorithm: String): ByteArray =
+fun hash(input: ByteArray, algorithm: String): ByteArray =
   MessageDigest
     .getInstance(algorithm)
     .digest(input)

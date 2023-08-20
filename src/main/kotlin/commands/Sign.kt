@@ -3,7 +3,7 @@ package me.hbj.bikkuri.commands
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import me.hbj.bikkuri.api.getUserSpaceWbi
+import me.hbj.bikkuri.bili.api.getUserSpace
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.command.Command
 import me.hbj.bikkuri.command.MiraiCommandSender
@@ -87,7 +87,7 @@ class Sign(private val sender: MiraiCommandSender) : Command(Sign) {
       val userSpace =
         withTimeoutOrNull(30_000) {
           async {
-            client.getUserSpaceWbi(uid!!)
+            client.getUserSpace(uid!!)
           }
         }
 

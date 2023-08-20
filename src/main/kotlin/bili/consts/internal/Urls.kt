@@ -38,7 +38,7 @@ internal const val NICK_CHECK_URL = "$PASSPORT/web/generic/check/nickname"
 
 internal const val MY_SPACE_GET_URL = "$MAIN/x/space/myinfo"
 
-internal const val USER_SPACE_GET_URL = "$MAIN/x/space/acc/info"
+internal const val USER_SPACE_GET_WBI_URL = "$MAIN/x/space/wbi/acc/info"
 
 internal const val USER_TAGS_GET_URL = "$MAIN/x/space/acc/tags"
 

@@ -4,7 +4,6 @@ import net.mamoe.mirai.contact.Member
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.javatime.timestamp
 import org.jetbrains.exposed.sql.or
 
@@ -30,8 +29,7 @@ object BotAccepted : Table() {
   override val primaryKey: PrimaryKey = PrimaryKey(eventId)
 
   fun eq(bot: Long, group: Long): Op<Boolean> =
-    (botId eq bot) and
-      ((fromGroupId eq group) or (toGroupId eq group))
+    ((fromGroupId eq group) or (toGroupId eq group))
 
   fun eqMember(memberId: Long): Op<Boolean> = fromId eq memberId
   fun eqMember(member: Member): Op<Boolean> = fromId eq member.id

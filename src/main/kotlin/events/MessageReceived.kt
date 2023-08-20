@@ -36,17 +36,23 @@ private val logger = KotlinLogging.logger {}
 val commandCtxManager = ContextManager()
 
 fun executeCommandSafely(event: MessageEvent, text: String) {
-  if (!text.startsWith("/")) return
+  val command = if (text.startsWith("/")) {
+    text.removePrefix("/")
+  } else if (text.startsWith(".")) {
+    text.removePrefix(".")
+  } else {
+    return
+  }
   val group = (event.sender as? Member)?.group?.id
   val i = JobIdentity(event.bot.id, group, event.sender.id)
-  if (text == "/cancel") {
-    CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), text.removePrefix("/"))
+  if (command == "cancel") {
+    CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), command)
     return
   }
   val begin = commandCtxManager.contextBegin(
     i = i,
     jobInitializer = {
-      CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), text.removePrefix("/"))
+      CommandManager.invokeCommand(MiraiCommandSender(event.sender, event), command)
     },
   )
   if (!begin) {

@@ -61,4 +61,13 @@ data class BasicInfoData(
   @SerialName("allowance_count") val allowanceCount: Int? = null,
   @SerialName("answer_status") val answerStatus: Int? = null,
   @SerialName("is_senior_member") val isSeniorMember: Boolean? = null,
+  @SerialName("wbi_img") val wbi: WbiKey,
+)
+
+@Serializable
+data class WbiKey(
+  @SerialName("img_url")
+  val img: String,
+  @SerialName("sub_url")
+  val sub: String,
 )

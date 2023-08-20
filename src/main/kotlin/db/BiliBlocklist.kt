@@ -2,12 +2,8 @@ package me.hbj.bikkuri.db
 
 import me.hbj.bikkuri.db.BiliBlocklist.eqToGroup
 import net.mamoe.mirai.contact.Group
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object BiliBlocklist : Table() {
@@ -16,8 +12,7 @@ object BiliBlocklist : Table() {
   val uid = long("bili_uid")
 
   fun eqToGroup(group: Group) = with(group) {
-    (botId eq bot.id) and
-      (groupId eq group.redirectBlockId())
+    (groupId eq group.redirectBlockId())
   }
 }
 

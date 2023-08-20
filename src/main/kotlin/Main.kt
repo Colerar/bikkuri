@@ -111,7 +111,7 @@ fun main(): Unit = runBlocking {
     launchAutoBackupTask()
     launchAutoKickTask()
     launchUpdateGuardListTask()
-    setMessageTask()
+    setupBiliClient()
   }
 
   val loginBots = bikkuriScope.launch {

@@ -2,7 +2,6 @@
 
 package me.hbj.bikkuri.bili.connect
 
-import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.utils.io.core.*
@@ -17,6 +16,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import me.hbj.bikkuri.bili.BiliClient
 import me.hbj.bikkuri.bili.data.live.CertificatePacketBody
 import me.hbj.bikkuri.bili.data.live.CertificatePacketResponse
 import me.hbj.bikkuri.bili.data.live.LiveDanmakuHost
@@ -37,11 +37,12 @@ internal class LiveMessageConnection(
   private val realRoomId: Long,
   private val token: String,
   private val host: LiveDanmakuHost,
-  private val client: HttpClient,
+  private val client: BiliClient,
   private val jsonParser: Json,
   private val context: CoroutineContext = Dispatchers.IO + CoroutineName("yabapi-live-msg-connect"),
   config: LiveDanmakuConnectConfig.() -> Unit = {},
 ) {
+  private val httpClient = client.client
   private val configInstance = LiveDanmakuConnectConfig()
 
   init {
@@ -54,7 +55,7 @@ internal class LiveMessageConnection(
     launch(context) {
       requireNotNull(host.host)
       requireNotNull(host.wssPort)
-      client.wss(HttpMethod.Get, host = host.host, host.wssPort, "/sub") {
+      httpClient.wss(HttpMethod.Get, host = host.host, host.wssPort, "/sub") {
         val isSuccess = sendCertificatePacket()
         if (isSuccess) {
           launch {
@@ -146,11 +147,9 @@ internal class LiveMessageConnection(
       if (packet.body.getOrNull(0) == 123.toByte() ||
         packet.body.getOrNull(0) == 91.toByte()
       ) {
-        println("Single, ${packet.header.protocol}")
         jsons.add(packet.body.decodeToString())
       } else {
         while (!body.endOfInput && isActive) {
-          println("Delimited, ${packet.header.protocol}")
           require(body.remaining >= 16) { "Header is not long enough, expected: 16, actual: ${body.remaining}" }
           val headerBytes = body.readBytes(16)
           val head = LiveMsgPacketHead.decode(headerBytes)
@@ -167,7 +166,7 @@ internal class LiveMessageConnection(
         logger.trace { "Decoded raw json string: $parsed" }
         RawLiveCommand(jsonParser.decodeFromString(parsed))
       }.collect { raw -> // Send Raw to downstream
-        logger.debug { "Decoded RawLiveCommand $raw" }
+        logger.trace { "Decoded RawLiveCommand $raw" }
         configInstance.onRawCommandResponse(this, channelFlow { send(raw) })
         val data = try {
           raw.data
@@ -202,10 +201,15 @@ internal class LiveMessageConnection(
         roomId = realRoomId,
         key = token,
         version = 2,
-        type = 1,
+        platform = "web",
+        buvid = client.getBuvid3()?.value ?: run {
+          logger.warn { "No BUVID3 in cookies" }
+          ""
+        },
+        type = 2,
       ),
     )
-    println(encodeToString)
+    logger.info { "CertPacket: $encodeToString" }
     val body = encodeToString.toByteArray()
     return sendLiveDanmakuPacket(
       LiveMsgPacket(
