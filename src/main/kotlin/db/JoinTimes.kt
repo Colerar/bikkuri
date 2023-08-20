@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 
-private val logger = mu.KotlinLogging.logger {}
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
 
 object JoinTimes : Table() {
   val groupId = long("group_id").index()

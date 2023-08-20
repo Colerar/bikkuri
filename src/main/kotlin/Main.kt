@@ -2,6 +2,7 @@
 
 package me.hbj.bikkuri
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import me.hbj.bikkuri.command.CommandManager
 import me.hbj.bikkuri.command.ConsoleCommandSender
@@ -22,7 +23,6 @@ import me.hbj.bikkuri.utils.ModuleScope
 import me.hbj.bikkuri.utils.absPath
 import me.hbj.bikkuri.utils.globalWorkDirectory
 import me.hbj.bikkuri.utils.lazyUnsafe
-import mu.KotlinLogging
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.auth.BotAuthorization
 import net.mamoe.mirai.event.GlobalEventChannel

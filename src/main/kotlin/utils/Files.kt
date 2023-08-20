@@ -2,7 +2,7 @@ package me.hbj.bikkuri.utils
 
 import java.io.File
 
-private val logger = mu.KotlinLogging.logger { }
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger { }
 
 /**
  * Global Work Directory, set by `user.dir`

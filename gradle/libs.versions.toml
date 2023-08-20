@@ -19,7 +19,8 @@ kaml = "com.charleskorn.kaml:kaml:0.54.0"
 kotlinx-coroutines-core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
 kotlinx-datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
-microutils-logging = "io.github.microutils:kotlin-logging-jvm:3.0.5"
+microutils-logging = "io.github.oshai:kotlin-logging-jvm:5.1.0"
+slf4j = "org.slf4j:slf4j-api:2.0.7"
 logback = "ch.qos.logback:logback-classic:1.4.11"
 
 krontab = "dev.inmo:krontab:2.2.0"
@@ -60,4 +61,4 @@ mirai-log-logback = { module = "net.mamoe:mirai-logging-slf4j-logback", version.
 qsign = { module = "top.mrxiaom:qsign", version = "1.0.9" }
 
 [bundles]
-log = ["microutils-logging", "logback"]
+log = ["microutils-logging", "slf4j", "logback"]

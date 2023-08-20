@@ -3,11 +3,11 @@ package me.hbj.bikkuri.tasks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import me.hbj.bikkuri.bili.api.modifyMessageSetting
+import me.hbj.bikkuri.bili.data.GeneralCode
 import me.hbj.bikkuri.client
-import moe.sdl.yabapi.api.modifyMessageSetting
-import moe.sdl.yabapi.data.GeneralCode
 
-private val logger = mu.KotlinLogging.logger { }
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger { }
 
 fun CoroutineScope.setMessageTask(): Job = launch {
   logger.info { "Modifying message setting" }

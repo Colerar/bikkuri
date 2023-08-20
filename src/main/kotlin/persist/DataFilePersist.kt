@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.persist
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -10,7 +11,7 @@ import kotlinx.serialization.StringFormat
 import me.hbj.bikkuri.utils.*
 import java.io.File
 
-private val logger = mu.KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
 /**
  * Data file persist

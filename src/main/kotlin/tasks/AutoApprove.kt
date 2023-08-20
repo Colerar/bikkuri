@@ -1,9 +1,9 @@
 package me.hbj.bikkuri.tasks
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import me.hbj.bikkuri.data.ListenerPersist
 import me.hbj.bikkuri.events.queuedMemberRequest
-import mu.KotlinLogging
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.isOperator
 

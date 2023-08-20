@@ -1,11 +1,11 @@
 package me.hbj.bikkuri.commands
 
 import kotlinx.coroutines.coroutineScope
+import me.hbj.bikkuri.bili.api.getBasicInfo
+import me.hbj.bikkuri.bili.data.GeneralCode
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.command.Command
 import me.hbj.bikkuri.command.MiraiCommandSender
-import moe.sdl.yabapi.api.getBasicInfo
-import moe.sdl.yabapi.data.GeneralCode
 
 class CheckLogin(private val sender: MiraiCommandSender) : Command(CheckLogin) {
   val member = memberOperator(sender)

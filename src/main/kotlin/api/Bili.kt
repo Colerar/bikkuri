@@ -6,10 +6,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.withContext
-import moe.sdl.yabapi.BiliClient
-import moe.sdl.yabapi.consts.internal.MAIN
-import moe.sdl.yabapi.data.info.UserSpaceGetResponse
-import moe.sdl.yabapi.deserializeJson
+import me.hbj.bikkuri.bili.BiliClient
+import me.hbj.bikkuri.bili.consts.internal.MAIN
+import me.hbj.bikkuri.bili.data.info.UserSpaceGetResponse
+import me.hbj.bikkuri.bili.deserializeJson
 import kotlin.coroutines.CoroutineContext
 
 internal const val USER_SPACE_GET_WBI_URL = "$MAIN/x/space/wbi/acc/info"

@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.persist
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
@@ -9,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-private val logger = mu.KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
 /**
  * Auto Load File Persist

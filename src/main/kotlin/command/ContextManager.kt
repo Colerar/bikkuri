@@ -1,7 +1,7 @@
 package me.hbj.bikkuri.command
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Job
-import mu.KotlinLogging
 import net.mamoe.mirai.utils.ConcurrentHashMap
 
 private val logger = KotlinLogging.logger {}

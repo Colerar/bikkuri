@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.events
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
@@ -19,7 +20,6 @@ import me.hbj.bikkuri.utils.byTagFirst
 import me.hbj.bikkuri.utils.readToXmlDocument
 import me.hbj.bikkuri.utils.sendMessage
 import me.hbj.bikkuri.utils.toList
-import mu.KotlinLogging
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.NormalMember
@@ -65,7 +65,7 @@ fun Events.onMessageReceived() {
     executeCommandSafely(event, text)
   }
 
-  subscribeAlways<MessageEvent>e@{
+  subscribeAlways<MessageEvent> e@{
     if (!General.data.biliLightAppConvert) return@e
     val simpleService = message.firstIsInstanceOrNull<SimpleServiceMessage>()
     val videoShort = if (simpleService != null) {

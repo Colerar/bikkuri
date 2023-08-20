@@ -46,7 +46,7 @@ dependencies {
   // Logger
   implementation(libs.bundles.log)
   // Bilibili
-  implementation(libs.yabapi)
+//  implementation(libs.yabapi)
   // Coroutines
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.atomicfu)

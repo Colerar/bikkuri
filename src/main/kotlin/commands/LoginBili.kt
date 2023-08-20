@@ -1,23 +1,23 @@
 package me.hbj.bikkuri.commands
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import me.hbj.bikkuri.bili.BiliClient
+import me.hbj.bikkuri.bili.api.*
+import me.hbj.bikkuri.bili.data.GeneralCode
+import me.hbj.bikkuri.bili.data.login.LoginWebQRCodeResponse
+import me.hbj.bikkuri.bili.data.login.LoginWebQRCodeResponseCode
+import me.hbj.bikkuri.bili.data.login.LoginWebSMSResponseCode
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.command.Command
 import me.hbj.bikkuri.commands.LoginType.*
-import moe.sdl.yabapi.BiliClient
-import moe.sdl.yabapi.api.*
-import moe.sdl.yabapi.data.GeneralCode
-import moe.sdl.yabapi.data.login.LoginWebQRCodeResponse
-import moe.sdl.yabapi.data.login.LoginWebQRCodeResponseCode
-import moe.sdl.yabapi.data.login.LoginWebSMSResponseCode
 import moe.sdl.yac.parameters.options.default
 import moe.sdl.yac.parameters.options.option
 import moe.sdl.yac.parameters.options.switch
-import mu.KotlinLogging
 import java.net.URLEncoder
 import kotlin.coroutines.CoroutineContext
 
@@ -46,9 +46,9 @@ class LoginBili : Command(LoginBili) {
       QR -> {
         val resp = client.loginQr().lastOrNull()
         if (resp?.code == GeneralCode.SUCCESS) {
-          logger.info("Logged in successfully via qrcode")
+          logger.info { "Logged in successfully via qrcode" }
         } else {
-          logger.warn("Failed to login")
+          logger.warn { "Failed to login" }
         }
       }
 
@@ -57,9 +57,9 @@ class LoginBili : Command(LoginBili) {
           logger.info { it }
         }
         if (resp.code == LoginWebSMSResponseCode.SUCCESS) {
-          logger.info("Logged in successfully via sms")
+          logger.info { "Logged in successfully via sms" }
         } else {
-          logger.warn("Failed to login")
+          logger.warn { "Failed to login" }
         }
       }
 
@@ -67,7 +67,7 @@ class LoginBili : Command(LoginBili) {
         client.loginWebConsole {
           logger.info { it }
         }
-        logger.info("Logged in successfully via pwd")
+        logger.info { "Logged in successfully via pwd" }
       }
     }
   }

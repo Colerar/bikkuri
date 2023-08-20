@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-private val logger = mu.KotlinLogging.logger { }
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger { }
 
 /**
  * Auto Save File Persist

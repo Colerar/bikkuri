@@ -1,6 +1,6 @@
 package me.hbj.bikkuri.utils
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.MessageChainBuilder
 import net.mamoe.mirai.utils.ExternalResource

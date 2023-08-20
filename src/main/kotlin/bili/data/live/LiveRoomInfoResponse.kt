@@ -1,0 +1,57 @@
+package me.hbj.bikkuri.bili.data.live
+
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import me.hbj.bikkuri.bili.data.GeneralCode
+import me.hbj.bikkuri.bili.data.GeneralCode.UNKNOWN
+
+@Serializable
+data class LiveRoomInfoResponse(
+  @SerialName("code") val code: GeneralCode = UNKNOWN, // 未找到该房间 -> 1
+  @SerialName("msg") val msg: String? = null,
+  @SerialName("message") val message: String? = null,
+  @SerialName("data") val data: LiveRoomData? = null,
+)
+
+@Serializable
+data class LiveRoomData(
+  @SerialName("uid") val uid: Long,
+  @SerialName("room_id") val roomId: Long,
+  @SerialName("short_id") val shortId: Long? = null, // 官方定制房间号
+  @SerialName("attention") val attention: Int? = null,
+  @SerialName("online") val online: Int? = null,
+  @SerialName("is_portrait") val portrait: Boolean? = null,
+  @SerialName("description") val description: String? = null,
+  @SerialName("live_status") val liveStatus: Int? = null,
+  @SerialName("area_id") val areaId: Long? = null, // 子区 ID?
+  @SerialName("parent_area_id") val parentAreaId: Long? = null,
+  @SerialName("parent_area_name") val parentAreaName: String? = null,
+  @SerialName("old_area_id") val oldAreaId: Long? = null,
+  @SerialName("background") val background: String? = null,
+  @SerialName("title") val title: String? = null,
+  @SerialName("user_cover") val userCover: String? = null,
+  @SerialName("keyframe") val keyFrame: String? = null,
+  @SerialName("is_strict_room") val isStrictRoom: Boolean? = null,
+  @SerialName("live_time") val liveTime: String? = null, // 格式为 yyyy-MM-DD HH:mm:ss
+  @SerialName("tags") val tags: String? = null,
+  @SerialName("is_anchor") val isAnchor: Int? = null,
+  @SerialName("room_silent_type") val roomSilentType: String? = null,
+  @SerialName("room_silent_level") val roomSilentLevel: Int? = null,
+  @SerialName("room_silent_second") val roomSilentSecond: Int? = null,
+  @SerialName("area_name") val areaName: String? = null,
+  @SerialName("pendants") val pendants: String? = null, // blank
+  @SerialName("area_pendants") val areaPendants: String? = null, // blank
+  @SerialName("new_pendants") val newPendants: JsonObject? = null,
+  @SerialName("up_session") val upSession: String? = null,
+  @SerialName("pk_status") val pkStatus: Int? = null,
+  @SerialName("pk_id") val pkId: Long? = null,
+  @SerialName("battle_id") val battleId: Long? = null,
+  @SerialName("allow_change_area_time") val allowChangeAreaTime: Int? = null,
+  @SerialName("allow_upload_cover_time") val allowUploadCoverTime: Int? = null,
+  @SerialName("hot_words") val hotWords: List<String> = emptyList(),
+  @SerialName("studio_info") val studioInfo: JsonObject? = null,
+  @SerialName("hot_words_status") val hotWordsStatus: Int? = null,
+  @SerialName("verify") val verify: JsonElement? = null,
+)

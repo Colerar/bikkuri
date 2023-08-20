@@ -1,5 +1,6 @@
 package me.hbj.bikkuri.tasks
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -8,6 +9,16 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
+import me.hbj.bikkuri.bili.api.*
+import me.hbj.bikkuri.bili.connect.LiveDanmakuConnectConfig
+import me.hbj.bikkuri.bili.connect.onCertificateResponse
+import me.hbj.bikkuri.bili.connect.onCommandResponse
+import me.hbj.bikkuri.bili.connect.onHeartbeatResponse
+import me.hbj.bikkuri.bili.data.live.GuardLevel
+import me.hbj.bikkuri.bili.data.live.LiveDanmakuInfoGetResponse
+import me.hbj.bikkuri.bili.data.live.commands.DanmakuMsgCmd
+import me.hbj.bikkuri.bili.data.live.commands.GuardBuyCmd
+import me.hbj.bikkuri.bili.data.live.commands.SuperChatMsgCmd
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.GuardFetcher
 import me.hbj.bikkuri.data.ListenerPersist
@@ -17,17 +28,6 @@ import me.hbj.bikkuri.exception.ReconnectException
 import me.hbj.bikkuri.utils.after1Day
 import me.hbj.bikkuri.utils.after30Days
 import me.hbj.bikkuri.utils.now
-import moe.sdl.yabapi.api.*
-import moe.sdl.yabapi.connect.LiveDanmakuConnectConfig
-import moe.sdl.yabapi.connect.onCertificateResponse
-import moe.sdl.yabapi.connect.onCommandResponse
-import moe.sdl.yabapi.connect.onHeartbeatResponse
-import moe.sdl.yabapi.data.live.GuardLevel
-import moe.sdl.yabapi.data.live.LiveDanmakuInfoGetResponse
-import moe.sdl.yabapi.data.live.commands.DanmakuMsgCmd
-import moe.sdl.yabapi.data.live.commands.GuardBuyCmd
-import moe.sdl.yabapi.data.live.commands.SuperChatMsgCmd
-import mu.KotlinLogging
 import net.mamoe.mirai.utils.retryCatching
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
@@ -167,7 +167,7 @@ class UpdateRoomConnection(
           selfId,
           realId,
           stream.data!!.token!!,
-          stream.data!!.hostList.first(),
+          stream.data.hostList.first(),
         ) {
           onResponse()
         }
@@ -232,7 +232,7 @@ class UpdateRoomConnection(
       flow.filterIsInstance<SuperChatMsgCmd>().collect {
         val uid = it.data?.uid ?: return@collect
         val allowed = listOf(GuardLevel.CAPTAIN, GuardLevel.GOVERNOR, GuardLevel.ADMIRAL)
-        if (!allowed.contains(it.data?.medalInfo?.guardLevel)) return@collect
+        if (!allowed.contains(it.data.medalInfo?.guardLevel)) return@collect
         GuardList.insertOrUpdate(mid, uid, after1Day, GuardFetcher.MESSAGE)
       }
     }

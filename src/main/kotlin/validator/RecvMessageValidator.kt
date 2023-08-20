@@ -1,12 +1,12 @@
 package me.hbj.bikkuri.validator
 
+import me.hbj.bikkuri.bili.api.fetchSessionMessage
+import me.hbj.bikkuri.bili.api.getBasicInfo
+import me.hbj.bikkuri.bili.data.message.contents.Text
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.fitKeygen
 import me.hbj.bikkuri.utils.sendMessage
-import moe.sdl.yabapi.api.fetchSessionMessage
-import moe.sdl.yabapi.api.getBasicInfo
-import moe.sdl.yabapi.data.message.contents.Text
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At

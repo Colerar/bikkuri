@@ -1,20 +1,20 @@
 package me.hbj.bikkuri.validator
 
 import kotlinx.coroutines.*
+import me.hbj.bikkuri.bili.api.getBasicInfo
+import me.hbj.bikkuri.bili.api.getUserCard
+import me.hbj.bikkuri.bili.api.sendMessageTo
+import me.hbj.bikkuri.bili.data.GeneralCode
+import me.hbj.bikkuri.bili.data.message.MessageContent
 import me.hbj.bikkuri.client
 import me.hbj.bikkuri.data.KeygenData
 import me.hbj.bikkuri.data.Listener
 import me.hbj.bikkuri.data.fitKeygen
-import moe.sdl.yabapi.api.getBasicInfo
-import moe.sdl.yabapi.api.getUserCard
-import moe.sdl.yabapi.api.sendMessageTo
-import moe.sdl.yabapi.data.GeneralCode
-import moe.sdl.yabapi.data.message.MessageContent
 import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.content
 
-private val logger = mu.KotlinLogging.logger {}
+private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
 
 class SendMessageValidator(
   private val keygen: KeygenData,

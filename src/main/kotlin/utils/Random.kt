@@ -1,7 +1,7 @@
 package me.hbj.bikkuri.utils
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import me.hbj.bikkuri.utils.encoding.hex
-import mu.KotlinLogging
 import java.security.SecureRandom
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
