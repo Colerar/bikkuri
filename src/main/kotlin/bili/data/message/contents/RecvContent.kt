@@ -12,6 +12,7 @@ abstract class ContentFactory<T : RecvContent> {
     private val factories by lazy {
       listOf<ContentFactory<*>>(
         Text,
+        Pop,
       )
     }
 

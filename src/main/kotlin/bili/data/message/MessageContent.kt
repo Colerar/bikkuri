@@ -14,6 +14,7 @@ enum class MessageType(val code: Int) {
   TEXT(1),
   IMAGE(2),
   RECALL(5),
+  POP(18),
 }
 
 @Serializable
