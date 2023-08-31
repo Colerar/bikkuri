@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.9.0"
-ktor = "2.3.3"
+ktor = "2.3.4"
 ktlint = "0.49.1"
 mirai = "2.15.0"
 exposed = "0.42.1"
