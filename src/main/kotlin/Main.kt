@@ -56,7 +56,7 @@ val dbs = listOf(
 fun main(): Unit = runBlocking {
   logger.info { "Starting Bikkuri ${versionFormatted()}" }
   logger.info { "Working directory: $globalWorkDirectory" }
-
+  fixLog()
   System.setProperty("mirai.no-desktop", "true")
 
   val bikkuriScope = ModuleScope("Bikkuri", this.coroutineContext)
